@@ -20,6 +20,7 @@ func _ready() -> void:
 		args[kv[0]] = kv[1] if kv.size() > 1 else "1"
 	if args.has("shot"):   # a watchdog: a broken build must not hang the test machine
 		get_tree().create_timer(float(args.get("timeout", "420")), true, false, true).timeout.connect(func(): print("TIMEOUT"); get_tree().quit(1))
+	if not args.has("shot") and await _import_if_needed(): return
 	if args.has("hour"): DayNight.set_hour(float(args["hour"]))
 	var t0 := Time.get_ticks_msec()
 	WorldData.lite = args.has("lite")
@@ -47,6 +48,34 @@ func _ready() -> void:
 	print("world built in %d ms" % (Time.get_ticks_msec() - t0))
 	if args.has("shot"): _shot()
 	_check_kits()
+
+## New art (e.g. freshly unpacked kits) must be imported by Godot before the game can use it. However
+## the game was started, if any art file has no import record yet, run Godot's importer now and
+## restart, so the world never loads half-empty.
+func _import_if_needed() -> bool:
+	var pending := 0
+	for d in ["res://assets/village", "res://assets/nature", "res://assets/props", "res://assets/anims", "res://assets/characters", "res://assets/characters/textures"]:
+		if not DirAccess.dir_exists_absolute(d): continue
+		for f in DirAccess.get_files_at(d):
+			var ext := f.get_extension().to_lower()
+			if ext in ["gltf", "glb", "png"] and not FileAccess.file_exists(d + "/" + f + ".import"): pending += 1
+	if pending == 0: return false
+	# never loop: at most one automatic import every 10 minutes
+	var mark := "user://last_auto_import.txt"
+	if FileAccess.file_exists(mark) and Time.get_unix_time_from_system() - float(FileAccess.get_file_as_string(mark)) < 600.0:
+		push_warning("%d art files still not imported after an automatic import" % pending); return false
+	var fm := FileAccess.open(mark, FileAccess.WRITE); fm.store_string(str(Time.get_unix_time_from_system())); fm.close()
+	var cl := CanvasLayer.new(); add_child(cl)
+	var bg := ColorRect.new(); bg.color = Color(0.06, 0.07, 0.06); bg.set_anchors_preset(Control.PRESET_FULL_RECT); cl.add_child(bg)
+	var l := Label.new(); l.text = "Preparing %d pieces of new art for Ashvale...\nThis happens once and takes a minute or two. The game restarts by itself." % pending
+	l.add_theme_font_size_override("font_size", 26); l.set_anchors_preset(Control.PRESET_CENTER); l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.position = Vector2(-420, -40); l.size = Vector2(840, 80); cl.add_child(l)
+	for i in 3: await get_tree().process_frame
+	var out := []
+	OS.execute(OS.get_executable_path(), ["--headless", "--path", ProjectSettings.globalize_path("res://"), "--import"], out, true)
+	OS.set_restart_on_exit(true, OS.get_cmdline_args())
+	get_tree().quit()
+	return true
 
 ## the art kits are unpacked from Downloads by tools/setup_godot.ps1; say so plainly if they're missing
 func _check_kits() -> void:
