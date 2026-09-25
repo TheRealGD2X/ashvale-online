@@ -1,0 +1,70 @@
+{
+ "name": "sk_mage",
+ "kind": "character",
+ "model": "art/models/kaykit/Skeleton_Mage.glb",
+ "prefix": "Skeleton_Mage",
+ "anims": {
+  "idle": {
+   "action": "Idle_Combat",
+   "frames": 4,
+   "fps": 5,
+   "loop": true
+  },
+  "walk": {
+   "action": "Running_A",
+   "frames": 8,
+   "fps": 12,
+   "loop": true
+  },
+  "attack": {
+   "action": "1H_Melee_Attack_Slice_Horizontal",
+   "frames": 6,
+   "fps": 14,
+   "events": {
+    "hit": 3
+   }
+  },
+  "attack2": {
+   "action": "1H_Melee_Attack_Jump_Chop",
+   "frames": 6,
+   "fps": 14,
+   "events": {
+    "hit": 4
+   }
+  },
+  "cast": {
+   "action": "Spellcast_Shoot",
+   "frames": 6,
+   "fps": 14,
+   "events": {
+    "hit": 3
+   }
+  },
+  "hit": {
+   "action": "Hit_A",
+   "frames": 3,
+   "fps": 12
+  },
+  "die": {
+   "action": "Death_C_Skeletons",
+   "frames": 6,
+   "fps": 10
+  },
+  "dead": {
+   "action": "Death_C_Pose",
+   "frames": 1
+  },
+  "spawn": {
+   "action": "Skeletons_Awaken_Standing",
+   "frames": 6,
+   "fps": 10
+  }
+ },
+ "render_dirs": 5,
+ "attach": [
+  {
+   "model": "art/models/kaykit/Skeleton_Staff.gltf",
+   "bone": "handslot.r"
+  }
+ ]
+}

@@ -159,7 +159,13 @@ function burst(x, y, n, col, spd, life, size, grav, up) {
   for (let i = 0; i < n; i++) { const a = R() * Math.PI * 2, v = spd * (.3 + R() * .7); part(x, y, { vx: Math.cos(a) * v, vy: Math.sin(a) * v * .6 - (up || 0), life: life * (.6 + R() * .6), max: life, size: size * (.6 + R() * .6), col, grav: grav || 0 }); }
 }
 function fx(type, x, y, o) { const e = Object.assign({ type, x, y, t: 0, dur: 1 }, o); FX.push(e); return e; }
-function floatText(x, y, text, col, big) { FLOATS.push({ x: x + (R() - .5) * 10, y, text, col, t: 0, big }); }
+function floatText(x, y, text, col, big) {
+  const crit = big && col === '#ffd24a', hurt = col === '#ff6a55', heal = col === '#9cff7a' || col === '#8aff9a' || /^#[89a-f][0-9a-f]f/.test(col || '') && /heal/i.test(text);
+  const miss = /^(miss|dodge|parry|resist)$/i.test(text);
+  FLOATS.push({ x: x + (R() - .5) * 12, y, text, col: miss ? '#c8c8c8' : col, t: 0, big, crit, hurt, miss, vx: (R() - .5) * 26, kind: hurt ? 'hurt' : crit ? 'crit' : 'hit' });
+  if (crit) { VIEW.hitStop(.07); VIEW.shake(.35); }
+  else if (hurt && big) { VIEW.shake(.4); }
+}
 
 function drawBolt(c, x0, y0, x1, y1, w, col, jag) {
   const segs = 10; c.beginPath(); c.moveTo(x0, y0);
@@ -238,10 +244,15 @@ function drawParticles(c) {
 function drawFloats(c) {
   c.save(); c.textAlign = 'center'; c.lineJoin = 'round';
   for (const f of FLOATS) {
-    const t = f.t, y = f.y - 30 - t * 34 - (f.big ? 10 : 0), a = t < .8 ? 1 : 1 - (t - .8) / .3;
-    const sc = f.big ? (t < .12 ? 1 + (0.12 - t) * 6 : 1) : 1;
-    c.font = `${f.big ? 800 : 700} ${Math.round((f.big ? 19 : 14) * sc)}px "Alegreya Sans", system-ui, sans-serif`;
-    c.globalAlpha = Math.max(0, a); c.strokeStyle = 'rgba(0,0,0,.85)'; c.lineWidth = 3.5; c.strokeText(f.text, f.x, y); c.fillStyle = f.col; c.fillText(f.text, f.x, y);
+    const t = f.t, a = t < .75 ? 1 : 1 - (t - .75) / .35;
+    // rise fast then drift; crits pop bigger and hang a little longer
+    const rise = f.crit ? 46 : 36, y = f.y - 34 - (1 - Math.pow(1 - Math.min(1, t / .9), 2)) * rise - (f.big ? 8 : 0), x = f.x + f.vx * t;
+    const pop = t < .14 ? 1 + (0.14 - t) / .14 * (f.crit ? 1.1 : f.big ? .6 : .35) : 1;
+    const base = f.crit ? 24 : f.big ? 19 : f.miss ? 12 : 14;
+    c.font = `${f.miss ? 'italic 600' : f.crit || f.big ? 800 : 700} ${Math.round(base * pop)}px "Alegreya Sans", system-ui, sans-serif`;
+    c.globalAlpha = Math.max(0, a); c.strokeStyle = f.crit ? 'rgba(90,50,0,.95)' : 'rgba(0,0,0,.85)'; c.lineWidth = f.crit ? 5 : 3.5; c.strokeText(f.text, x, y);
+    if (f.crit && t < .2) { c.fillStyle = '#fff6d0'; c.fillText(f.text, x, y); c.globalAlpha = Math.max(0, a) * Math.min(1, t / .2); }
+    c.fillStyle = f.col; c.fillText(f.text, x, y);
   }
   c.restore();
 }

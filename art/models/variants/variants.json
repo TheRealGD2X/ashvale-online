@@ -1,0 +1,98 @@
+{
+ "plate_iron": {
+  "base": "knight",
+  "texture": "art/models/variants/knight__plate_iron.png"
+ },
+ "plate_dark": {
+  "base": "knight",
+  "texture": "art/models/variants/knight__plate_dark.png"
+ },
+ "plate_bronze": {
+  "base": "knight",
+  "texture": "art/models/variants/knight__plate_bronze.png"
+ },
+ "plate_gold": {
+  "base": "knight",
+  "texture": "art/models/variants/knight__plate_gold.png"
+ },
+ "plate_abyss": {
+  "base": "knight",
+  "texture": "art/models/variants/knight__plate_abyss.png"
+ },
+ "leather_hide": {
+  "base": "barbarian",
+  "texture": "art/models/variants/barbarian__leather_hide.png"
+ },
+ "leather_dark": {
+  "base": "barbarian",
+  "texture": "art/models/variants/barbarian__leather_dark.png"
+ },
+ "leather_green": {
+  "base": "barbarian",
+  "texture": "art/models/variants/barbarian__leather_green.png"
+ },
+ "robe_purple": {
+  "base": "mage",
+  "texture": "art/models/variants/mage__robe_purple.png"
+ },
+ "robe_blue": {
+  "base": "mage",
+  "texture": "art/models/variants/mage__robe_blue.png"
+ },
+ "robe_arcane": {
+  "base": "mage",
+  "texture": "art/models/variants/mage__robe_arcane.png"
+ },
+ "robe_abyss": {
+  "base": "mage",
+  "texture": "art/models/variants/mage__robe_abyss.png"
+ },
+ "robe_red": {
+  "base": "mage",
+  "texture": "art/models/variants/mage__robe_red.png"
+ },
+ "tao_green": {
+  "base": "rogue",
+  "texture": "art/models/variants/rogue__tao_green.png"
+ },
+ "tao_spirit": {
+  "base": "rogue",
+  "texture": "art/models/variants/rogue__tao_spirit.png"
+ },
+ "tao_abyss": {
+  "base": "rogue",
+  "texture": "art/models/variants/rogue__tao_abyss.png"
+ },
+ "tao_blue": {
+  "base": "rogue",
+  "texture": "art/models/variants/rogue__tao_blue.png"
+ },
+ "helm_neutral_knight": {
+  "base": "knight",
+  "texture": "art/models/variants/knight__helm_neutral_knight.png"
+ },
+ "cape_neutral_knight": {
+  "base": "knight",
+  "texture": "art/models/variants/knight__cape_neutral_knight.png"
+ },
+ "cape_neutral_mage": {
+  "base": "mage",
+  "texture": "art/models/variants/mage__cape_neutral_mage.png"
+ },
+ "cape_neutral_rogue": {
+  "base": "rogue",
+  "texture": "art/models/variants/rogue__cape_neutral_rogue.png"
+ },
+ "cape_neutral_barbarian": {
+  "base": "barbarian",
+  "texture": "art/models/variants/barbarian__cape_neutral_barbarian.png"
+ },
+ "hat_neutral_mage": {
+  "base": "mage",
+  "texture": "art/models/variants/mage__hat_neutral_mage.png"
+ },
+ "hat_neutral_barbarian": {
+  "base": "barbarian",
+  "texture": "art/models/variants/barbarian__hat_neutral_barbarian.png"
+ }
+}

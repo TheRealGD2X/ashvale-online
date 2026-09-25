@@ -150,7 +150,10 @@ input.txt:focus{box-shadow:0 0 0 1px var(--gold-hi),0 0 10px rgba(247,223,158,.2
 .slot:hover{box-shadow:inset 0 0 0 1px var(--gold-hi),inset 0 2px 6px rgba(0,0,0,.9),0 0 8px rgba(247,223,158,.25)}
 .slot .k{position:absolute;top:0;left:2px;font:700 9.5px var(--body);color:#c8b890;text-shadow:0 0 2px #000,0 0 2px #000,0 0 3px #000;pointer-events:none;z-index:1}
 .slot .c{position:absolute;bottom:0;right:2px;font:800 11px var(--body);color:#fff;text-shadow:0 0 2px #000,0 0 3px #000,0 0 3px #000;pointer-events:none;z-index:1}
-.slot .cd{position:absolute;inset:0;background:rgba(0,0,0,.68);transform-origin:bottom;pointer-events:none}
+.slot .cd{position:absolute;inset:0;background:conic-gradient(rgba(0,0,0,.74) var(--p,0%),transparent 0);pointer-events:none}
+.slot .cdt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:800 13px "Alegreya Sans",system-ui,sans-serif;color:#fff;text-shadow:0 0 3px #000,0 1px 2px #000;pointer-events:none}
+.slot.ready{animation:slotReady .45s ease-out}
+@keyframes slotReady{0%{box-shadow:0 0 0 0 rgba(255,220,120,.9),inset 0 0 14px rgba(255,235,170,.9)}100%{box-shadow:0 0 0 6px rgba(255,220,120,0),inset 0 0 0 rgba(255,235,170,0)}}
 .slot.on{box-shadow:inset 0 0 0 2px #ffd060,0 0 10px rgba(255,200,80,.6)}
 .slot.nomp{filter:saturate(.25) brightness(.55)}
 .slot.empty{opacity:.45}

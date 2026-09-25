@@ -1,0 +1,44 @@
+{
+ "name": "cr_spider",
+ "kind": "character",
+ "model": "art/models/creatures/spider.blend",
+ "prefix": "Spider_",
+ "anims": {
+  "idle": {
+   "action": "Idle",
+   "frames": 4,
+   "fps": 6,
+   "loop": true
+  },
+  "walk": {
+   "action": "Walk",
+   "frames": 8,
+   "fps": 14,
+   "loop": true
+  },
+  "attack": {
+   "action": "Attack",
+   "frames": 6,
+   "fps": 14,
+   "events": {
+    "hit": 3
+   }
+  },
+  "hit": {
+   "action": "Hit",
+   "frames": 3,
+   "fps": 12
+  },
+  "die": {
+   "action": "Die",
+   "frames": 6,
+   "fps": 10
+  },
+  "dead": {
+   "action": "Dead",
+   "frames": 1
+  }
+ },
+ "render_dirs": 5,
+ "yaw": 90
+}

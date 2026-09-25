@@ -20,6 +20,7 @@ function monLook(e) {
 const HSC = 1.2;
 function drawEntity(c, e) {
   const x = epx(e), y = epy(e);
+  ATLAS.tick(e, ATLAS.dt || 0);
   const fall = e.dead ? Math.min(1, e.deadT / .35) : 0;
   const life = e.kind === 'mon' ? 5 : 3;
   c.save();
@@ -41,12 +42,12 @@ function drawEntity(c, e) {
       else if (setN >= 4 && R() < .25) part(x + (R() - .5) * 26, y - R() * 40, { vy: -25, life: .8, max: .8, size: 2.2, col: '170,90,255' });
       if (e.buffs.sanct) { c.save(); c.globalCompositeOperation = 'lighter'; glow(c, x, y - 24, 46, '140,255,170', .35); c.restore(); }
     }
-    drawHuman(c, x, y, Object.assign({}, L, { dir: e.dir, walk: e.walk, moving: e.mt < 1, idle: e.idle, atk: e.atk, cast: e.cast, flash, fall, size: HSC }));
+    if (!ATLAS.drawEntity(c, e, x, y)) drawHuman(c, x, y, Object.assign({}, L, { dir: e.dir, walk: e.walk, moving: e.mt < 1, idle: e.idle, atk: e.atk, cast: e.cast, flash, fall, size: HSC }));
     if (e.kind === 'npc' && e.def.role === 'quest') { const P = S.P, q = QUESTS[P.q]; const mark = q && ((!P.qa && P.lv >= q.lv) || (P.qa && P.qn >= q.n)); if (mark) { const by = y - 78 + Math.sin(S.time * 3) * 2; c.save(); c.globalCompositeOperation = 'lighter'; glow(c, x, by, 14, '255,220,60', .5); c.restore(); textOut(c, P.qa ? '?' : '!', x, by + 7, '#ffe04a', '800 22px "Alegreya Sans", sans-serif'); } }
     if (e.cast >= 0) { c.save(); c.globalCompositeOperation = 'lighter'; const col = e.kind === 'player' ? ({ M: '255,150,60', T: '255,240,150', W: '255,200,120' }[S.P.cls]) : e.cls === 'M' ? '255,150,60' : '255,240,150'; glow(c, x + (e.faceL ? -10 : 10), y - 40, 22, col, .6 * Math.sin(e.cast * Math.PI)); c.restore(); }
   } else if (e.kind === 'mon') {
     const d = e.def; const o = { col: d.col, size: d.size || 1, walk: e.walk, moving: e.mt < 1, idle: e.idle, atk: e.atk, flash, fall, faceL: e.faceL, tusks: d.tusks, antlers: d.antlers, wing: d.wing, moth: d.moth, mark: d.mark };
-    switch (d.body) {
+    if (!ATLAS.drawEntity(c, e, x, y, { size: d.size || 1 })) switch (d.body) {
       case 'biped': drawHuman(c, x, y, Object.assign(monLook(e), { dir: e.dir, walk: e.walk, moving: e.mt < 1, idle: e.idle, atk: e.atk, cast: -1, flash, fall })); break;
       case 'quad': drawQuad(c, x, y, o); break; case 'hen': drawHen(c, x, y, o); break; case 'worm': drawWorm(c, x, y, o); break;
       case 'flyer': drawFlyer(c, x, y, o); break; case 'spider': drawSpider(c, x, y, o); break; case 'snake': drawSnake(c, x, y, o); break;
@@ -56,7 +57,7 @@ function drawEntity(c, e) {
   } else if (e.kind === 'pet') {
     if (e.abyss && !e.dead) { c.save(); c.globalCompositeOperation = 'lighter'; glow(c, x, y - 20, 40, '160,70,255', .35); c.restore(); }
     if (e.petType === 'hound') drawSummonHound(c, x, y, { walk: e.walk, moving: e.mt < 1, idle: e.idle, atk: e.atk, flash, fall, faceL: e.faceL, size: 1.1 });
-    else drawHuman(c, x, y, { bone: 1, skin: '#e8e2cc', cloth: '#3a2a5a', weapon: { k: 'sword', c: '#c8d0d8' }, shield: 1, helm: e.rank >= 2 ? { c: '#8a929e', k: 'nasal' } : null, dir: e.dir, walk: e.walk, moving: e.mt < 1, idle: e.idle, atk: e.atk, cast: -1, flash, fall, size: HSC * (1 + e.rank * .05) });
+    else if (!ATLAS.drawEntity(c, e, x, y, { size: 1 + e.rank * .05 })) drawHuman(c, x, y, { bone: 1, skin: '#e8e2cc', cloth: '#3a2a5a', weapon: { k: 'sword', c: '#c8d0d8' }, shield: 1, helm: e.rank >= 2 ? { c: '#8a929e', k: 'nasal' } : null, dir: e.dir, walk: e.walk, moving: e.mt < 1, idle: e.idle, atk: e.atk, cast: -1, flash, fall, size: HSC * (1 + e.rank * .05) });
   }
   if (!e.dead) {
     if (e.buffs.shield) { c.save(); c.globalCompositeOperation = 'lighter'; const a = .18 + Math.sin(S.time * 4) * .05; c.fillStyle = `rgba(110,170,255,${a})`; c.strokeStyle = `rgba(170,210,255,${a + .25})`; c.lineWidth = 1.5; c.beginPath(); c.ellipse(x, y - 22, 20, 29, 0, 0, 7); c.fill(); c.stroke(); c.restore(); }
@@ -99,10 +100,13 @@ function portalFx(c) {
 }
 
 function render() {
+  { const now = performance.now(); ATLAS.dt = Math.min(.05, (now - (ATLAS._lastNow || now)) / 1000); ATLAS._lastNow = now; }
   const m = S.map, p = S.player; if (!m || !p) return;
   const z = S.zoom * DPR;
-  let cx = epx(p), cy = epy(p) - 18;
-  if (S.shake > 0) { cx += (R() - .5) * 10 * S.shake; cy += (R() - .5) * 10 * S.shake; }
+  if (S.shake > 0) { VIEW.shake(S.shake * .5); S.shake = 0; }   // legacy sim shake → trauma
+  const mv = p.mt < 1 ? { x: DX[p.dir], y: DY[p.dir] } : { x: 0, y: 0 };
+  const camc = VIEW.camera(epx(p), epy(p) - 18, ATLAS.dt || 0, mv.x, mv.y);
+  let cx = camc.x, cy = camc.y;
   let ox = cx - S.vw / 2 / S.zoom, oy = cy - (S.vh - S.hudH) / 2 / S.zoom;
   { const vwW = S.vw / S.zoom, vhW = (S.vh - S.hudH) / S.zoom, mw = m.w * TW, mh = m.h * TH; ox = mw > vwW ? clamp(ox, 0, mw - vwW) : (mw - vwW) / 2; oy = mh > vhW ? clamp(oy, -40, mh - vhW) : (mh - vhW) / 2; }
   ox = Math.round(ox * z) / z; oy = Math.round(oy * z) / z;
@@ -188,7 +192,7 @@ function drawLabels(c) {
   for (const d of S.drops) { if (d.gold) continue; const def = ITEMS[d.it.id]; const hov = S.mouse.tx === d.x && S.mouse.ty === d.y; if (def.q || addTotal(d.it) > 0 || hov) textOut(c, itemName(d.it), d.x * TW + 24, d.y * TH - 2, itemColor(d.it), '700 11px "Alegreya Sans", sans-serif'); }
   for (const q of S.map.portals) { const x = ((q.x0 + q.x1) / 2) * TW + TW / 2, y = Math.min(q.y0, q.y1) * TH - 8; textOut(c, '⇢ ' + q.label, x, y, '#a8ccff', '700 12px "Alegreya Sans", sans-serif'); }
   for (const e of S.ents) {
-    if (e.dead) continue; const x = epx(e); const sz = e.def ? (e.def.size || 1) : 1; const human = e.kind !== 'mon' || e.def.body === 'biped'; let y = epy(e) - (human ? 66 : 52) * sz - (e.kind === 'mon' && e.def.body === 'flyer' ? 26 : 0);
+    if (e.dead) continue; const x = epx(e); const sz = e.def ? (e.def.size || 1) : 1; const human = e.kind !== 'mon' || e.def.body === 'biped'; let y = epy(e) - (human ? 82 : 52) * sz - (e.kind === 'mon' && e.def.body === 'flyer' ? 26 : 0);
     if (e.kind === 'mon' && ['hen', 'worm', 'spider', 'snake', 'quad'].includes(e.def.body)) y = epy(e) - 32 * sz;
     const hov = S.hover === e, tgt = p.target === e;
     if (e.sayT > 0 && e.say) { c.font = '500 12px "Alegreya Sans", sans-serif'; const w = Math.min(220, c.measureText(e.say).width + 14); c.fillStyle = 'rgba(10,9,8,.8)'; rr(c, x - w / 2, y - 44, w, 20, 5); c.fill(); c.strokeStyle = 'rgba(227,194,127,.4)'; c.lineWidth = 1; c.stroke(); c.fillStyle = '#f4efe2'; c.textAlign = 'center'; c.fillText(e.say.length > 34 ? e.say.slice(0, 33) + '…' : e.say, x, y - 30); }

@@ -498,7 +498,7 @@ function startDrag(i, e) {
 
 /* ---------- HUD ---------- */
 function buildBars() {
-  let h = ''; for (let i = 0; i < 8; i++) h += `<div class="slot" data-sk="${i}"><span class="k">${i + 1}</span><div class="cd" style="transform:scaleY(0)"></div></div>`; $('#skbar').innerHTML = h;
+  let h = ''; for (let i = 0; i < 8; i++) h += `<div class="slot" data-sk="${i}"><span class="k">${i + 1}</span><div class="cd" style="--p:0%"></div><span class="cdt"></span></div>`; $('#skbar').innerHTML = h;
   h = ''; for (let i = 0; i < 6; i++) h += `<div class="slot" data-belt="${i}"><span class="k">${['Q', 'E', '', '', '', ''][i]}</span><span class="c"></span></div>`; $('#belt').innerHTML = h;
   $('#skbar').addEventListener('pointerdown', e => { const t = e.target.closest('[data-sk]'); if (!t) return; const i = +t.dataset.sk; if (e.button === 2) { S.P.keys[i] = null; UI.skillsDirty = true; return; } const k = S.P.keys[i]; if (k) castSkill(k); });
   $('#belt').addEventListener('pointerdown', e => { const t = e.target.closest('[data-belt]'); if (!t) return; const i = +t.dataset.belt; if (e.button === 2) { S.P.belt[i] = null; UI.beltDirty = true; return; } useBelt(i); });
@@ -644,10 +644,12 @@ UI.hudTick = (dt) => {
   const sks = he('skbar').children;
   for (let i = 0; i < 8 && i < sks.length; i++) {
     const k = P.keys[i], el = sks[i]; if (el.dataset.k !== (k || '')) { el.dataset.k = k || ''; el.style.backgroundImage = k ? `url(${skillIconUrl(k)})` : ''; el.classList.toggle('empty', !k); }
-    const cdEl = el._cd || (el._cd = el.querySelector('.cd')); let v = 0;
-    if (k) { const s = SKILLS[k], sk = P.skills[k]; v = clamp(sk && sk.cd > 0 && s.cd ? sk.cd / s.cd : S.gcd > 0 && s.kind !== 'toggle' ? S.gcd / .75 : 0, 0, 1); const on = !!P.toggles[k], nm = p.mp < s.mp; if (el._on !== on) { el._on = on; el.classList.toggle('on', on); } if (el._nm !== nm) { el._nm = nm; el.classList.toggle('nomp', nm); } }
+    const cdEl = el._cd || (el._cd = el.querySelector('.cd')), cdT = el._cdt || (el._cdt = el.querySelector('.cdt')); let v = 0, left = 0;
+    if (k) { const s = SKILLS[k], sk = P.skills[k]; const real = sk && sk.cd > 0 && s.cd; v = clamp(real ? sk.cd / s.cd : S.gcd > 0 && s.kind !== 'toggle' ? S.gcd / .75 : 0, 0, 1); left = real ? sk.cd : 0; const on = !!P.toggles[k], nm = p.mp < s.mp; if (el._on !== on) { el._on = on; el.classList.toggle('on', on); } if (el._nm !== nm) { el._nm = nm; el.classList.toggle('nomp', nm); } }
     else if (el._on || el._nm) { el._on = el._nm = false; el.classList.remove('on', 'nomp'); }
-    const sv = 'scaleY(' + v.toFixed(3) + ')'; if (cdEl._s !== sv) { cdEl._s = sv; cdEl.style.transform = sv; }
+    // radial sweep (WoW-style), countdown text over 1.5 s, and a flash when it comes off cooldown
+    const sv = (v * 100).toFixed(1) + '%'; if (cdEl._s !== sv) { if (cdEl._s && cdEl._s !== '0.0%' && sv === '0.0%') { el.classList.remove('ready'); void el.offsetWidth; el.classList.add('ready'); } cdEl._s = sv; cdEl.style.setProperty('--p', sv); }
+    const tt = left > 1.5 ? (left < 10 ? left.toFixed(1) : Math.ceil(left) + '') : ''; if (cdT._t !== tt) { cdT._t = tt; cdT.textContent = tt; }
   }
   if (UI.wins.char && UI.dollCv) { UI.dollT += dt; if (UI.dollT > .045) { UI.dollT = 0; drawDoll(); } }
   if (UI.t < .15 && !UI.chatDirty) return; UI.t = 0;

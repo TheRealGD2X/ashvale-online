@@ -74,7 +74,7 @@ function frame(now) {
     S.ctrl = !!(S.ctrlHeld || S.pkMode);
     try {
       if (!S.dead) S.P.playT = (S.P.playT || 0) + dt;
-      update(dt);
+      update(dt * VIEW.timeScale(dt));
       S.hover = pickHover();
       cv.className = S.hover ? (S.hover.kind === 'npc' ? 'talk' : isEnemy(S.player, S.hover) || S.hover.kind === 'mon' ? 'atk' : '') : '';
       render(); UI.hudTick(dt);
