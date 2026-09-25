@@ -133,10 +133,43 @@ func house(c: Vector2, yaw: float, W: int, D: int, floors: int, style: String) -
 		var gp := root.to_global(lp)
 		var it_node := piece(it[0], root, Vector3(lp.x, WorldData.h(gp.x, gp.z) - root.global_position.y, lp.z), [0.0, PI / 2, -PI / 2][side] + rng.randf_range(-0.3, 0.3), it[1])
 		it_node.scale = Vector3.ONE
+	# _merge(root)   # parked: unfinished (primitive meshes need skipping); see notes
 	# collision
 	var body := StaticBody3D.new(); root.add_child(body)
 	var cs := CollisionShape3D.new(); var sh := BoxShape3D.new(); sh.size = Vector3(W + 0.3, top + 2.0, D + 0.3); cs.shape = sh
 	cs.position = Vector3(0, (top + 2.0) / 2.0, 0); body.add_child(cs)
+
+## Fold a house's ~60 kit pieces into one mesh per material (a handful of draw calls instead of
+## hundreds). Lanterns keep their own nodes (they carry lights).
+func _merge(root: Node3D) -> void:
+	var groups := {}      # key -> [SurfaceTool, material]
+	var inv := root.global_transform.affine_inverse()
+	var merged: Array[Node] = []
+	for child in root.get_children():
+		if not (child is Node3D) or child is GPUParticles3D or child is StaticBody3D: continue
+		if child.find_children("*", "Light3D", true, false).size() > 0: continue
+		var mis := child.find_children("*", "MeshInstance3D", true, false)
+		if child is MeshInstance3D: mis.append(child)
+		if mis.any(func(m): return not ((m as MeshInstance3D).mesh is ArrayMesh)): continue   # primitive shapes stay as they are
+		for m in mis:
+			var mi: MeshInstance3D = m
+			if not mi.mesh: continue
+			var xf := inv * mi.global_transform
+			for si in mi.mesh.get_surface_count():
+				var mat: Material = mi.material_override if mi.material_override else (mi.get_surface_override_material(si) if mi.get_surface_override_material(si) else mi.mesh.surface_get_material(si))
+				var key := str(mat.get_instance_id() if mat else 0) + ":" + str(mi.mesh.surface_get_format(si) & (Mesh.ARRAY_FORMAT_TEX_UV | Mesh.ARRAY_FORMAT_COLOR | Mesh.ARRAY_FORMAT_TANGENT | Mesh.ARRAY_FORMAT_TEX_UV2))
+				if not groups.has(key):
+					var st := SurfaceTool.new(); st.begin(Mesh.PRIMITIVE_TRIANGLES); groups[key] = [st, mat]
+				(groups[key][0] as SurfaceTool).append_from(mi.mesh, si, xf)
+		merged.append(child)
+	var mesh := ArrayMesh.new()
+	for key in groups:
+		var st: SurfaceTool = groups[key][0]
+		st.commit(mesh)
+		mesh.surface_set_material(mesh.get_surface_count() - 1, groups[key][1])
+	for n in merged: n.free()
+	var out := MeshInstance3D.new(); out.name = "HouseMesh"; out.mesh = mesh
+	root.add_child(out)
 
 var _stone: StandardMaterial3D
 func _stone_mat() -> StandardMaterial3D:

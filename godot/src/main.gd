@@ -47,6 +47,7 @@ func _ready() -> void:
 	if ResourceLoader.exists("res://src/ui/hud.gd") and not args.has("shot"): add_child(load("res://src/ui/hud.gd").new())
 	print("world built in %d ms" % (Time.get_ticks_msec() - t0))
 	if args.has("shot"): _shot()
+	if args.has("leakcheck"): add_child(load("res://tools/leakcheck.gd").new()); DayNight.paused = false
 	_check_kits()
 
 ## New art (e.g. freshly unpacked kits) must be imported by Godot before the game can use it. However

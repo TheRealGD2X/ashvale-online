@@ -23,7 +23,7 @@ func _ready() -> void:
 	sun = DirectionalLight3D.new(); sun.name = "Sun"; add_child(sun)
 	sun.shadow_enabled = true
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
-	sun.directional_shadow_max_distance = 140.0
+	sun.directional_shadow_max_distance = 90.0
 	sun.directional_shadow_split_1 = 0.06; sun.directional_shadow_split_2 = 0.16; sun.directional_shadow_split_3 = 0.4
 	sun.directional_shadow_blend_splits = true
 	sun.shadow_blur = 1.2
@@ -44,8 +44,8 @@ func _ready() -> void:
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY; env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
 	env.tonemap_mode = Environment.TONE_MAPPER_AGX; env.tonemap_exposure = 1.0
 	env.ssao_enabled = true; env.ssao_radius = 1.4; env.ssao_intensity = 1.8; env.ssao_power = 1.4; env.ssao_detail = 0.6
-	env.ssil_enabled = hq; env.ssil_radius = 4.0; env.ssil_intensity = 0.8
-	env.sdfgi_enabled = hq; env.sdfgi_use_occlusion = true; env.sdfgi_cascades = 4; env.sdfgi_min_cell_size = 0.2; env.sdfgi_energy = 0.9
+	env.ssil_enabled = false; env.ssil_radius = 4.0; env.ssil_intensity = 0.8
+	env.sdfgi_enabled = hq; env.sdfgi_use_occlusion = true; env.sdfgi_cascades = 3; env.sdfgi_min_cell_size = 0.3; env.sdfgi_energy = 0.9
 	env.glow_enabled = true; env.glow_intensity = 0.55; env.glow_bloom = 0.04; env.glow_hdr_threshold = 1.1; env.glow_blend_mode = Environment.GLOW_BLEND_MODE_SOFTLIGHT
 	env.fog_enabled = true; env.fog_mode = Environment.FOG_MODE_DEPTH; env.fog_depth_begin = 30.0; env.fog_depth_end = 260.0; env.fog_depth_curve = 1.6
 	env.fog_aerial_perspective = 0.55; env.fog_sky_affect = 0.0
@@ -58,7 +58,7 @@ func _ready() -> void:
 func set_quality(high: bool) -> void:
 	hq = high
 	if env:
-		env.sdfgi_enabled = high; env.ssil_enabled = high; env.volumetric_fog_enabled = high
+		env.sdfgi_enabled = high; env.volumetric_fog_enabled = high
 
 func _process(delta: float) -> void:
 	fast = Input.is_physical_key_pressed(KEY_T)

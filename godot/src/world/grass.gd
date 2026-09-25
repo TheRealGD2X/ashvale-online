@@ -8,10 +8,9 @@ var near_mat: ShaderMaterial
 var far_mat: ShaderMaterial
 var lite := false
 
-static func blade_clump(blades: int, height: float, width: float, radius: float, seed: int) -> ArrayMesh:
+static func blade_clump(blades: int, height: float, width: float, radius: float, seed: int, segs := 4) -> ArrayMesh:
 	var rng := RandomNumberGenerator.new(); rng.seed = seed
 	var st := SurfaceTool.new(); st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var segs := 4
 	for b in blades:
 		var a := rng.randf() * TAU
 		var base := Vector3(cos(a), 0, sin(a)) * radius * sqrt(rng.randf())
@@ -42,19 +41,20 @@ func _ready() -> void:
 	var hm := Image.create_from_data(WorldData.RES, WorldData.RES, false, Image.FORMAT_RF, WorldData.heights.to_byte_array())
 	var hmt := ImageTexture.create_from_image(hm)
 	var clear := ImageTexture.create_from_image(WorldData.clear)
-	var near_sp := 0.16
-	var far_sp := 0.34
-	near_mat = _mat(sh, hmt, clear, near_sp, 1.0, 22.0, 34.0)
-	far_mat = _mat(sh, hmt, clear, far_sp, 1.5, 62.0, 95.0)
-	var near_mesh := blade_clump(6, 0.27, 0.075, 0.1, 1)
-	var far_mesh := blade_clump(5, 0.27, 0.1, 0.13, 2)
+	# budget: about 5 million grass triangles in view (was ~25M)
+	var near_sp := 0.2
+	var far_sp := 0.5
+	near_mat = _mat(sh, hmt, clear, near_sp, 1.0, 16.0, 25.0)
+	far_mat = _mat(sh, hmt, clear, far_sp, 1.8, 45.0, 72.0)
+	var near_mesh := blade_clump(6, 0.27, 0.08, 0.11, 1)
+	var far_mesh := blade_clump(4, 0.27, 0.12, 0.16, 2, 2)
 	var n := int(2.0 * WorldData.HALF / CHUNK)
 	for j in n:
 		for i in n:
 			var o := Vector3(-WorldData.HALF + i * CHUNK, 0, -WorldData.HALF + j * CHUNK)
 			# skip chunks that are all road/water/town square (cheap test on a few samples)
-			_layer(o, near_mesh, near_mat, near_sp, 0.0, 40.0)
-			_layer(o, far_mesh, far_mat, far_sp, 18.0, 100.0)
+			_layer(o, near_mesh, near_mat, near_sp, 0.0, 30.0)
+			_layer(o, far_mesh, far_mat, far_sp, 12.0, 78.0)
 
 func _mat(sh: Shader, hmt: Texture2D, clear: Texture2D, sp: float, sc: float, f0: float, f1: float) -> ShaderMaterial:
 	var m := ShaderMaterial.new(); m.shader = sh

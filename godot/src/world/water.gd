@@ -44,7 +44,7 @@ func _sync_reflection() -> void:
 	var cam := get_viewport().get_camera_3d()
 	if not cam: return
 	var vs := get_viewport().get_visible_rect().size
-	var want := Vector2i(int(vs.x / 2), int(vs.y / 2))
+	var want := Vector2i(int(vs.x / 3), int(vs.y / 3))
 	if refl_vp.size != want: refl_vp.size = want
 	if not refl_cam.environment:
 		var we := get_tree().root.find_children("*", "WorldEnvironment", true, false)
@@ -59,8 +59,13 @@ func _sync_reflection() -> void:
 	var S := Transform3D(Basis(Vector3(1, 0, 0), Vector3(0, -1, 0), Vector3(0, 0, 1)), Vector3.ZERO)
 	refl_cam.global_transform = R * cam.global_transform * S
 	# only render the reflection when the pond could be on screen
-	var near := cam.global_position.distance_to(pond.global_position) < 140.0
-	refl_vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS if near else SubViewport.UPDATE_DISABLED
+	# only render the reflection when the pond is close and actually on screen
+	var visible := false
+	if cam.global_position.distance_to(pond.global_position) < 75.0:
+		var r := WorldData.POND_R * 1.2
+		for o in [Vector3.ZERO, Vector3(r, 0, 0), Vector3(-r, 0, 0), Vector3(0, 0, r), Vector3(0, 0, -r)]:
+			if cam.is_position_in_frustum(pond.global_position + o): visible = true; break
+	refl_vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS if visible else SubViewport.UPDATE_DISABLED
 
 # ------------------------------------------------------------------ lily pads, petals, pebbles, jetty
 func _pad_mesh(r: float) -> ArrayMesh:
