@@ -8,3 +8,5 @@
 /assets/village/
 /assets/props/
 /assets/anims/
+# import settings Godot regenerates on each machine
+*.import
