@@ -497,3 +497,21 @@ input.txt:focus{box-shadow:0 0 0 1px var(--gold-hi),0 0 10px rgba(247,223,158,.2
 .aud input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff3cf,#b08a4e 60%,#5e4726);border:1px solid #000;cursor:pointer}
 .aud input[type=range]:focus-visible{box-shadow:inset 0 0 0 1px #000,0 0 0 2px var(--bronze-hi)}
 .aud-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:2px}
+
+/* ============ character creation: turntable stage + form ============ */
+.panel.create{width:min(880px,100%);margin-top:0}
+.cgrid{display:grid;grid-template-columns:320px 1fr;gap:22px;margin-top:12px;align-items:start}
+.stagebox{position:relative;border:1px solid rgba(122,90,38,.5);background:radial-gradient(ellipse 80% 60% at 50% 38%,rgba(90,62,30,.35),transparent 70%),linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,.55));box-shadow:inset 0 0 40px rgba(0,0,0,.7),0 0 0 1px #000}
+.stagebox canvas{display:block;width:320px;height:380px;cursor:grab}
+.stagebox canvas:active{cursor:grabbing}
+.turnhint{position:absolute;left:0;right:0;bottom:8px;text-align:center;font:700 10px var(--body);letter-spacing:.24em;text-transform:uppercase;color:rgba(227,194,127,.55);pointer-events:none}
+.cform .classes{margin:0 0 12px}
+.cform .cls{padding:8px 6px 10px}
+.cform .cls p{font-size:11.5px}
+.crow{display:grid;grid-template-columns:64px 1fr;align-items:center;gap:10px;margin-top:10px}
+.crow>.small.muted,.crow>label.small{margin:0!important;letter-spacing:.12em;text-transform:uppercase;font-size:11px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.btn.chip{padding:5px 11px;font-size:12px}
+.btn.chip.sel{color:#2a1804;text-shadow:none;background:linear-gradient(180deg,#fff0bc,#d4a850);box-shadow:inset 0 0 0 1px #fff3cf,0 0 0 1px #3a2606}
+.lnkfile{color:var(--bronze-hi);text-decoration:underline;text-underline-offset:2px}
+.lnkfile:hover{color:#fff0c0}

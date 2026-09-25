@@ -1,0 +1,158 @@
+{
+ "name": "wpn_abyssstaff",
+ "kind": "weapon",
+ "rig": "art/models/kaykit/Knight.glb",
+ "prefix": "Knight",
+ "anims": {
+  "idle": {
+   "action": "Idle",
+   "frames": 4,
+   "fps": 5,
+   "loop": true
+  },
+  "walk": {
+   "action": "Running_A",
+   "frames": 8,
+   "fps": 14,
+   "loop": true
+  },
+  "attack": {
+   "action": "1H_Melee_Attack_Slice_Diagonal",
+   "frames": 6,
+   "fps": 16,
+   "events": {
+    "hit": 3
+   }
+  },
+  "attack2": {
+   "action": "1H_Melee_Attack_Chop",
+   "frames": 6,
+   "fps": 16,
+   "events": {
+    "hit": 3
+   }
+  },
+  "cast": {
+   "action": "Spellcast_Shoot",
+   "frames": 6,
+   "fps": 14,
+   "events": {
+    "hit": 3
+   }
+  },
+  "casting": {
+   "action": "Spellcasting",
+   "frames": 4,
+   "fps": 8,
+   "loop": true
+  },
+  "hit": {
+   "action": "Hit_A",
+   "frames": 3,
+   "fps": 12
+  },
+  "die": {
+   "action": "Death_A",
+   "frames": 6,
+   "fps": 10
+  },
+  "dead": {
+   "action": "Death_A_Pose",
+   "frames": 1
+  },
+  "sit": {
+   "action": "Sit_Floor_Idle",
+   "frames": 2,
+   "fps": 1,
+   "loop": true
+  },
+  "attack2h": {
+   "action": "2H_Melee_Attack_Slice",
+   "frames": 6,
+   "fps": 16,
+   "events": {
+    "hit": 3
+   }
+  },
+  "spin": {
+   "action": "2H_Melee_Attack_Spin",
+   "frames": 8,
+   "fps": 16,
+   "events": {
+    "hit": 4
+   }
+  },
+  "idle2h": {
+   "action": "2H_Melee_Idle",
+   "frames": 4,
+   "fps": 5,
+   "loop": true
+  },
+  "cheer": {
+   "action": "Cheer",
+   "frames": 5,
+   "fps": 10
+  },
+  "interact": {
+   "action": "Interact",
+   "frames": 4,
+   "fps": 10
+  },
+  "raise": {
+   "action": "Spellcast_Raise",
+   "frames": 6,
+   "fps": 12,
+   "events": {
+    "hit": 3
+   }
+  },
+  "use": {
+   "action": "Use_Item",
+   "frames": 5,
+   "fps": 10,
+   "events": {
+    "hit": 3
+   }
+  },
+  "shoot": {
+   "action": "1H_Ranged_Shoot",
+   "frames": 5,
+   "fps": 12,
+   "events": {
+    "hit": 2
+   }
+  },
+  "stab": {
+   "action": "1H_Melee_Attack_Stab",
+   "frames": 6,
+   "fps": 16,
+   "events": {
+    "hit": 3
+   }
+  },
+  "block": {
+   "action": "Block_Hit",
+   "frames": 3,
+   "fps": 12
+  }
+ },
+ "bone": "handslot.r",
+ "model": "art/models/weapons/abyssstaff.blend",
+ "two_pass": true,
+ "holdout": [
+  "Knight_Body",
+  "Knight_ArmLeft",
+  "Knight_ArmRight",
+  "Knight_LegLeft",
+  "Knight_LegRight",
+  "Knight_Head",
+  "Knight_Cape",
+  "Knight_Helmet"
+ ],
+ "weapon_quat": [
+  0,
+  0,
+  -0.7071068,
+  -0.7071068
+ ]
+}

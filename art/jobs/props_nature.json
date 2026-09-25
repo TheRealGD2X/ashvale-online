@@ -1,0 +1,162 @@
+{
+ "name": "props_nature",
+ "shadow": true,
+ "samples": 24,
+ "props": [
+  {
+   "key": "oak0",
+   "model": "art/models/nature/oak.blend",
+   "height": 4.4
+  },
+  {
+   "key": "oak1",
+   "model": "art/models/nature/oak2.blend",
+   "height": 4.0
+  },
+  {
+   "key": "oak2",
+   "model": "art/models/nature/oak3.blend",
+   "height": 4.8
+  },
+  {
+   "key": "oak3",
+   "model": "art/models/nature/birch.blend",
+   "height": 4.6
+  },
+  {
+   "key": "darkoak",
+   "model": "art/models/nature/darkoak.blend",
+   "height": 5.0
+  },
+  {
+   "key": "deadtree",
+   "model": "art/models/nature/dead.blend",
+   "height": 3.6
+  },
+  {
+   "key": "pine0",
+   "model": "art/models/hexpack/decoration/nature/tree_single_A.gltf",
+   "height": 4.6
+  },
+  {
+   "key": "pine1",
+   "model": "art/models/hexpack/decoration/nature/tree_single_B.gltf",
+   "height": 4.2
+  },
+  {
+   "key": "pine_dark",
+   "model": "art/models/hexpack/decoration/nature/tree_single_A.gltf",
+   "height": 5.2,
+   "tint": [
+    0.62,
+    0.78,
+    0.7
+   ]
+  },
+  {
+   "key": "stump",
+   "model": "art/models/hexpack/decoration/nature/tree_single_A_cut.gltf",
+   "height": 0.6
+  },
+  {
+   "key": "bush0",
+   "model": "art/models/nature/bush.blend",
+   "height": 1.0
+  },
+  {
+   "key": "bush1",
+   "model": "art/models/nature/bush2.blend",
+   "height": 0.9
+  },
+  {
+   "key": "crop0",
+   "model": "art/models/nature/crop_green.blend",
+   "height": 0.55
+  },
+  {
+   "key": "crop1",
+   "model": "art/models/nature/crop_green.blend",
+   "height": 0.7
+  },
+  {
+   "key": "crop2",
+   "model": "art/models/nature/crop.blend",
+   "height": 1.0
+  },
+  {
+   "key": "mushroom0",
+   "model": "art/models/nature/mushroom.blend",
+   "height": 0.45
+  },
+  {
+   "key": "mushroom1",
+   "model": "art/models/nature/mushroom.blend",
+   "height": 0.35,
+   "tint": [
+    0.8,
+    0.6,
+    0.4
+   ]
+  },
+  {
+   "key": "grass",
+   "model": "art/models/nature/grass.blend",
+   "height": 0.45
+  },
+  {
+   "key": "rock0",
+   "model": "art/models/hexpack/decoration/nature/rock_single_A.gltf",
+   "scale": 2.6,
+   "anchor": "foot",
+   "tint": [
+    0.72,
+    0.7,
+    0.66
+   ]
+  },
+  {
+   "key": "rock1",
+   "model": "art/models/hexpack/decoration/nature/rock_single_B.gltf",
+   "scale": 2.6,
+   "anchor": "foot",
+   "tint": [
+    0.72,
+    0.7,
+    0.66
+   ]
+  },
+  {
+   "key": "rock2",
+   "model": "art/models/hexpack/decoration/nature/rock_single_C.gltf",
+   "scale": 2.6,
+   "anchor": "foot",
+   "tint": [
+    0.72,
+    0.7,
+    0.66
+   ]
+  },
+  {
+   "key": "rock3",
+   "model": "art/models/hexpack/decoration/nature/rock_single_D.gltf",
+   "scale": 2.6,
+   "anchor": "foot",
+   "tint": [
+    0.72,
+    0.7,
+    0.66
+   ]
+  },
+  {
+   "key": "rock4",
+   "model": "art/models/hexpack/decoration/nature/rock_single_E.gltf",
+   "scale": 2.6,
+   "anchor": "foot",
+   "tint": [
+    0.72,
+    0.7,
+    0.66
+   ]
+  }
+ ]
+}

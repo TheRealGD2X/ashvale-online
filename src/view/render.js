@@ -71,6 +71,11 @@ function drawEntity(c, e) {
 function hexRgb(h) { if (!h) return '255,255,255'; const c = h.replace('#', ''); return `${parseInt(c.slice(0, 2), 16)},${parseInt(c.slice(2, 4), 16)},${parseInt(c.slice(4, 6), 16)}`; }
 
 function drawObj(c, o, px, py) {
+  if (PROPS.draw(c, o, px, py)) {   // rendered 3D prop (props.js); its living bits drawn on top
+    if (o.type === 'lamp') { c.save(); c.globalCompositeOperation = 'lighter'; glow(c, px + 13, py - 86, 22, '255,210,130', .55 + Math.sin(S.time * 7 + o.x) * .05); c.restore(); }
+    if (o.type === 'fountain' && R() < .7) { c.save(); c.globalCompositeOperation = 'lighter'; part(px + 72 + (R() - .5) * 4, py - 118, { vx: (R() - .5) * 50, vy: -60 - R() * 30, grav: 240, life: .8, max: .8, size: 1.6, col: '170,210,255' }); c.restore(); }
+    return;
+  }
   const s = objSprite(o); if (!s) return;
   const sc = s.sc || 1;
   let alpha = 1;

@@ -28,13 +28,27 @@ os.makedirs(out_dir, exist_ok=True)
 ax, ay = meta['anchor']
 
 # load + trim
-items = []
+from PIL import ImageChops
+items = []; edge = []
+def add(key, im, anchor=None):
+    ax, ay = anchor or meta['anchor']   # props carry their own anchor per frame
+    a = im.getchannel('A').point(lambda v: 255 if v > 3 else 0)   # ignore denoiser dust when trimming
+    bbox = a.getbbox()
+    if not bbox:
+        if key.endswith('/b'): return
+        bbox = (int(ax) - 1, int(ay) - 1, int(ax) + 1, int(ay) + 1)
+    if meta.get('kind') != 'prop' and (bbox[0] == 0 or bbox[1] == 0 or bbox[2] == im.width or bbox[3] == im.height): edge.append(key)
+    items.append((key, im.crop(bbox), bbox[0] - ax, bbox[1] - ay))
 for f in meta['frames']:
+    key = f"{f['anim']}/{f['dir']}/{f['i']}"
     im = Image.open(os.path.join(src, f['file'])).convert('RGBA')
-    bbox = im.getbbox()
-    if not bbox: bbox = (int(ax) - 1, int(ay) - 1, int(ax) + 1, int(ay) + 1)
-    crop = im.crop(bbox)
-    items.append((f"{f['anim']}/{f['dir']}/{f['i']}", crop, bbox[0] - ax, bbox[1] - ay))
+    add(key, im, f.get('anchor'))
+    if f.get('full'):
+        # two-pass layer: the part hidden behind the body goes in <key>/b and is drawn before the body
+        full = Image.open(os.path.join(src, f['full'])).convert('RGBA')
+        back = full.copy(); back.putalpha(ImageChops.subtract(full.getchannel('A'), im.getchannel('A')))
+        if back.getchannel('A').getextrema()[1] > 24: add(key + '/b', back, f.get('anchor'))
+if edge: print(f'!! {len(edge)} frames touch the frame edge (clipped?):', ' '.join(edge[:8]))
 
 # shelf packing, tallest first
 items.sort(key=lambda t: -t[1].height)
@@ -64,8 +78,9 @@ for i, p in enumerate(pages):
 # draw scale: the renderer used size/ortho px per world unit; a KayKit character is ~2.4 units tall and
 # should stand ~72 px tall at zoom 1 (1.5 tiles of 48 px). 2.4 * cos(41.8°) = 1.79 projected units.
 px_per_unit = meta['px_per_unit']; scale = round(68 / (1.79 * px_per_unit), 3)
-atlas_json = {"name": name, "kind": meta['kind'], "pages": page_files, "scale": scale, "dirs": meta['dirs'], "mirror": meta.get('mirror', False),
-           "anims": meta['anims'], "frames": frames}
+# v2: 8 rendered directions, faces without hair, behind-the-body parts under "<key>/b" when "back" is set
+atlas_json = {"name": name, "v": 2, "kind": meta['kind'], "pages": page_files, "scale": scale, "dirs": meta.get('dirs', 1), "mirror": meta.get('mirror', False),
+           "back": any(k.endswith('/b') for k in frames), "anims": meta['anims'], "frames": frames}
 json.dump(atlas_json, open(os.path.join(out_dir, name + '.json'), 'w'), separators=(',', ':'))
 # script-tag loadable copy (works from file:// where fetch() does not)
 open(os.path.join(out_dir, name + '.js'), 'w').write('ATLAS.register(' + json.dumps(atlas_json, separators=(',', ':')) + ');\n')

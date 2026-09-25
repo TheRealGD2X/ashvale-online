@@ -94,5 +94,25 @@
  "hat_neutral_barbarian": {
   "base": "barbarian",
   "texture": "art/models/variants/barbarian__hat_neutral_barbarian.png"
+ },
+ "hair_neutral_knight": {
+  "base": "knight",
+  "texture": "art/models/variants/knight__hair_neutral_knight.png"
+ },
+ "hair_neutral_barbarian": {
+  "base": "barbarian",
+  "texture": "art/models/variants/barbarian__hair_neutral_barbarian.png"
+ },
+ "hair_neutral_mage": {
+  "base": "mage",
+  "texture": "art/models/variants/mage__hair_neutral_mage.png"
+ },
+ "hair_neutral_rogue": {
+  "base": "rogue",
+  "texture": "art/models/variants/rogue__hair_neutral_rogue.png"
+ },
+ "hood_neutral_rogue": {
+  "base": "rogue",
+  "texture": "art/models/variants/rogue__hood_neutral_rogue.png"
  }
 }

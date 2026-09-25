@@ -1,7 +1,7 @@
 {
  "name": "w_crossbow",
  "kind": "weapon",
- "rig": "art/models/kaykit/Rogue_Hooded.glb",
+ "rig": "art/models/kaykit/Rogue.glb",
  "prefix": "Rogue",
  "anims": {
   "idle": {
@@ -82,6 +82,12 @@
     "hit": 4
    }
   },
+  "idle2h": {
+   "action": "2H_Melee_Idle",
+   "frames": 4,
+   "fps": 5,
+   "loop": true
+  },
   "cheer": {
    "action": "Cheer",
    "frames": 5,
@@ -91,9 +97,56 @@
    "action": "Interact",
    "frames": 4,
    "fps": 10
+  },
+  "raise": {
+   "action": "Spellcast_Raise",
+   "frames": 6,
+   "fps": 12,
+   "events": {
+    "hit": 3
+   }
+  },
+  "use": {
+   "action": "Use_Item",
+   "frames": 5,
+   "fps": 10,
+   "events": {
+    "hit": 3
+   }
+  },
+  "shoot": {
+   "action": "1H_Ranged_Shoot",
+   "frames": 5,
+   "fps": 12,
+   "events": {
+    "hit": 2
+   }
+  },
+  "stab": {
+   "action": "1H_Melee_Attack_Stab",
+   "frames": 6,
+   "fps": 16,
+   "events": {
+    "hit": 3
+   }
+  },
+  "block": {
+   "action": "Block_Hit",
+   "frames": 3,
+   "fps": 12
   }
  },
  "bone": "handslot.r",
- "model": "art/models/kaykit/Rogue_Hooded.glb",
+ "model": "art/models/kaykit/Rogue.glb",
+ "two_pass": true,
+ "holdout": [
+  "Rogue_Body",
+  "Rogue_ArmLeft",
+  "Rogue_ArmRight",
+  "Rogue_LegLeft",
+  "Rogue_LegRight",
+  "Rogue_Head",
+  "Rogue_Cape"
+ ],
  "weapon_object": "1H_Crossbow"
 }

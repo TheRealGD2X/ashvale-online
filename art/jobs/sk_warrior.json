@@ -60,7 +60,6 @@
    "fps": 10
   }
  },
- "render_dirs": 5,
  "attach": [
   {
    "model": "art/models/kaykit/Skeleton_Blade.gltf",

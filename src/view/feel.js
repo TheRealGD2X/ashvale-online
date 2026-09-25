@@ -8,6 +8,8 @@
 const VIEW = {
   stop: 0, trauma: 0, shakeDir: { x: 0, y: 0 }, cam: null,
   hitStop(sec) { VIEW.stop = Math.max(VIEW.stop, sec); },
+  /* the player pressed an ability: remember which, so the sprite can pick the right casting pose */
+  cast(k) { VIEW.lastCast = k; castSkill(k); },
   shake(amount, dx, dy) { VIEW.trauma = Math.min(1, VIEW.trauma + amount); if (dx || dy) { const l = Math.hypot(dx, dy) || 1; VIEW.shakeDir = { x: dx / l, y: dy / l }; } },
   /* time scale for the sim this frame (1 = normal) */
   timeScale(dt) { if (VIEW.stop > 0) { VIEW.stop -= dt; return .15; } return 1; },

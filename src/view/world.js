@@ -349,12 +349,19 @@ function groundColor(m, wx, wy) {
       if (h > .97) { r -= 20; gg -= 20; b -= 20; }
       break;
     }
-    case G.PAVE: {
-      const sw = 24, sh = 16; const row = Math.floor(wy / sh); const ox = (row & 1) * 12; const col = Math.floor((wx + ox) / sw);
-      const lx = (wx + ox) % sw, ly = wy % sh; const cv = hash2(col, row, 18);
-      r = 150 + cv * 22 + big * 14; gg = 138 + cv * 20 + big * 12; b = 116 + cv * 16;
-      if (lx < 1 || ly < 1) { r = 92; gg = 84; b = 70; } else if (lx < 2 || ly < 2) { r -= 10; gg -= 10; b -= 8; } else if (lx > sw - 3 || ly > sh - 3) { r += 8; gg += 8; b += 6; }
-      if (h > .985) { r -= 30; gg -= 30; b -= 30; }
+    case G.PAVE: {   // rounded flagstones in a random bond, softly bevelled (KayKit-style)
+      const sh = 16, row = Math.floor(wy / sh), ly = wy - row * sh;
+      const sw = 24 + ((hash2(row, 0, 61) * 3) | 0) * 4, off = (hash2(row, 1, 62) * sw) | 0;
+      const col = Math.floor((wx + off) / sw), lx = (wx + off) - col * sw; const cv = hash2(col, row, 18), tint = hash2(col, row, 63);
+      r = 162 + cv * 26 + big * 12; gg = 152 + cv * 22 + big * 10; b = 132 + cv * 18;
+      if (tint < .2) { r -= 12; gg -= 6; b += 4; } else if (tint > .85) { r += 8; gg += 2; b -= 8; }
+      const dx = Math.min(lx, sw - 1 - lx), dy = Math.min(ly, sh - 1 - ly), rc = 4;
+      const mortar = dx < 1 || dy < 1 || (dx < rc && dy < rc && (rc - dx) * (rc - dx) + (rc - dy) * (rc - dy) > rc * rc);
+      if (mortar) { r = 104 + big * 10; gg = 96 + big * 8; b = 82; }
+      else if (ly < 3 && dy === ly) { r += 16; gg += 15; b += 12; }                 // lit top edge
+      else if (sh - 1 - ly < 3) { r -= 18; gg -= 17; b -= 15; }                      // shaded lower edge
+      else if (lx < 2) { r += 6; gg += 6; b += 5; } else if (sw - 1 - lx < 2) { r -= 10; gg -= 10; b -= 9; }
+      if (h > .988) { r -= 24; gg -= 24; b -= 22; }
       break;
     }
     case G.WATER: {

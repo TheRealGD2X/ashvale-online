@@ -47,10 +47,10 @@ def neutral(im, cells, light=0.72):
 
 # which cells each part uses (from the UV probe). 'armour' = body+arms+legs minus skin cells.
 CELLS = {
-    'knight':    {'armour': [(3, 0), (4, 0), (6, 0), (7, 0), (7, 1), (2, 1), (1, 1)], 'cloth': [(0, 1)], 'helm': [(3, 0), (7, 0)], 'cape': [(0, 1)], 'trim': [(1, 1)]},
-    'barbarian': {'armour': [(1, 1), (2, 1), (3, 0), (6, 0), (7, 0), (7, 1), (7, 2), (3, 2)], 'cloth': [(0, 1)], 'helm': [(2, 0), (2, 1), (7, 0)], 'cape': [(7, 0)], 'trim': [(7, 2)]},
-    'mage':      {'armour': [(0, 1), (0, 2), (2, 2), (3, 0), (4, 0), (5, 0), (7, 1), (7, 2), (3, 2)], 'cloth': [(0, 1), (0, 2)], 'helm': [(1, 1), (3, 0), (5, 0)], 'cape': [(2, 1)], 'trim': [(5, 0), (4, 0)]},
-    'rogue':     {'armour': [(0, 1), (1, 1), (3, 0), (5, 0), (6, 0), (7, 1), (5, 2), (3, 2)], 'cloth': [(0, 1), (1, 1)], 'helm': [(1, 1)], 'cape': [(1, 1)], 'trim': [(5, 0)]},
+    'knight':    {'armour': [(3, 0), (4, 0), (6, 0), (7, 0), (7, 1), (2, 1), (1, 1)], 'cloth': [(0, 1)], 'helm': [(3, 0), (7, 0)], 'cape': [(0, 1)], 'trim': [(1, 1)], 'hair': [(1, 0)]},
+    'barbarian': {'armour': [(1, 1), (2, 1), (3, 0), (6, 0), (7, 0), (7, 1), (7, 2), (3, 2)], 'cloth': [(0, 1)], 'helm': [(2, 0), (2, 1), (7, 0)], 'cape': [(7, 0)], 'trim': [(7, 2)], 'hair': [(1, 0)]},
+    'mage':      {'armour': [(0, 1), (0, 2), (2, 2), (3, 0), (4, 0), (5, 0), (7, 1), (7, 2), (3, 2)], 'cloth': [(0, 1), (0, 2)], 'helm': [(1, 1), (3, 0), (5, 0)], 'cape': [(2, 1)], 'trim': [(5, 0), (4, 0)], 'hair': [(1, 0)]},
+    'rogue':     {'armour': [(0, 1), (1, 1), (3, 0), (5, 0), (6, 0), (7, 1), (5, 2), (3, 2)], 'cloth': [(0, 1), (1, 1)], 'helm': [(1, 1)], 'cape': [(1, 1)], 'trim': [(5, 0)], 'hair': [(1, 0)], 'hood': [(1, 1)]},
 }
 
 # variant name → (base, recolours). Each recolour: (cell group, colour, keep_l, gain)
@@ -84,6 +84,12 @@ VARIANTS = {
     'cape_neutral_barbarian': ('barbarian', [('cape', None, 0, 0)]),
     'hat_neutral_mage':       ('mage',      [('helm', None, 0, 0)]),
     'hat_neutral_barbarian':  ('barbarian', [('helm', None, 0, 0)]),
+    # neutral (tintable) hair: every KayKit head keeps its hair in palette cell (1,0); the hood in (1,1)
+    'hair_neutral_knight':    ('knight',    [('hair', None, 0, 0)]),
+    'hair_neutral_barbarian': ('barbarian', [('hair', None, 0, 0)]),
+    'hair_neutral_mage':      ('mage',      [('hair', None, 0, 0)]),
+    'hair_neutral_rogue':     ('rogue',     [('hair', None, 0, 0)]),
+    'hood_neutral_rogue':     ('rogue',     [('hood', None, 0, 0)]),
 }
 
 def build():
@@ -92,7 +98,7 @@ def build():
         im = Image.open(os.path.join(SRC, base + '_texture.png')).convert('RGBA')
         for group, col, keep_l, gain in recs:
             cells = CELLS[base][group]
-            if col is None: neutral(im, cells)
+            if col is None: neutral(im, cells, light=.86 if group == 'hair' else .72)
             else: recolour(im, cells, col, keep_l, gain)
         fn = f'{base}__{name}.png'; im.save(os.path.join(OUT, fn)); index[name] = {'base': base, 'texture': 'art/models/variants/' + fn}
     json.dump(index, open(os.path.join(OUT, 'variants.json'), 'w'), indent=1)

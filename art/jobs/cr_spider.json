@@ -38,7 +38,5 @@
    "action": "Dead",
    "frames": 1
   }
- },
- "render_dirs": 5,
- "yaw": 90
+ }
 }

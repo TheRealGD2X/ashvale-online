@@ -159,6 +159,10 @@ function renderChar(b) {
   h += `</div><div class="charhd"><b style="color:${c.color}">${c.name}</b><span>Level ${P.lv}${P.guild ? ' &middot; ' + esc(P.guild.name) : ''}</span></div>`;
   UI.lastCStats = charStatsHtml(); h += `<div class="stats" id="cstats">${UI.lastCStats}</div>`;
   b.innerHTML = h; UI.dollCv = b.querySelector('#dollcv'); drawDoll();
+  { let d0 = null; const cvd = UI.dollCv; cvd.style.cursor = 'grab';   // drag the doll to turn it round
+    cvd.onpointerdown = e => { d0 = { x: e.clientX, dir: UI.dollDir == null ? 4 : UI.dollDir }; cvd.setPointerCapture(e.pointerId); };
+    cvd.onpointermove = e => { if (d0) UI.dollDir = ((d0.dir - Math.round((e.clientX - d0.x) / 26)) % 8 + 8) % 8; };
+    cvd.onpointerup = () => { d0 = null; }; }
 }
 function drawDoll() {
   const cvd = UI.dollCv; if (!cvd || !cvd.isConnected || !S.P) return; const c = cvd.getContext('2d');
@@ -175,9 +179,13 @@ function drawDoll() {
   c.strokeStyle = 'rgba(212,175,100,.28)'; c.lineWidth = 1.6; c.beginPath(); c.arc(0, 0, 82, 0, 7); c.stroke();
   for (let i = 0; i < 28; i++) { const a = i / 28 * Math.PI * 2 + t * .12; c.fillStyle = i % 4 ? 'rgba(247,223,158,.3)' : 'rgba(255,240,200,.75)'; c.fillRect(Math.cos(a) * 75 - 1.5, Math.sin(a) * 75 - 1.5, 3, 3); }
   c.restore();
-  c.save(); c.translate(cx - 4, fy); c.scale(3.4, 3.4);
-  drawHuman(c, 0, 0, Object.assign(playerLook(), { dir: 4, walk: 0, moving: false, idle: t, atk: -1, cast: -1 }));
-  c.restore();
+  // the rendered paper doll, wearing exactly what you wear (code-drawn figure until the sprites load)
+  const pe = UI.dollE || (UI.dollE = {}); Object.assign(pe, S.player, { dir: UI.dollDir == null ? 4 : UI.dollDir, mt: 1, atk: -1, cast: -1, dead: false, flashT: 0, idle: t, _kb: null, _hitT: 0, _useT: 0, emote: null, sitting: false, afk: false, anim: null });
+  if (!STAGE.draw(c, pe, cx, fy + 2, 2.55)) {
+    c.save(); c.translate(cx - 4, fy); c.scale(3.4, 3.4);
+    drawHuman(c, 0, 0, Object.assign(playerLook(), { dir: 4, walk: 0, moving: false, idle: t, atk: -1, cast: -1 }));
+    c.restore();
+  }
 }
 
 /* ---------- skills / quests / guild ---------- */
@@ -254,6 +262,7 @@ function renderOpts(b) {
   <div class="audio-set">${[['master', 'Master'], ['music', 'Music'], ['amb', 'Ambience'], ['sfx', 'Effects']].map(([k, l]) => `<label class="aud"><span>${l}</span><input type="range" min="0" max="100" value="${Math.round(AU.vol[k] * 100)}" data-vol="${k}" id="vol-${k}" aria-label="${l} volume"><b>${Math.round(AU.vol[k] * 100)}</b></label>`).join('')}
   <div class="aud-row"><button class="btn" id="o-sound">${AU.on ? 'Mute all' : 'Unmute'}</button><button class="btn" id="o-steps">Footsteps: ${AU.steps ? 'On' : 'Off'}</button></div></div>
   <button class="btn" id="o-save">Save now</button>
+  <div class="aud-row"><button class="btn" id="o-export">Save to file</button><button class="btn" id="o-import">Load from file</button></div>
   <button class="btn" id="o-help">Controls</button>
   <button class="btn danger" id="o-del">${UI.delConfirm ? 'Click again to delete this character forever' : 'Delete character'}</button></div>
   <div class="hint" style="margin-top:10px">${UI.cloud ? 'Progress saves to your account and this browser.' : 'Progress saves in this browser.'} Last saved ${UI.lastSave ? new Date(UI.lastSave).toLocaleTimeString() : 'never'}.</div>`;
@@ -261,9 +270,35 @@ function renderOpts(b) {
   b.querySelector('#o-steps').onclick = () => { AU.steps = !AU.steps; saveAudioPrefs(S.P); renderOpts(b); };
   b.querySelectorAll('[data-vol]').forEach(r => r.oninput = () => { AU.vol[r.dataset.vol] = r.value / 100; r.nextElementSibling.textContent = r.value; applyVolumes(); saveAudioPrefs(S.P); if (r.dataset.vol === 'sfx') sfx('gold'); });
   b.querySelector('#o-save').onclick = () => { saveGame(true); renderOpts(b); };
+  b.querySelector('#o-export').onclick = () => { saveGame(true); SAVEFILE.export(); };
+  b.querySelector('#o-import').onclick = () => SAVEFILE.pick(P => { closeWin('opts'); S.running = false; for (const id of Object.keys(UI.wins)) closeWin(id); showTitle(P); });
   b.querySelector('#o-help').onclick = () => { closeWin('opts'); showHelp(); };
   b.querySelector('#o-del').onclick = () => { if (!UI.delConfirm) { UI.delConfirm = true; renderOpts(b); return; } UI.delConfirm = false; deleteSave(); };
 }
+/* ---------- save file backup (a copy of your character you keep on your own computer) ----------
+   [need] G.exportSave()/G.importSave() from the systems worker; until then this reads/writes the same
+   JSON the game keeps in the browser. */
+const SAVEFILE = {
+  export() {
+    const j = serialize(); if (!j) return; const P = JSON.parse(j);
+    const blob = new Blob([JSON.stringify({ game: 'ashvale-online', v: 1, savedAt: new Date().toISOString(), profile: P }, null, 1)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `ashvale-${P.name}-lv${P.lv}-${new Date().toISOString().slice(0, 10)}.json`; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); sys('Your character was saved to a file.');
+  },
+  pick(done) {
+    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json,application/json';
+    inp.onchange = () => { const f = inp.files && inp.files[0]; if (!f) return; const r = new FileReader();
+      r.onload = () => { try {
+        const d = JSON.parse(r.result), P = d && d.profile ? d.profile : d;
+        if (!P || typeof P.name !== 'string' || !CLASSES[P.cls] || typeof P.lv !== 'number') throw new Error('not a save');
+        localStorage.setItem(SAVE_KEY, JSON.stringify(P)); if (window.UI && UI.toast) UI.toast('Loaded ' + P.name); done(P);
+      } catch (e) { alertBox('That file is not an Ashvale Online save.'); } };
+      r.readAsText(f); };
+    inp.click();
+  },
+};
+function alertBox(t) { const d = document.createElement('div'); d.className = 'toast'; d.innerHTML = `<b>${esc(t)}</b>`; document.body.appendChild(d); setTimeout(() => d.remove(), 3000); }
 function showHelp() {
   makeWin('help', 'Controls', Math.max(10, S.vw / 2 - 220), 50, b => { b.innerHTML = `<div class="help">
   <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> walk. Or <kbd>left click</kbd> to walk, attack, talk and pick up; hold to keep walking.</div>
@@ -276,7 +311,17 @@ function showHelp() {
 }
 
 /* ---------- NPC ---------- */
-function npcPortrait(n) { const c = document.createElement('canvas'); c.width = 184; c.height = 184; const x = c.getContext('2d'); x.scale(4.6, 4.6); drawHuman(x, 20, 70, Object.assign({}, n.look, { dir: 4, walk: 0, moving: false, idle: 0, atk: -1, cast: -1 })); return c; }
+function npcPortrait(n) {
+  const c = document.createElement('canvas'); c.width = 184; c.height = 184; const x = c.getContext('2d');
+  const e = Object.assign({}, n, { dir: 4, mt: 1, atk: -1, cast: -1, flashT: 0, idle: 0, dead: false, _kb: null, _hitT: 0 });
+  const paint = () => {   // feet far below the frame: a head-and-shoulders portrait
+    const t = document.createElement('canvas'); t.width = t.height = 184; const tx = t.getContext('2d');
+    const g = tx.createRadialGradient(92, 70, 8, 92, 70, 110); g.addColorStop(0, 'rgba(255,200,130,.22)'); g.addColorStop(1, 'rgba(0,0,0,0)'); tx.fillStyle = g; tx.fillRect(0, 0, 184, 184);
+    if (!STAGE.draw(tx, e, 92, 318, 4.3)) return false; x.clearRect(0, 0, 184, 184); x.drawImage(t, 0, 0); return true; };
+  if (!paint()) { x.save(); x.scale(4.6, 4.6); drawHuman(x, 20, 70, Object.assign({}, n.look, { dir: 4, walk: 0, moving: false, idle: 0, atk: -1, cast: -1 })); x.restore();
+    let tries = 0; const again = () => { if (!c.isConnected && tries > 2) return; if (paint()) return; if (++tries < 40) setTimeout(again, 150); }; setTimeout(again, 150); }
+  return c;
+}
 UI.openNPC = (n) => {
   const def = n.def; closeWin('shop'); closeWin('storage'); closeWin('smith'); closeWin('tele');
   makeWin('npc', S.map.name, Math.max(10, S.vw / 2 - 380), 70, b => renderNPC(b, n), 440);
@@ -470,7 +515,7 @@ document.addEventListener('contextmenu', e => { if (e.target.closest('#app')) e.
 $('#wins').addEventListener('pointerdown', e => {
   const P = S.P; const t = e.target.closest('[data-inv],[data-eq],[data-sto],[data-buy],[data-bind],[data-cast]'); if (!t) return;
   if (t.dataset.bind) { const [k, i] = t.dataset.bind.split(':'); const ix = +i; for (let j = 0; j < 8; j++) if (P.keys[j] === k) P.keys[j] = null; P.keys[ix] = k; UI.skillsDirty = true; sfx('click'); return; }
-  if (t.dataset.cast) { castSkill(t.dataset.cast); return; }
+  if (t.dataset.cast) { VIEW.cast(t.dataset.cast); return; }
   if (t.dataset.buy) { buy(t.dataset.buy, e.shiftKey); if (UI.wins.shop) refreshWin('shop'); return; }
   if (t.dataset.sto != null) { const i = +t.dataset.sto, it = P.storage[i]; if (it && invAdd(it)) { P.storage[i] = null; refreshWin('storage'); UI.invDirty = true; sfx('pickup'); } return; }
   if (t.dataset.eq) { if (e.button === 2 || e.detail >= 2) unequip(t.dataset.eq); return; }
@@ -500,7 +545,7 @@ function startDrag(i, e) {
 function buildBars() {
   let h = ''; for (let i = 0; i < 8; i++) h += `<div class="slot" data-sk="${i}"><span class="k">${i + 1}</span><div class="cd" style="--p:0%"></div><span class="cdt"></span></div>`; $('#skbar').innerHTML = h;
   h = ''; for (let i = 0; i < 6; i++) h += `<div class="slot" data-belt="${i}"><span class="k">${['Q', 'E', '', '', '', ''][i]}</span><span class="c"></span></div>`; $('#belt').innerHTML = h;
-  $('#skbar').addEventListener('pointerdown', e => { const t = e.target.closest('[data-sk]'); if (!t) return; const i = +t.dataset.sk; if (e.button === 2) { S.P.keys[i] = null; UI.skillsDirty = true; return; } const k = S.P.keys[i]; if (k) castSkill(k); });
+  $('#skbar').addEventListener('pointerdown', e => { const t = e.target.closest('[data-sk]'); if (!t) return; const i = +t.dataset.sk; if (e.button === 2) { S.P.keys[i] = null; UI.skillsDirty = true; return; } const k = S.P.keys[i]; if (k) VIEW.cast(k); });
   $('#belt').addEventListener('pointerdown', e => { const t = e.target.closest('[data-belt]'); if (!t) return; const i = +t.dataset.belt; if (e.button === 2) { S.P.belt[i] = null; UI.beltDirty = true; return; } useBelt(i); });
   document.querySelectorAll('#btns [data-w]').forEach(b => b.onclick = e => { toggleWin(b.dataset.w); if (e.detail) b.blur(); });
   $('#pkbtn').onclick = e => { S.pkMode = !S.pkMode; $('#pkbtn').classList.toggle('on', S.pkMode); sys(S.pkMode ? 'PK mode on. Clicking other players will attack them.' : 'PK mode off.'); if (e.detail) $('#pkbtn').blur(); };
@@ -759,8 +804,8 @@ window.addEventListener('keydown', e => {
   if (e.key === 'Control') S.ctrlHeld = true;
   if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
   const k = e.key;
-  if (/^F[1-8]$/.test(k)) { e.preventDefault(); const sk = S.P.keys[+k.slice(1) - 1]; if (sk) castSkill(sk); return; }
-  if (k >= '1' && k <= '8') { const sk = S.P.keys[+k - 1]; if (sk) castSkill(sk); return; }
+  if (/^F[1-8]$/.test(k)) { e.preventDefault(); const sk = S.P.keys[+k.slice(1) - 1]; if (sk) VIEW.cast(sk); return; }
+  if (k >= '1' && k <= '8') { const sk = S.P.keys[+k - 1]; if (sk) VIEW.cast(sk); return; }
   const lk = k.toLowerCase();
   if (lk.length === 1 && 'wasd'.includes(lk) && !e.ctrlKey && !e.metaKey) { e.preventDefault(); S.keys = S.keys || {}; S.keys[lk] = true; return; }
   if (lk === 'q' && !e.ctrlKey) { quaff('hp'); return; }

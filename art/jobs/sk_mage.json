@@ -60,11 +60,15 @@
    "fps": 10
   }
  },
- "render_dirs": 5,
  "attach": [
   {
    "model": "art/models/kaykit/Skeleton_Staff.gltf",
-   "bone": "handslot.r"
+   "bone": "handslot.r",
+   "rot": [
+    90,
+    0,
+    0
+   ]
   }
  ]
 }

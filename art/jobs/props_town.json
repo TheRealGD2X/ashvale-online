@@ -1,0 +1,153 @@
+{
+ "name": "props_town",
+ "shadow": true,
+ "samples": 24,
+ "props": [
+  {
+   "key": "house_weapons",
+   "model": "art/models/hexpack/buildings/red/building_archeryrange_red.gltf",
+   "fit": [
+    5,
+    3
+   ],
+   "anchor": "corner"
+  },
+  {
+   "key": "house_armour",
+   "model": "art/models/hexpack/buildings/blue/building_barracks_blue.gltf",
+   "fit": [
+    5,
+    3
+   ],
+   "anchor": "corner"
+  },
+  {
+   "key": "house_jeweler",
+   "model": "art/models/hexpack/buildings/yellow/building_market_yellow.gltf",
+   "fit": [
+    5,
+    3
+   ],
+   "anchor": "corner"
+  },
+  {
+   "key": "house_potions",
+   "model": "art/models/hexpack/buildings/green/building_home_B_green.gltf",
+   "fit": [
+    5,
+    3
+   ],
+   "anchor": "corner"
+  },
+  {
+   "key": "house_books",
+   "model": "art/models/hexpack/buildings/blue/building_tower_A_blue.gltf",
+   "fit": [
+    5,
+    3
+   ],
+   "anchor": "corner"
+  },
+  {
+   "key": "house_smith",
+   "model": "art/models/hexpack/buildings/red/building_blacksmith_red.gltf",
+   "fit": [
+    5,
+    3
+   ],
+   "anchor": "corner"
+  },
+  {
+   "key": "house_storage",
+   "model": "art/models/hexpack/buildings/yellow/building_home_A_yellow.gltf",
+   "fit": [
+    5,
+    3
+   ],
+   "anchor": "corner"
+  },
+  {
+   "key": "house_guild",
+   "model": "art/models/hexpack/buildings/red/building_tavern_red.gltf",
+   "fit": [
+    5,
+    3
+   ],
+   "anchor": "corner"
+  },
+  {
+   "key": "cave_mouth",
+   "model": "art/models/hexpack/buildings/blue/building_mine_blue.gltf",
+   "fit": [
+    5,
+    3
+   ],
+   "anchor": "corner",
+   "fill": 1.1
+  },
+  {
+   "key": "fountain",
+   "model": "art/models/nature/fountain.blend",
+   "fit": [
+    3,
+    3
+   ],
+   "anchor": "corner"
+  },
+  {
+   "key": "lamp",
+   "model": "art/models/nature/lamp.blend",
+   "height": 2.4
+  },
+  {
+   "key": "sign",
+   "model": "art/models/nature/sign.blend",
+   "height": 1.5
+  },
+  {
+   "key": "barrel",
+   "model": "art/models/hexpack/decoration/props/barrel.gltf",
+   "height": 0.8
+  },
+  {
+   "key": "crate",
+   "model": "art/models/hexpack/decoration/props/crate_A_big.gltf",
+   "height": 0.85
+  },
+  {
+   "key": "crate_long",
+   "model": "art/models/hexpack/decoration/props/crate_long_A.gltf",
+   "height": 0.6
+  },
+  {
+   "key": "sack",
+   "model": "art/models/hexpack/decoration/props/sack.gltf",
+   "height": 0.5
+  },
+  {
+   "key": "weaponrack",
+   "model": "art/models/hexpack/decoration/props/weaponrack.gltf",
+   "height": 1.2
+  },
+  {
+   "key": "wheelbarrow",
+   "model": "art/models/hexpack/decoration/props/wheelbarrow.gltf",
+   "height": 0.8
+  },
+  {
+   "key": "tent",
+   "model": "art/models/hexpack/decoration/props/tent.gltf",
+   "height": 1.8
+  },
+  {
+   "key": "target",
+   "model": "art/models/hexpack/decoration/props/target.gltf",
+   "height": 1.3
+  },
+  {
+   "key": "lumber",
+   "model": "art/models/hexpack/decoration/props/resource_lumber.gltf",
+   "height": 0.7
+  }
+ ]
+}

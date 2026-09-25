@@ -1,0 +1,10 @@
+.godot/
+*.tmp
+/export/
+/assets/licensed/
+/shots/
+# kit folders are unpacked from the downloaded zips by tools/setup_godot.ps1
+/assets/nature/
+/assets/village/
+/assets/props/
+/assets/anims/

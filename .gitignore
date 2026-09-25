@@ -11,3 +11,10 @@ Claude outputs/
 # art pipeline scratch (renders are committed under assets/, sources are not)
 art/_render/
 art/_cache/
+tests/_shots/
+
+# the 3D game: engine download and the kits unpacked by tools/setup_godot.ps1
+tools/godot/
+# third-party model kits used by the web art pipeline (KayKit, CC0): download again from kaylousberg.itch.io if needed
+art/models/hexpack/
+*.blend1
