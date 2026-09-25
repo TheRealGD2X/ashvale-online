@@ -1,0 +1,13 @@
+# build output and test artefacts
+dist/
+f_*.png
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+node_modules/
+# files the Claude desktop app drops into the folder when a worker sends an attachment
+Claude outputs/
+# art pipeline scratch (renders are committed under assets/, sources are not)
+art/_render/
+art/_cache/

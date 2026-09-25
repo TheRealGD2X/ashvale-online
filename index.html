@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ashvale Online</title>
+<meta name="description" content="A single-player MMORPG in the spirit of Legend of Mir 2 and Classic WoW">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cinzel+Decorative:wght@700;900&family=Marcellus+SC&family=Alegreya+Sans:wght@400;500;700;800&display=swap">
+<link rel="stylesheet" href="src/view/style.css">
+</head>
+<body>
+<div id="app">
+  <canvas id="cv"></canvas>
+  <div id="fade"></div>
+  <div id="buffs" class="hud-el"></div>
+  <div id="party" class="hud-el"></div>
+  <div id="target" class="hud-el frame" hidden><div class="tn" id="tname"></div><div class="tl" id="tlv"></div><div class="bar"><i id="thp"></i></div></div>
+  <div id="mm" class="hud-el frame orn"><div class="mmhd" id="mmname">Ashvale Province</div><div class="mmwrap"><b>N</b><canvas id="mmc" width="328" height="328"></canvas></div><div class="mmh"><span><span id="mmxy">0:0</span> · <span id="tod">Day</span></span><span id="online">1,284 online</span></div></div>
+  <div id="qt" class="hud-el frame"></div>
+  <div id="toasts" class="hud-el"></div>
+  <div id="invite" class="hud-el frame orn"><div class="ih">Group Invitation</div><div id="invtext"></div><div class="row"><button class="btn gold" id="invy" style="padding:5px 18px">Accept</button><button class="btn" id="invn" style="padding:5px 18px">Decline</button></div></div>
+  <div id="hud" class="hud-el">
+    <div id="orbw">
+      <canvas id="orb" width="408" height="312"></canvas>
+      <div class="orbnums"><span class="hpn" id="hpn">0</span><i></i><span class="mpn" id="mpn">0</span></div>
+      <div id="tl" class="status"><div><b id="stname">Hero</b> <span class="lv" id="stlv">Lv 1</span></div><div><span id="mapname">Ashvale Province</span> <span class="xy" id="coords">0:0</span></div></div>
+    </div>
+    <div class="pillar"></div>
+    <div id="mid">
+      <div class="slots" id="belt" data-label="Belt"></div>
+      <div class="slots" id="skbar" data-label="Skills"></div>
+      <div id="chat">
+        <div class="cgems">
+          <button class="gem sm amber" data-chat="up" data-tip="Scroll chat up" aria-label="Scroll chat up"><svg viewBox="0 0 8 8"><path d="M4 1.5L7 6H1z"/></svg></button>
+          <button class="gem sm amber" data-chat="down" data-tip="Scroll chat down" aria-label="Scroll chat down"><svg viewBox="0 0 8 8"><path d="M4 6.5L1 2h6z"/></svg></button>
+          <button class="gem sm amber" data-chat="end" data-tip="Jump to latest" aria-label="Jump to latest message"><svg viewBox="0 0 8 8"><path d="M4 5L1 1h6zM1 6h6v1.3H1z"/></svg></button>
+        </div>
+        <div id="chatbox">
+          <div id="chatlog"></div>
+          <div class="chatrow"><span id="chch">Say</span><input id="chatin" maxlength="120" placeholder="Press Enter to chat.  !shout  !~guild  !!group  /name whisper" aria-label="Chat message" autocomplete="off"></div>
+        </div>
+        <div class="cgems">
+          <button class="gem sm y" data-chat="!" data-tip="Shout|!" aria-label="Shout"></button>
+          <button class="gem sm g" data-chat="!~" data-tip="Guild chat|!~" aria-label="Guild chat"></button>
+          <button class="gem sm i" data-chat="!!" data-tip="Group chat|!!" aria-label="Group chat"></button>
+          <button class="gem sm b" data-chat="/" data-tip="Whisper|/name" aria-label="Whisper"></button>
+        </div>
+      </div>
+    </div>
+    <div class="pillar"></div>
+    <div id="right">
+      <div class="rstats">
+        <div class="lv"><b id="lvl">Lv 1</b><span id="clock">12:00</span></div>
+        <div class="meter xp" data-tip="Experience"><i id="xpb"></i><span><em>EXP</em><span id="xppct" style="position:static">0.00%</span></span></div>
+        <div class="meter wt" id="wtm" data-tip="Bag weight"><i id="wtb"></i><span><em>WT</em><span id="wtn" style="position:static">0/40</span></span></div>
+        <div class="gold"><span><i class="coin"></i><span id="goldn">0</span></span></div>
+      </div>
+      <div id="btns">
+        <button class="gem" data-w="char" data-tip="Character|C" aria-label="Character (C)"><svg viewBox="0 0 16 16"><path d="M8 1.8a3 3 0 1 1 0 6a3 3 0 1 1 0-6zM2.4 14.6c.4-3.4 2.8-5.4 5.6-5.4s5.2 2 5.6 5.4z"/></svg></button>
+        <button class="gem" data-w="inv" data-tip="Bag|I" aria-label="Bag (I)"><svg viewBox="0 0 16 16"><path d="M5.8 1.8h4.4l-1.2 2.4H7zM5 5.3h6c2.2 1.7 3.3 4 3.3 6.4 0 1.8-1.3 2.6-2.9 2.6H4.6c-1.6 0-2.9-.8-2.9-2.6C1.7 9.3 2.8 7 5 5.3z"/></svg></button>
+        <button class="gem" data-w="skills" data-tip="Skills|K" aria-label="Skills (K)"><svg viewBox="0 0 16 16"><path d="M9.8 1L3.2 9.2h4l-1.3 5.8 6.9-8.6H8.6z"/></svg></button>
+        <button class="gem" data-w="quest" data-tip="Quests|J" aria-label="Quests (J)"><svg viewBox="0 0 16 16"><path fill-rule="evenodd" d="M3.5 1.5h8A1.5 1.5 0 0 1 13 3v10.5a1.5 1.5 0 0 1-1.5 1.5h-8zM7.2 3.8h1.6l-.3 5.6h-1zM8 10.6a1 1 0 1 1 0 2a1 1 0 1 1 0-2z"/></svg></button>
+        <button class="gem" data-w="guild" data-tip="Guild|G" aria-label="Guild (G)"><svg viewBox="0 0 16 16"><path d="M3.2 1.2h1.5v13.6H3.2zM4.7 2h8.8l-2.4 3.3 2.4 3.3H4.7z"/></svg></button>
+        <button class="gem" data-w="map" data-tip="World map|M" aria-label="World map (M)"><svg viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 1.2a6.8 6.8 0 1 1 0 13.6A6.8 6.8 0 1 1 8 1.2zm0 1.7a5.1 5.1 0 1 0 0 10.2A5.1 5.1 0 1 0 8 2.9zM11.3 4.7L9.1 9.1 4.7 11.3 6.9 6.9z"/></svg></button>
+        <button class="gem" id="pkbtn" data-tip="PK mode|Hold Ctrl" aria-label="PK mode: attack other players"><svg viewBox="0 0 16 16"><path d="M8 1.3c3.3 0 5.7 2.3 5.7 5.3 0 1.9-1 3.3-2.3 4v2.2H9.6v-1.5H8.8v1.5H7.2v-1.5h-.8v1.5H4.6v-2.2c-1.3-.7-2.3-2.1-2.3-4 0-3 2.4-5.3 5.7-5.3zM5.6 6a1.5 1.5 0 1 0 0 3a1.5 1.5 0 1 0 0-3zm4.8 0a1.5 1.5 0 1 0 0 3a1.5 1.5 0 1 0 0-3zM8 9.2l-.9 1.5h1.8z"/></svg></button>
+        <button class="gem" data-w="opts" data-tip="Menu|O" aria-label="Menu (O)"><svg viewBox="0 0 16 16"><path d="M2.3 3.5h11.4v1.8H2.3zM2.3 7.1h11.4v1.8H2.3zM2.3 10.7h11.4v1.8H2.3z"/></svg></button>
+      </div>
+    </div>
+  </div>
+  <div id="wins"></div>
+  <div id="tip" class="frame orn"></div>
+  <div id="ctx" class="frame orn"></div>
+  <div id="ov"></div>
+</div>
+<!-- Load order matters: later files may override earlier function declarations (sim/bots.js relies on this). -->
+<script src="src/shared/events.js"></script>
+<script src="src/sim/data.js"></script>
+<script src="src/view/world.js"></script>
+<script src="src/view/draw.js"></script>
+<script src="src/view/human.js"></script>
+<script src="src/view/audio.js"></script>
+<script src="src/sim/game.js"></script>
+<script src="src/sim/bots.js"></script>
+<script src="src/view/render.js"></script>
+<script src="src/view/ui.js"></script>
+<script src="src/sim/save.js"></script>
+<script src="src/view/boot.js"></script>
+</body>
+</html>
