@@ -2,7 +2,11 @@
 rem Ashvale Online - the 3D game. Double-click to play.
 cd /d "%~dp0"
 set GODOT=%~dp0tools\godot\Godot_v4.7.2-stable_win64.exe
-if not exist "%GODOT%" (
+set NEED=0
+if not exist "%GODOT%" set NEED=1
+if not exist "%~dp0godot\assets\village" set NEED=1
+if not exist "%~dp0godot\assets\anims\UAL1.glb" set NEED=1
+if "%NEED%"=="1" (
   echo Setting up the game for the first time...
   powershell -ExecutionPolicy Bypass -File "%~dp0tools\setup_godot.ps1"
 )

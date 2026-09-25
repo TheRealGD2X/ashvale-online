@@ -46,6 +46,20 @@ func _ready() -> void:
 	if ResourceLoader.exists("res://src/ui/hud.gd") and not args.has("shot"): add_child(load("res://src/ui/hud.gd").new())
 	print("world built in %d ms" % (Time.get_ticks_msec() - t0))
 	if args.has("shot"): _shot()
+	_check_kits()
+
+## the art kits are unpacked from Downloads by tools/setup_godot.ps1; say so plainly if they're missing
+func _check_kits() -> void:
+	var missing := []
+	for k in ["village", "nature", "props"]:
+		if not DirAccess.dir_exists_absolute("res://assets/" + k): missing.append(k)
+	if not FileAccess.file_exists("res://assets/anims/UAL1.glb"): missing.append("animations")
+	if missing.is_empty(): return
+	var cl := CanvasLayer.new(); cl.layer = 50; add_child(cl)
+	var p := PanelContainer.new(); cl.add_child(p); p.position = Vector2(40, 120)
+	var l := Label.new(); p.add_child(l); l.add_theme_font_size_override("font_size", 22)
+	l.text = "Some art is missing (%s).\nClose the game and double-click 'Play Ashvale.bat' again:\nit unpacks the Quaternius zips from your Downloads folder." % ", ".join(missing)
+	push_warning(l.text)
 
 func _shot() -> void:
 	if args.has("cam"):
