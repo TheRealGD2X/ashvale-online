@@ -10,7 +10,7 @@ if "%NEED%"=="1" (
   echo Setting up the game for the first time...
   powershell -ExecutionPolicy Bypass -File "%~dp0tools\setup_godot.ps1"
 )
-if not exist "%~dp0godot\.godot\imported" (
-  "%~dp0tools\godot\Godot_v4.7.2-stable_win64_console.exe" --headless --path "%~dp0godot" --import
-)
+rem bring in any new or changed art (quick when nothing changed; a few minutes the first time)
+echo Preparing the art...
+"%~dp0tools\godot\Godot_v4.7.2-stable_win64_console.exe" --headless --path "%~dp0godot" --import
 start "" "%GODOT%" --path "%~dp0godot" %*
