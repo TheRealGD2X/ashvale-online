@@ -12,6 +12,14 @@ if "%NEED%"=="1" (
   echo Setting up the game for the first time...
   powershell -ExecutionPolicy Bypass -File "%~dp0tools\setup_godot.ps1"
 )
+if not exist "%GODOT%" (
+  echo.
+  echo Could not find Godot. Put Godot_v4.7.2-stable_win64.exe.zip in your Downloads folder
+  echo ^(loose, not inside another folder^) and double-click this file again.
+  echo.
+  pause
+  exit /b 1
+)
 rem bring in any new or changed art (quick when nothing changed; a few minutes the first time)
 echo Preparing the art...
 "%~dp0tools\godot\Godot_v4.7.2-stable_win64_console.exe" --headless --path "%~dp0godot" --import

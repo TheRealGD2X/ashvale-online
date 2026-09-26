@@ -9,7 +9,36 @@
 #   powershell -ExecutionPolicy Bypass -File tools\setup_godot.ps1
 $ErrorActionPreference = "Stop"
 $repo = Split-Path -Parent $PSScriptRoot
-$dl = Join-Path $env:USERPROFILE "Downloads"
+# Where the downloads are: Windows' real Downloads folder (often moved into OneDrive), the usual places,
+# and the "Ashvale transfer" folder used to move the game between PCs. The folder holding the most of
+# what we need wins.
+$want = @("Godot_v4.7.2-stable_win64.exe.zip", "Stylized Nature MegaKit[Standard].zip", "Medieval Village MegaKit[Standard].zip",
+  "Fantasy Props MegaKit[Standard].zip", "Universal Animation Library[Standard].zip", "Universal Base Characters[Source].zip",
+  "Modular Character Outfits - Fantasy[Source].zip", "Bestiary - Dungeon Monsters Kit[Source].zip")
+$cands = @()
+try {
+  $k = Get-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" -ErrorAction Stop
+  $v = $k."{374DE290-123F-4565-B85C-1BF3D2EC6F3F}"
+  if ($v) { $cands += [Environment]::ExpandEnvironmentVariables($v) }
+} catch {}
+$cands += (Join-Path $env:USERPROFILE "Downloads")
+# the transfer folder dropped into Downloads whole, rather than its contents
+$base = @($cands)
+foreach ($b0 in $base) {
+  $cands += (Join-Path $b0 "Put these in Downloads"); $cands += (Join-Path $b0 "Ashvale transfer\Put these in Downloads")
+}
+if ($env:OneDrive) { $cands += (Join-Path $env:OneDrive "Downloads"); $cands += (Join-Path $env:OneDrive "Desktop\Ashvale transfer\Put these in Downloads") }
+$cands += (Join-Path $env:USERPROFILE "Desktop\Ashvale transfer\Put these in Downloads")
+$cands += (Join-Path (Split-Path -Parent $PSScriptRoot) "..\Ashvale transfer\Put these in Downloads")
+$dl = $null; $best = -1
+foreach ($c in $cands) {
+  if (-not (Test-Path -LiteralPath $c)) { continue }
+  $names = @(Get-ChildItem -LiteralPath $c -ErrorAction SilentlyContinue | ForEach-Object { $_.Name })
+  $score = @($want | Where-Object { $names -contains $_ -or $names -contains ($_ -replace "\.zip$", "") }).Count
+  if ($score -gt $best) { $best = $score; $dl = (Resolve-Path -LiteralPath $c).Path }
+}
+if (-not $dl) { $dl = Join-Path $env:USERPROFILE "Downloads" }
+Write-Host "Looking for the downloads in: $dl ($best of $($want.Count) found)"
 $tmp = Join-Path $env:TEMP "ashvale_setup"
 New-Item -ItemType Directory -Force -Path $tmp | Out-Null
 
@@ -31,8 +60,13 @@ function Unzip($zipName, $dest) {
 Write-Host "Godot engine"
 $gd = Join-Path $repo "tools\godot"
 if (-not (Test-Path (Join-Path $gd "Godot_v4.7.2-stable_win64.exe"))) {
-  $z = Get-ChildItem -Path $dl -Filter "Godot_v4.7.2-stable_win64.exe.zip" | Select-Object -First 1
-  if ($z) { Expand-Archive -LiteralPath $z.FullName -DestinationPath $gd -Force; Write-Host "  ok" } else { Write-Host "  missing Godot zip in Downloads" -ForegroundColor Yellow }
+  $z = Get-ChildItem -LiteralPath $dl -File | Where-Object { $_.Name -eq "Godot_v4.7.2-stable_win64.exe.zip" } | Select-Object -First 1
+  # or already unzipped by Windows (a folder of the same name, or the two .exe files lying loose)
+  $con = Get-ChildItem -LiteralPath $dl -Recurse -Depth 2 -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq "Godot_v4.7.2-stable_win64_console.exe" } | Select-Object -First 1
+  New-Item -ItemType Directory -Force -Path $gd | Out-Null
+  if ($z) { Expand-Archive -LiteralPath $z.FullName -DestinationPath $gd -Force; Write-Host "  ok" }
+  elseif ($con) { Copy-Item -LiteralPath $con.FullName -Destination $gd -Force; Copy-Item -LiteralPath (Join-Path $con.DirectoryName "Godot_v4.7.2-stable_win64.exe") -Destination $gd -Force; Write-Host "  ok" }
+  else { Write-Host "  missing Godot zip (Godot_v4.7.2-stable_win64.exe.zip) in $dl" -ForegroundColor Yellow }
 } else { Write-Host "  already there" }
 
 $kits = @(
