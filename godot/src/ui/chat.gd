@@ -113,6 +113,10 @@ func post(ch: String, who: String, text: String) -> void:
 		"npc": line = "[color=#%s]%s says: %s[/color]" % [c, who, _esc(text)]
 		_: line = "[color=#%s]%s[/color]" % [c, _esc(text) if ch != "loot" else text]
 	log_box.append_text(line + "\n")
+	if has_meta("print"):
+		var plain := RegEx.new(); plain.compile("\\[/?[a-z]+(=[^\\]]*)?\\]")
+		print("CHAT ", plain.sub(line, "", true))
+
 	lines.append(line)
 	if lines.size() > 200:
 		lines = lines.slice(100)

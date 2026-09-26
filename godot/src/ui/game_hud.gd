@@ -68,7 +68,8 @@ func bind(p: Player, c: Camera3D) -> void:
 	win.bind(self, p); chat.player = p
 	minimap = Minimap.new(); root.add_child(minimap); minimap.setup(p, c)
 	root.move_child(minimap, 0)
-	chat.post("system", "", "Welcome to Ashvale. Press Enter to chat; /who lists who's around.")
+	chat.post("system", "", "Welcome to %s. Press Enter to chat; /who lists who's around." % WorldData.Z.get("name", "Ashvale"))
+
 	p.changed.connect(_refresh_player)
 	p.xp_changed.connect(_refresh_xp)
 	p.leveled.connect(func(lv): _banner("Level %d!" % lv, "You feel stronger."))
@@ -511,7 +512,12 @@ func _update_floats(delta: float) -> void:
 func error(msg: String) -> void:
 	err.text = msg; err_t = 2.0; err.modulate.a = 1.0
 
+func banner(title: String, sub: String) -> void:
+	_banner(title, sub)
+	get_tree().call_group("fx", "sound", "page", null, -8.0, 0.0)
+
 func _banner(title: String, sub: String) -> void:
+
 	var l := _label(root, title, 54, Vector2.ZERO, GOLD, true)
 	l.set_anchors_preset(Control.PRESET_CENTER_TOP); l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	l.offset_left = -400; l.offset_right = 400; l.offset_top = 170
@@ -608,6 +614,10 @@ func open_npc(n: Npc) -> void:
 
 func open_loot(m: Monster) -> void:
 	win.open_loot(m)
+
+func open_station(kind: String) -> void:
+	win.open_station(kind)
+
 
 func toggle_book() -> void:
 	if book == null:

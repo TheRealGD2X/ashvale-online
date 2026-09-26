@@ -35,7 +35,21 @@ const PLACES := {
 	"mine": "the mine is up the north road but i heard it's not open yet", "ada": "captain ada is at the mill with the militia",
 	"wren": "wren the hunter is at the mill", "tomas": "tomas sits by the mill, he'll buy junk", "vendor": "bess sells food, grom sells gear, tomas at the mill buys junk",
 	"food": "bess at the inn sells food and water", "water": "bess sells water at the inn", "repair": "grom repairs, south-east of the square",
+	# the Hollow Cliffs
+	"camp": "the miners' camp is straight up the hollow road from ashvale's north road", "gault": "gault's the foreman at the miners' camp. well, he was",
+	"bram": "bram cooks at the miners' camp, sells food too", "vale": "sister vale is at the miners' camp by the tents", "hux": "hux the quartermaster is at the camp, he repairs",
+	"bat": "bats are in the scree, west of the camp under the rocks", "scree": "the scree is west of the miners' camp",
+	"maggot": "maggots are up in the upper tunnels, west and north of camp", "tunnel": "upper tunnels are north-west of the camp",
+	"ore": "the ore veins have chalk marks, along lantern row and in the upper tunnels", "vein": "chalk-marked veins on lantern row and the upper tunnels",
+	"skarr": "skarr's cut is east of the camp, he's the big one with the pick", "digger": "the diggers are at skarr's cut east of camp",
+	"spider": "spiders are all along lantern row, the rails going north to the mine", "lantern": "lantern row is the old cart rails north of the camp",
+	"grave": "the cairn field is way up north-west, stand by the headstones", "cairn": "cairn field is the high ground north-west",
+	"rockjaw": "rockjaw's den is south-east of camp. elite bear, bring a friend", "bear": "bears are south-east of the camp, near rockjaw's den",
+	"brak": "brak's past skarr's cut, elite. group up", "hollow mine": "the mine mouth is at the top of lantern row. need a group of 2+",
+	"dungeon": "the hollow mine, top of lantern row. go with at least one other person", "bone king": "the bone king's at the very bottom of the mine. break the cages fast",
+	"grub": "grub mother dives under the floor, get out of the ring when it shows up",
 }
+
 
 var rng := RandomNumberGenerator.new()
 var llm_model := ""
@@ -133,9 +147,15 @@ func event(b: Bot, kind: String, info := {}) -> void:
 			var line := ""
 			var r := rng.randf()
 			if t.begins_with("looking for") and r < 0.6:
-				line = _pick(["anyone seen %s?" % _what(t), "where do %s spawn?" % _what(t), "been looking for %s forever, where are they?" % _what(t)])
+				line = _pick(["anyone seen %s?" % _what(t), "where do %s spawn?" % _what(t), "been looking for %s forever, where are they?" % _what(t), "where are the %s?" % _what(t)])
+
 			elif (t.contains("Hogtooth") or (b.level >= 8 and "hogtooth" in b.quests)) and r < 0.8:
 				line = _pick(["lfg hogtooth", "anyone want to do hogtooth?", "need 1-2 for hogtooth, /w me"])
+			elif WorldData.zone_id == "hollow" and b.level >= 13 and r < 0.35:
+				line = _pick(["lfg hollow mine", "LF1M hollow mine, need heals", "anyone for the mine? /w me", "lf tank for the mine", "rockjaw anyone?"])
+			elif WorldData.zone_id == "hollow" and r < 0.3:
+				line = _pick(["these bats are relentless", "where's the chalk ore, i can't find the last one", "bram's stew is actually good??", "anyone seen gault?", "the view from the cairn field is amazing"])
+
 			elif r < 0.35: line = _pick(["this music is so nice", "the mill at sunset though", "anyone know if grom sells better swords?", "wts boar hides, cheap", "lol the scarecrows in the west field",
 				"is it just me or are the boars everywhere", "where do people sell junk?", "how do talents work? do i get them at 10?", "anyone else get lost looking for the split oak",
 				"orrin talks a lot huh", "bess's stew is op", "love this zone"])
@@ -157,7 +177,12 @@ func heard(b: Bot, ch: String, from: Player, text: String) -> void:
 	var mentioned := low.contains(b.uname.to_lower())
 	# in General only a question, or someone named, gets an answer, and only from one bot
 	if ch == "general":
+		# a hello in General gets a hello or two back
+		if _has(low, ["hi all", "hello all", "hey all", "hi everyone", "hello everyone", "hey everyone", "evening all", "morning all"]) or low.strip_edges() in ["hi", "hello", "hey", "yo"]:
+			if rng.randf() < 0.25: _after(rng.randf_range(2.0, 9.0), func(): say(b, "general", null, _style(b, _pick(["hi", "hey", "o/", "hello", "hiya", "evening"]))))
+			return
 		if not (low.contains("?") or mentioned or low.begins_with("lfg") or low.contains("anyone")): return
+
 		if not mentioned and (b != _chosen(from, text) ): return
 	var reply_ch := "whisper" if ch == "whisper" else ch
 	var delay := rng.randf_range(1.5, 3.0) + text.length() * 0.03
@@ -176,14 +201,38 @@ func _chosen(from: Player, text: String) -> Bot:
 		_chosen_bot = all[rng.randi() % all.size()] if not all.is_empty() else null
 	return _chosen_bot
 
+var _rx := {}
 func _fact(low: String) -> String:
-	low = low.to_lower()
+	low = " " + low.to_lower() + " "
+	var best := ""
 	for k in PLACES:
-		if low.contains(k): return PLACES[k]
-	return ""
+		# whole words only (so "then" isn't a hen, and "more" isn't ore); plurals are fine; the most specific wins
+		if not _rx.has(k): var r := RegEx.new(); r.compile("[^a-z']" + k + "(s|es)?[^a-z]"); _rx[k] = r
+		if k.length() > best.length() and _rx[k].search(low): best = k
+	return PLACES[best] if best != "" else ""
+
+## what a bot is doing, the way a person would say it
+func _doing(b: Bot) -> String:
+	var t: String = b.brain.task
+	if t == "" or t == "idle": return "just hanging around"
+	if t.begins_with("looking for") or t == "hunting": return "hunting %s" % _what(t)
+	if t.begins_with("picking up") or t.begins_with("handing in"): return t.to_lower()
+	if t in ["eating", "drinking", "resting", "backing off to rest"]: return "taking a breather"
+	if t.begins_with("back from"): return "running back from the graveyard lol"
+	return "doing %s" % t.to_lower()
+
 
 func _rule_reply(b: Bot, ch: String, from: Player, low: String) -> String:
 	var fact := _fact(low)
+	if ch == "party" and b.party_with == from:
+		if _has(low, ["where", "what now", "what next", "go"]): return _pick(["your call", "wherever you want, i'll follow", "you lead", "i still need %s if you're going that way" % _what(b.brain.task)])
+		if _has(low, ["thank", "ty", "thx"]): return _pick(["np!", "anytime", ":)"])
+		if _has(low, ["ready", "rdy"]): return _pick(["ready", "rdy", "yep"])
+		if _has(low, ["wait", "brb", "sec"]): return _pick(["np", "k", "sure"])
+		if _has(low, ["pull", "go go", "lets go", "let's go"]): return _pick(["go", "ok!", "right behind you"])
+	if _has(low, ["how are you", "how's it going", "hows it going", "how r u", "how you doing"]): return _pick(["good! %s" % _doing(b), "not bad, you?", "tired but ok lol", "good, levelling slowly"])
+	if _has(low, ["what are you doing", "wyd", "what you up to", "what r u doing", "what are you up to"]): return _doing(b)
+
 	if (low.contains("where") or low.contains("how do i find") or low.contains("anyone seen")) and fact != "": return fact
 	if _has(low, ["invite", "group", "party", "join", "lfg", "help me", "need help", "wanna quest", "want to quest"]):
 		if b.party_with == from: return "i'm already with you"
@@ -192,8 +241,7 @@ func _rule_reply(b: Bot, ch: String, from: Player, low: String) -> String:
 	if _has(low, ["hello", "hi ", "hey", "yo ", "sup", "o/", "evening", "morning"]) or low in ["hi", "yo", "hey"]:
 		return _pick(["hey", "hi!", "hello", "o/", "hey, how's it going?", "hiya"])
 	if _has(low, ["thank", "ty", "thx", "cheers"]): return _pick(["np", "no problem", "anytime", "np :)"])
-	if _has(low, ["how are you", "how's it going", "hows it going", "how r u"]): return _pick(["good! just %s" % b.brain.task.to_lower(), "not bad, you?", "tired but ok lol", "good, levelling slowly"])
-	if _has(low, ["what are you doing", "wyd", "what you up to", "what r u doing"]): return "just %s" % (b.brain.task.to_lower() if b.brain.task != "" else "wandering around")
+
 	if _has(low, ["level", "lvl"]): return "%d %s" % [b.level, Rules.CLASSES[b.cls]["name"].to_lower()]
 	if _has(low, ["bye", "cya", "see you", "gn", "good night"]): return _pick(["cya", "bye!", "see ya", "night!"])
 	if _has(low, ["lol", "haha", "lmao"]): return _pick([":)", "haha", "", ""])

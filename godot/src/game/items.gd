@@ -123,8 +123,12 @@ const START := {
 	"cleric": ["acolyte_mace", "acolyte_vestment", "acolyte_pants", "acolyte_shoes", "acolyte_sleeves", "acolyte_collar"],
 }
 
+static var _mats := {}
+
 static func get_def(it: Dictionary) -> Dictionary:
-	var base: Dictionary = LIST.get(it.get("id", ""), {})
+	if _mats.is_empty(): _mats = Crafting.materials()
+	var id: String = it.get("id", "")
+	var base: Dictionary = LIST.get(id, _mats.get(id, {}))
 	if it.has("rolled"):
 		var d := base.duplicate(true)
 		for k in it["rolled"]: d[k] = it["rolled"][k]
@@ -167,7 +171,13 @@ const AFFIX := {"of the Bear": {"sta": 0.5, "str": 0.5}, "of the Owl": {"int": 0
 const ARMOR_PER := {"cloth": 3.0, "leather": 6.0, "mail": 12.0, "plate": 20.0}
 const SLOT_ARMOR := {"chest": 1.0, "legs": 0.85, "head": 0.8, "shoulders": 0.7, "feet": 0.6, "hands": 0.55, "waist": 0.45, "wrist": 0.4, "back": 0.4}
 
+## weapons that drop: [weapon type, name, speed, model, dps scale]
+const WEAPON_BASES := [["sword", "Blade", 2.4, "sword", 1.0], ["sword", "Longsword", 2.6, "long", 1.0], ["axe", "Hatchet", 2.5, "axe", 1.0],
+	["mace", "Cudgel", 2.6, "club", 1.0], ["staff", "Staff", 3.0, "staff", 1.3], ["staff", "Walking Staff", 2.9, "wood", 1.3], ["wand", "Wand", 1.8, "wand", 0.9],
+	["dagger", "Dirk", 1.8, "dagger", 0.95]]
+
 static func roll(level: int, rng: RandomNumberGenerator, quality := 2) -> Dictionary:
+	if rng.randf() < 0.3: return _roll_weapon(level, rng, quality)
 	var b: Array = BASES[rng.randi() % BASES.size()]
 	var ilvl := maxi(2, level + rng.randi_range(0, 3))
 	var affix: String = AFFIX.keys()[rng.randi() % AFFIX.size()]
@@ -188,7 +198,23 @@ static func buy_price(d: Dictionary) -> int:
 	var n := 1 if int(d.get("stack", 1)) == 1 else mini(5, int(d["stack"]))
 	return maxi(1, int(d.get("sell", 1)) * 4) * n
 
+static func _roll_weapon(level: int, rng: RandomNumberGenerator, quality: int) -> Dictionary:
+	var b: Array = WEAPON_BASES[rng.randi() % WEAPON_BASES.size()]
+	var ilvl := maxi(2, level + rng.randi_range(0, 3))
+	var affix: String = AFFIX.keys()[rng.randi() % AFFIX.size()]
+	var dps: float = (1.5 + 0.55 * ilvl) * float(b[4]) * (1.0 if quality == 2 else 1.12)
+	var spd: float = b[2]
+	var stats := {}
+	var budget: float = ilvl * (0.9 if quality == 2 else 1.3) * 0.55 + 1.0
+	for k in AFFIX[affix]: stats[k] = maxi(1, int(round(budget * AFFIX[affix][k])))
+	var d := {"name": "%s %s %s" % [PREFIX[rng.randi() % PREFIX.size()], b[1], affix], "q": quality, "slot": "main_hand", "wtype": b[0], "ilvl": ilvl,
+		"weapon": [int(dps * spd * 0.75), int(ceil(dps * spd * 1.25)), spd], "stats": stats, "model": b[3],
+		"sell": int(ilvl * ilvl * 2.0 * (1.0 if quality == 2 else 2.2)) + 15, "bind": "boe"}
+	if b[0] in ["staff", "wand"]: d["sp"] = int(ilvl * 0.4)
+	return {"id": "rolled", "rolled": d, "n": 1}
+
 ## gold amounts, WoW style: 1g 23s 45c
+
 static func money(c: int) -> String:
 	var g := c / 10000; var s := (c / 100) % 100; var cc := c % 100
 	var out := ""
@@ -221,6 +247,10 @@ static func tooltip(it: Dictionary, cls := "", level := 1) -> String:
 		if d.has("heal") and d["use"] == "potion": t += "[color=#1eff00]Use: Restores %d health.[/color]\n" % int(d["heal"])
 		elif d.has("heal"): t += "[color=#1eff00]Use: Restores %d health over 18 sec. Must remain seated while eating.[/color]\n" % int(d["heal"])
 		if d.has("mana"): t += "[color=#1eff00]Use: Restores %d mana over 18 sec. Must remain seated while drinking.[/color]\n" % int(d["mana"])
+		if d.has("mana_now"): t += "[color=#1eff00]Use: Restores %d mana.[/color]\n" % int(d["mana_now"])
+	if d.has("mat"): t += "[color=#9ad0ff]Crafting material (tier %d)[/color]\n" % int(d["tier"])
+	if d.get("crafted", false): t += "[color=#9a9a9a]Crafted[/color]\n"
+
 	var rl := req_level(d)
 	if d.has("slot") and rl > 1: t += ("[color=#ff2020]" if level < rl else "") + "Requires Level %d" % rl + ("[/color]" if level < rl else "") + "\n"
 	if cls != "" and d.has("slot") and not can_use(cls, d, 99): t += "[color=#ff2020]Your class can't use this[/color]\n"

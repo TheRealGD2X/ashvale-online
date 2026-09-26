@@ -27,7 +27,8 @@ const CAMPS := {"ashvale": [
 		{"kind": "wolf", "lv": [10, 11], "n": 4, "at": Vector2(4, 82), "r": 12.0},
 		# ---- the Scree and the Upper Tunnels, west of the camp
 		{"kind": "cave_bat", "lv": [10, 11], "n": 10, "at": Vector2(-54, 12), "r": 15.0},
-		{"kind": "cave_maggot", "lv": [11, 12], "n": 10, "at": Vector2(-36, -40), "r": 13.0},
+		{"kind": "cave_maggot", "lv": [10, 12], "n": 9, "at": Vector2(-36, -40), "r": 16.0},
+
 		# ---- Lantern Row: the old cart rails up to the mine
 		{"kind": "rail_spider", "lv": [12, 13], "n": 7, "at": Vector2(36, -54), "r": 12.0},
 		# ---- Skarr's Cut, east
@@ -98,6 +99,7 @@ func _ready() -> void:
 		add_child(p)
 		var at := Vector3(pk["at"].x, 0, pk["at"].y); at.y = WorldData.h(at.x, at.z) + 0.02
 		p.global_position = at
+	_resources()
 	if args.has("nomonsters"): return
 	var rng := RandomNumberGenerator.new(); rng.seed = 1234
 	var near := Vector2.INF
@@ -137,7 +139,28 @@ func rise(kind: String, n: int, lv: int, near: Vector3, at_whom: Unit) -> void:
 		# they don't come back once put down
 		m.died.connect(func(_u): m.get_tree().create_timer(20.0).timeout.connect(m.queue_free))
 
+## ore veins on the rougher ground, herbs in the grass: scattered by the zone's seed
+func _resources() -> void:
+	var tier := int(WorldData.Z.get("tier", 0))
+	if tier == 0: return
+	var rng := RandomNumberGenerator.new(); rng.seed = int(WorldData.Z.get("seed", 1)) * 31
+	for kind in ["ore", "herb"]:
+		var placed := 0; var tries := 0
+		while placed < (14 if kind == "ore" else 18) and tries < 3000:
+			tries += 1
+			var p := Vector2(rng.randf_range(-110, 110), rng.randf_range(-110, 110))
+			if WorldData.town_w(p) > 0.15 or WorldData.road(p).x < 4.0 or WorldData.in_water(p.x, p.y): continue
+			var steep := 1.0 - WorldData.n(p.x, p.y).y
+			if kind == "ore" and steep < 0.06 and rng.randf() < 0.7: continue
+			if kind == "herb" and steep > 0.12: continue
+			var at := Vector3(p.x, 0, p.y)
+			if not Nav.walkable(at): continue
+			var n := ResourceNode.new(); n.setup(kind, tier); add_child(n)
+			at.y = WorldData.h(p.x, p.y); n.global_position = at
+			placed += 1
+
 func _people() -> void:
+
 
 	for id in Npcs.LIST:
 		var info: Dictionary = Npcs.LIST[id]

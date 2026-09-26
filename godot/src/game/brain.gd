@@ -22,6 +22,8 @@ var log_lines := false          # print what we decide (for the tests)
 var no_quest_until := 0.0
 var skip := {}                  # quests we gave up on (too hard for now)
 var focus: Unit                 # fight only this (tests)
+var _last_level := 0
+
 
 func _init(owner_player: Player = null) -> void:
 	p = owner_player
@@ -36,6 +38,7 @@ func _physics_process(delta: float) -> void:
 		return
 	if think_t > 0.0: return
 	think_t = 0.25
+	if p.level != _last_level: _last_level = p.level; skip.clear()
 	_unstick(0.25)
 	if focus and is_instance_valid(focus) and not focus.dead:
 		p.target = focus
@@ -99,7 +102,13 @@ func _use(id: String, t: Unit) -> bool:
 	return p.use(id, t) == ""
 
 func _warrior(t: Unit) -> void:
+	# in a group, the warrior holds the monsters' attention: taunt whatever is hitting someone else
+	if leader and is_instance_valid(leader) and "taunt" in p.known:
+		for u in p.get_tree().get_nodes_in_group("units"):
+			if u is Monster and not u.dead and u.in_combat and u.target and u.target != p and u.target.faction == "player" and p.check_use("taunt", u) == "":
+				p.use("taunt", u); p.target = u; p.start_attack(u); return
 	if not p.attacking: p.start_attack(t)
+
 	var d := p.distance_to(t)
 	if d > p.swing_range():
 		if _can("charge", t): p.use("charge", t); return
@@ -141,7 +150,11 @@ func _caster(t: Unit, nukes: Array, instant: String, armor: String) -> void:
 func _cleric(t: Unit) -> void:
 	if not p.casting.is_empty(): return
 	var heal_me: Unit = p
-	if leader and is_instance_valid(leader) and not leader.dead and leader.hp < leader.max_hp * 0.55: heal_me = leader
+	# the group's healer: whoever is lowest
+	var lowest := p.hp / p.max_hp
+	for m in (leader.party_members() if leader and is_instance_valid(leader) else p.party_members()):
+		if is_instance_valid(m) and not m.dead and m.hp / m.max_hp < lowest and p.global_position.distance_to(m.global_position) < 28.0:
+			lowest = m.hp / m.max_hp; heal_me = m
 	if heal_me.hp < heal_me.max_hp * 0.5:
 		if _can("ward_of_light", heal_me) and not heal_me.has_aura("weakened_soul"): p.use("ward_of_light", heal_me); return
 		if _can("renewal", heal_me) and not heal_me.has_aura("renewal"): p.use("renewal", heal_me); return
@@ -196,8 +209,22 @@ func _follow() -> void:
 
 # ------------------------------------------------------------------ questing
 
+var goal_best := 1e9
+var goal_t := 0.0
+
 func _go(pos: Vector3, why: String) -> void:
+	# no closer for a long while: this place can't be reached from here; leave it for later
+	var d := Vector2(p.global_position.x - pos.x, p.global_position.z - pos.z).length()
+	if why != task or goal.distance_to(pos) > 6.0: goal_best = d; goal_t = 0.0
+	elif d < goal_best - 1.0: goal_best = d; goal_t = 0.0
+	else:
+		goal_t += 0.25
+		if goal_t > 45.0:
+			goal_t = 0.0
+			for id in p.quests:
+				if why.contains(Quests.LIST[id]["title"]): skip[id] = true; say("giving up on %s for now" % id)
 	task = why
+
 	if goal.distance_to(pos) > 1.5 or not p.is_moving():
 		goal = pos
 		p.move_to(pos)

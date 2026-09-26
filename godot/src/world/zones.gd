@@ -36,12 +36,15 @@ const DEFS := {
 		"builders": ["village", "landmarks", "water", "vegetation", "life"],
 		"exits": [{"at": Vector2(-4, -122), "r": 7.0, "to": "hollow", "arrive": Vector2(-2, 112), "name": "Hollow Road", "sign": "Hollow Cliffs (10–16)"}],
 		"graveyard": Vector2(-18, -14), "inn": Vector2(-17.5, 8.5), "start": Vector2(3, 16), "sky": "day",
+		"stations": [["forge", Vector2(19.5, -17.5), 2.4], ["tannery", Vector2(75, 18), 3.6], ["loom", Vector2(-11, -13.5), 0.3], ["alchemy", Vector2(-3.5, -19.5), 0.0]],
+		"tier": 1,
 		"music": {"town": "town", "wild": "wilds"},
 	},
 	"hollow": {
 		"name": "Hollow Cliffs", "band": [10, 16], "seed": 31, "relief": 11.0, "edge": 34.0,
-		"plateaus": [{"at": Vector2(8, 26), "r0": 20.0, "r1": 40.0, "h": 9.0}, {"at": Vector2(24, -84), "r0": 12.0, "r1": 22.0, "h": 12.0},
-			{"at": Vector2(-84, -84), "r0": 14.0, "r1": 26.0, "h": 22.0}],
+		"plateaus": [{"at": Vector2(8, 26), "r0": 20.0, "r1": 40.0, "h": 9.0}, {"at": Vector2(24, -84), "r0": 12.0, "r1": 34.0, "h": 11.0},
+			{"at": Vector2(-84, -84), "r0": 13.0, "r1": 42.0, "h": 13.0}],
+
 		"ridges": [
 			# the cliff the mine is cut into, running across the north
 			{"pts": [Vector2(-128, -104), Vector2(-60, -96), Vector2(0, -102), Vector2(24, -98), Vector2(60, -106), Vector2(128, -100)], "h": 26.0, "w": 16.0},
@@ -64,6 +67,9 @@ const DEFS := {
 			{"at": Vector2(24, -92), "r": 3.5, "to": "mine", "arrive": Vector2(0, 104), "name": "The Hollow Mine", "sign": "Dungeon (12–16), groups of 2+", "no_post": true}],
 
 		"graveyard": Vector2(0, 50), "inn": Vector2(4, 30), "start": Vector2(-2, 108), "sky": "day",
+		"stations": [["forge", Vector2(23, 25), -1.2], ["alchemy", Vector2(19, 38), -2.2], ["tannery", Vector2(-10, 40), 1.0]],
+		"tier": 2,
+
 		"music": {"town": "wilds", "wild": "wilds"}, "forest": 0.35, "pines": true,
 	},
 	"mine": {

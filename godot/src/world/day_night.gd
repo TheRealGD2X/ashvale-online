@@ -88,8 +88,9 @@ func _apply() -> void:
 		night = 1.0; dusk = 0.0
 		sun.visible = false; moon.visible = false
 		env.background_mode = Environment.BG_COLOR; env.background_color = Color(0.01, 0.01, 0.015)
-		env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR; env.ambient_light_color = Color(0.32, 0.3, 0.36); env.ambient_light_energy = 0.55
-		env.tonemap_exposure = 1.35
+		env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR; env.ambient_light_color = Color(0.42, 0.38, 0.44); env.ambient_light_energy = 1.0
+		env.tonemap_exposure = 1.55
+
 		env.fog_light_color = Color(0.03, 0.03, 0.04); env.fog_density = 0.012
 		env.volumetric_fog_density = 0.02; env.volumetric_fog_albedo = Color(0.5, 0.45, 0.4)
 		return

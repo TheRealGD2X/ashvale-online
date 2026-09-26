@@ -126,7 +126,7 @@ func _scatter() -> void:
 				elif r < 0.05: _add(["Grass_Wispy_Tall", "Grass_Common_Tall", "Grass_Wispy_Short"][rng.randi() % 3], px, pz, rng.randf_range(0.3, 0.5))
 				elif r < 0.054: _add(["Plant_7", "Plant_1"][rng.randi() % 2], px, pz, rng.randf_range(0.4, 0.7))
 			# rocks: hills and forest edges
-			var rocky := 0.0 if ash else 0.02 + 0.06 * (1.0 - WorldData.n(px, pz).y)
+			var rocky := 0.0 if ash else 0.008 + 0.05 * (1.0 - WorldData.n(px, pz).y)
 			if rng.randf() < 0.004 + rocky + 0.02 * smoothstep(85.0, 115.0, maxf(absf(px), absf(pz))):
 				var s := rng.randf_range(0.5, 1.4)
 				_add("Rock_Medium_%d" % (1 + rng.randi() % 3), px, pz, s, -1.0, 0.25)

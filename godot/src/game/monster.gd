@@ -425,6 +425,11 @@ func _roll_loot() -> void:
 		var green := 0.05 + (0.9 if d.get("named", false) or elite else 0.0)
 		if rng.randf() < green: loot.append(Items.roll(level, rng, 3 if elite and rng.randf() < 0.3 else 2))
 		if rng.randf() < 0.04: loot.append({"id": "minor_healing_potion", "n": 1})
+		# crafting materials: hides from beasts, cloth scraps from people
+		var tier := clampi(int(level / 10) + 1, 1, 6)
+		if creature_type == "beast" and rng.randf() < 0.4: loot.append({"id": "hide_%d" % tier, "n": rng.randi_range(1, 2)})
+		if creature_type == "humanoid" and rng.randf() < 0.35: loot.append({"id": "linen_%d" % tier, "n": rng.randi_range(1, 3)})
+
 	if looter.has_method("quest_drops"): loot.append_array(looter.quest_drops(self))
 	if looter.has_method("auto_loot"): looter.auto_loot(self); return
 	if not loot.is_empty() or loot_money > 0: _show_sparkle(true)

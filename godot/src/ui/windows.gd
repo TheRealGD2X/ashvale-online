@@ -45,13 +45,14 @@ func bind(h: Node, p: Player) -> void:
 	_refresh_tracker()
 
 func any_open() -> bool:
-	for w in [npc_win, bag_win, char_win, log_win, tal_win, loot_win]:
+	for w in [npc_win, bag_win, char_win, log_win, tal_win, loot_win, craft_win, market_win]:
 		if w and w.visible: return true
 	return false
 
 ## Esc closes the top window first
 func close_one() -> bool:
-	for w in [loot_win, npc_win, tal_win, log_win, char_win, bag_win]:
+	for w in [loot_win, craft_win, market_win, npc_win, tal_win, log_win, char_win, bag_win]:
+
 		if w and w.visible:
 			w.visible = false
 			if w == npc_win: npc = null
@@ -214,6 +215,7 @@ func _gossip() -> void:
 	if info.has("vendor"): v.add_child(_option("◆", "Let me browse your goods.", INK, func(): npc_page = "vendor"; _vendor(); open_bags(true)))
 	if info.get("trainer", "") == player.cls: v.add_child(_option("✦", "I'd like to train.", INK, func(): npc_page = "trainer"; _trainer()))
 	elif info.has("trainer"): v.add_child(_para("\"You're no %s. Go and find your own kind.\"" % Rules.CLASSES[info["trainer"]]["name"], 16, Color(0.75, 0.7, 0.6)))
+	if info.get("market", false): v.add_child(_option("⚖", "Show me the market board.", INK, func(): open_market()))
 	if info.get("inn", false): v.add_child(_option("⌂", "Make this inn your home.", INK, func():
 		player.hearth = WorldData.zone_id; hud.notice("%s is now your home." % ("Ashvale Inn" if WorldData.zone_id == "ashvale" else "The Miners' Camp")); npc_win.visible = false))
 
@@ -494,7 +496,8 @@ func _fill_log() -> void:
 	var list := VBoxContainer.new(); list.custom_minimum_size = Vector2(250, 0); h.add_child(list)
 	var chains := {}
 	for id in player.quests:
-		var zone := "Ashvale Province"
+		var zone: String = Zones.get_def(Npcs.LIST.get(Quests.LIST[id]["giver"], {}).get("zone", "ashvale"))["name"]
+
 		if not chains.has(zone): chains[zone] = true; list.add_child(_lbl(zone, 16, Color(0.8, 0.75, 0.65), true))
 		var q: Dictionary = Quests.LIST[id]
 		var col := Rules.con_color(player.level, int(q["level"]))
@@ -610,3 +613,174 @@ func _talent_btn(t: Dictionary, tree: Dictionary) -> Control:
 
 func _short(n: String) -> String:
 	return n
+
+# ------------------------------------------------------------------ crafting stations
+
+var craft_win: PanelContainer
+var station := ""
+var craft_tier := 1
+
+func open_station(kind: String) -> void:
+	station = kind
+	if craft_win == null:
+		craft_win = _window("", 620); craft_win.position = Vector2(30, 130)
+	craft_win.visible = true
+	craft_tier = clampi(int(WorldData.Z.get("tier", 1)), 1, 6)
+	_fill_station()
+	open_bags(true)
+	get_tree().call_group("fx", "sound", "anvil" if kind == "forge" else "page", null, -10.0)
+
+func _fill_station() -> void:
+	var v := _body(craft_win, Crafting.STATIONS[station])
+	# the skills this station uses
+	var used := {}
+	for r in Crafting.RECIPES:
+		if r[3] == station: used[r[2]] = true
+	var head := HBoxContainer.new(); head.add_theme_constant_override("separation", 18); v.add_child(head)
+	for s in used: head.add_child(_lbl("%s %d / 300" % [Crafting.SKILLS[s], player.skill(s)], 16, Color(0.6, 0.85, 1.0)))
+	for s in ["mining", "herbalism"]: head.add_child(_lbl("%s %d" % [Crafting.SKILLS[s], player.skill(s)], 14, Color(0.7, 0.7, 0.7)))
+	# tier picker
+	var tiers := HBoxContainer.new(); v.add_child(tiers)
+	tiers.add_child(_lbl("Tier  ", 16, GOLD))
+	for t in range(1, 7):
+		var b := _btn("T%d" % t, func(): craft_tier = t; _fill_station(), 50)
+		if t == craft_tier: b.add_theme_color_override("font_color", Color(1, 1, 1)); b.add_theme_stylebox_override("normal", b.get_theme_stylebox("hover"))
+		tiers.add_child(b)
+	tiers.add_child(_lbl("   needs %d skill" % Crafting.skill_needed(craft_tier), 14, Color(0.8, 0.76, 0.68)))
+	# refining
+	for raw in Crafting.REFINE:
+		var info: Array = Crafting.REFINE[raw]
+		if info[1] != station: continue
+		var rid := "%s_%d" % [raw, craft_tier]
+		var h := HBoxContainer.new(); h.add_theme_constant_override("separation", 10); v.add_child(h)
+		h.add_child(_slot({"id": rid, "n": maxi(1, player.count_item(rid))}, 40))
+		h.add_child(_lbl("2 × %s → 1 × %s   (you have %d)" % [Items.get_def({"id": rid})["name"], Items.get_def({"id": "%s_%d" % [info[0], craft_tier]})["name"], player.count_item(rid)], 15, INK))
+		var rb := _btn("Refine all", func():
+			var n := Crafting.refine(player, rid, 99)
+			if n > 0: get_tree().call_group("fx", "sound", "anvil", null, -12.0)
+			_fill_station())
+		rb.disabled = player.count_item(rid) < 2
+		h.add_child(rb)
+	# recipes
+	var scroll := ScrollContainer.new(); scroll.custom_minimum_size = Vector2(580, 380); v.add_child(scroll)
+	var list := VBoxContainer.new(); list.add_theme_constant_override("separation", 6); scroll.add_child(list)
+	for r in Crafting.RECIPES:
+		if r[3] != station: continue
+		var need := Crafting.needs(r, craft_tier)
+		var ok := Crafting.has_all(player, need) and player.skill(r[2]) >= Crafting.skill_needed(craft_tier)
+		var h2 := HBoxContainer.new(); h2.add_theme_constant_override("separation", 8); list.add_child(h2)
+		var rng := RandomNumberGenerator.new(); rng.seed = 1
+		var preview := Crafting.make(r, craft_tier, 0, rng)
+		h2.add_child(_slot(preview, 42))
+		var nm := _lbl(r[1], 16, INK if ok else Color(0.6, 0.6, 0.6)); nm.custom_minimum_size = Vector2(140, 0); h2.add_child(nm)
+		var parts := []
+		for m in need: parts.append("%d/%d %s" % [player.count_item(m), need[m], Items.get_def({"id": m})["name"]])
+		var nl := _lbl(", ".join(parts), 13, Color(0.8, 0.8, 0.75) if ok else Color(0.85, 0.5, 0.45)); nl.custom_minimum_size = Vector2(300, 0); nl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		h2.add_child(nl)
+		var id: String = r[0]
+		var cb := _btn("Craft", func():
+			var it := Crafting.craft(player, id, craft_tier)
+			if not it.is_empty():
+				var d := Items.get_def(it)
+				hud.notice("You create %s%s." % [d["name"], (" (%s)" % Crafting.QUALITY_NAMES[[0, 0, 2, 3][clampi(int(d.get("q", 2)), 0, 3)] if d.has("slot") else 0]) if d.get("q", 1) >= 3 else ""])
+				get_tree().call_group("fx", "sound", "learn" if d.get("q", 1) >= 3 else "anvil", null, -8.0)
+			_fill_station())
+		cb.disabled = not ok
+		h2.add_child(cb)
+
+# ------------------------------------------------------------------ the market
+
+var market_win: PanelContainer
+var market_tab := "buy"
+var market_filter := "all"
+var sell_pick := -1
+var sell_price := 0
+
+func open_market() -> void:
+	if npc_win: npc_win.visible = false
+	if market_win == null:
+		market_win = _window("Market", 720); market_win.position = Vector2(30, 110)
+	market_win.visible = true
+	open_bags(true)
+	_fill_market()
+
+func _market() -> Market:
+	return get_tree().get_first_node_in_group("market")
+
+func _fill_market() -> void:
+	var mk := _market()
+	if mk == null: return
+	var v := _body(market_win, "Market")
+	var tabs := HBoxContainer.new(); tabs.add_theme_constant_override("separation", 8); v.add_child(tabs)
+	for tb in [["buy", "Buy"], ["sell", "Sell"], ["mine", "Your listings"]]:
+		var tid: String = tb[0]
+		var b := _btn(tb[1], func(): market_tab = tid; _fill_market(), 140)
+		if tid == market_tab: b.add_theme_stylebox_override("normal", b.get_theme_stylebox("hover"))
+		tabs.add_child(b)
+	var sp := Control.new(); sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL; tabs.add_child(sp)
+	tabs.add_child(_money_row(player.gold))
+	match market_tab:
+		"buy":
+			var fl := HBoxContainer.new(); v.add_child(fl)
+			for f in [["all", "All"], ["mat", "Materials"], ["gear", "Gear"], ["use", "Food and potions"]]:
+				var fid: String = f[0]
+				fl.add_child(_option("", f[1], GOLD if market_filter == fid else INK, func(): market_filter = fid; _fill_market()))
+			var scroll := ScrollContainer.new(); scroll.custom_minimum_size = Vector2(690, 420); v.add_child(scroll)
+			var list := VBoxContainer.new(); scroll.add_child(list)
+			var shown := Market.listings.filter(func(l):
+				var d := Items.get_def(l["item"])
+				if l["seller"] == "you": return false
+				match market_filter:
+					"mat": return d.has("mat")
+					"gear": return d.has("slot")
+					"use": return d.has("use")
+				return true)
+			shown.sort_custom(func(a, b): return Items.get_def(a["item"]).get("name", "") < Items.get_def(b["item"]).get("name", ""))
+			for l in shown.slice(0, 60):
+				var d := Items.get_def(l["item"])
+				var h := HBoxContainer.new(); h.add_theme_constant_override("separation", 10); list.add_child(h)
+				h.add_child(_slot(l["item"], 38))
+				var nm := _lbl(d.get("name", "?"), 15, Items.color(d)); nm.custom_minimum_size = Vector2(270, 0); h.add_child(nm)
+				var sl := _lbl(l["seller"], 13, Color(0.7, 0.7, 0.7)); sl.custom_minimum_size = Vector2(100, 0); h.add_child(sl)
+				var mr := _money_row(int(l["price"]), 15); mr.custom_minimum_size = Vector2(130, 0); h.add_child(mr)
+				var key := int(l["key"])
+				var bb := _btn("Buy", func(): if mk.buy(player, key): _fill_market(), 70)
+				bb.disabled = player.gold < int(l["price"])
+				h.add_child(bb)
+			if shown.is_empty(): list.add_child(_lbl("Nothing like that for sale right now. Check back later.", 16, PARCH))
+		"sell":
+			v.add_child(_para("Click something in your bags below to put it up for sale. Other players buy things that are fairly priced; the market keeps 5%.", 15, PARCH, 690))
+			var g := GridContainer.new(); g.columns = 10; g.add_theme_constant_override("h_separation", 5); g.add_theme_constant_override("v_separation", 5); v.add_child(g)
+			for i in player.bags.size():
+				var idx: int = i
+				var ic := _slot(player.bags[i], 44, func(_b):
+					if player.bags[idx] == null: return
+					sell_pick = idx; sell_price = Market.fair(player.bags[idx]); _fill_market())
+				if i == sell_pick: ic.modulate = Color(1.3, 1.2, 0.8)
+				g.add_child(ic)
+			if sell_pick >= 0 and sell_pick < player.bags.size() and player.bags[sell_pick] != null:
+				var it = player.bags[sell_pick]
+				var d2 := Items.get_def(it)
+				var h2 := HBoxContainer.new(); h2.add_theme_constant_override("separation", 8); v.add_child(h2)
+				h2.add_child(_lbl(d2["name"] + ("  ×%d" % int(it.get("n", 1)) if int(it.get("n", 1)) > 1 else ""), 17, Items.color(d2)))
+				h2.add_child(_lbl("   price:", 16, INK))
+				for step in [[-1000, "−10s"], [-100, "−1s"], [-10, "−10c"], [10, "+10c"], [100, "+1s"], [1000, "+10s"]]:
+					var dv: int = step[0]
+					h2.add_child(_btn(step[1], func(): sell_price = maxi(1, sell_price + dv); _fill_market()))
+				var h3 := HBoxContainer.new(); h3.add_theme_constant_override("separation", 12); v.add_child(h3)
+				h3.add_child(_money_row(sell_price, 18))
+				h3.add_child(_lbl("(worth about %s)" % Items.money(Market.fair(it)), 14, Color(0.7, 0.7, 0.7)))
+				h3.add_child(_btn("List it", func():
+					if mk.list_item(player, sell_pick, sell_price): sell_pick = -1; hud.notice("Listed on the market.")
+					_fill_market(), 120))
+		"mine":
+			var mine := Market.listings.filter(func(l): return l["seller"] == "you")
+			if mine.is_empty(): v.add_child(_lbl("You have nothing listed.", 16, PARCH))
+			for l in mine:
+				var d3 := Items.get_def(l["item"])
+				var h4 := HBoxContainer.new(); h4.add_theme_constant_override("separation", 10); v.add_child(h4)
+				h4.add_child(_slot(l["item"], 38))
+				var nm2 := _lbl(d3.get("name", "?"), 15, Items.color(d3)); nm2.custom_minimum_size = Vector2(300, 0); h4.add_child(nm2)
+				h4.add_child(_money_row(int(l["price"]), 15))
+				var k2 := int(l["key"])
+				h4.add_child(_btn("Take down", func(): mk.cancel(player, k2); _fill_market()))

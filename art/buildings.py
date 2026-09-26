@@ -255,7 +255,7 @@ def tent():
     for f in ((0, 3, 5, 4), (1, 4, 5, 2), (3, 2, 5)): bm.faces.new([v[i] for i in f])
     bm.to_mesh(me); bm.free()
     s = o.modifiers.new('s', 'SOLIDIFY'); s.thickness = 0.05
-    _fin(o, '#d8cba8')
+    _fin(o, '#c9b690')
     cyl(0.05, 0.05, H + 0.3, (0, -D - 0.1, (H + 0.3) / 2), '#6a4a2e', verts=6)
     cyl(0.05, 0.05, H + 0.3, (0, D + 0.1, (H + 0.3) / 2), '#6a4a2e', verts=6)
     box((1.4, 1.8, 0.25), (0.6, 0.6, 0.14), '#7a6a58')                     # bedroll

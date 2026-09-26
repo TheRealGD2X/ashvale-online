@@ -62,13 +62,28 @@ func setup_from(ch: Dictionary) -> void:
 			equipped[d["slot"]] = {"id": id, "n": 1}
 		add_item({"id": "hearthstone", "n": 1})
 		add_item({"id": "warm_meal", "n": 4}); add_item({"id": "spring_water", "n": 4})
+	# tests that start further along get the greens a player would have found by now
+	if ch.get("test_gear", false):
+		var r := RandomNumberGenerator.new(); r.seed = 77
+		var got := 0
+		while got < 6:
+			var it := Items.roll(level - 2, r)
+			var d := Items.get_def(it)
+			var sl: String = d["slot"]
+			if Items.can_use(cls, d, level) and (not equipped.has(sl) or sl == "main_hand" and not equipped[sl].has("rolled")): equipped[sl] = it; got += 1
+
 	quests = ch.get("quests", {}).duplicate(true)
+
 	done_quests = ch.get("done_quests", []).duplicate()
 	talents = ch.get("talents", {}).duplicate()
 	titles = ch.get("titles", []).duplicate(); title = ch.get("title", "")
 	rep = ch.get("rep", {}).duplicate()
 	durability = float(ch.get("durability", 1.0))
 	hearth = String(ch.get("hearth", "ashvale")).to_lower()
+	discovered = ch.get("discovered", []).duplicate()
+	skills = ch.get("skills", {}).duplicate()
+
+
 
 	# rested: every 8 hours away earns 5% of a level (four times faster at the inn), up to a level and a half
 	rested = int(ch.get("rested", 0))
@@ -83,7 +98,7 @@ func to_save() -> Dictionary:
 	return {"name": uname, "cls": cls, "level": level, "look": look, "xp": xp, "gold": gold, "bar": bar,
 		"pos": [global_position.x, global_position.z], "known": known, "bags": bags, "equipped": equipped,
 		"quests": quests, "done_quests": done_quests, "talents": talents, "titles": titles, "title": title, "rep": rep, "durability": durability,
-		"rested": rested, "hearth": hearth, "logout": Time.get_unix_time_from_system(), "at_inn": global_position.distance_to(Vector3(-19, 0, 9)) < 14.0}
+		"rested": rested, "hearth": hearth, "discovered": discovered, "skills": skills, "logout": Time.get_unix_time_from_system(), "at_inn": global_position.distance_to(Vector3(-19, 0, 9)) < 14.0}
 
 # ------------------------------------------------------------------ bags
 
@@ -148,6 +163,10 @@ func use_bag(i: int) -> void:
 		"potion":
 			if cds.has("potion"): _hud("error", "Not ready yet"); return
 			heal(self, float(d.get("heal", 0))); cds["potion"] = 60.0
+			_consume(i)
+		"mana_potion":
+			if cds.has("potion"): _hud("error", "Not ready yet"); return
+			power = minf(max_power, power + float(d.get("mana_now", 0))); cds["potion"] = 60.0; changed.emit()
 			_consume(i)
 
 func _consume(i: int) -> void:
@@ -268,7 +287,7 @@ func _unhandled_input(e: InputEvent) -> void:
 			if e.pressed:
 				var hit = _pick(e.position)
 				interact = null
-				if hit is Pickup:
+				if hit is Node3D and not (hit is Unit) and hit.has_method("take"):
 					go_interact(hit); holding_move = false
 				elif hit is Unit:
 					_click_unit(hit, e.double_click)
@@ -283,7 +302,7 @@ func _unhandled_input(e: InputEvent) -> void:
 		elif e.button_index == MOUSE_BUTTON_RIGHT and e.pressed:
 			var hit2 = _pick(e.position)
 			if hit2 is Unit: _click_unit(hit2, true)
-			elif hit2 is Pickup: go_interact(hit2)
+			elif hit2 is Node3D and hit2.has_method("take"): go_interact(hit2)
 	elif e is InputEventKey and e.pressed and not e.echo:
 		var k: int = e.physical_keycode
 		if k >= KEY_1 and k <= KEY_5: press_slot(k - KEY_1)
@@ -342,10 +361,11 @@ func _pick(sp: Vector2):
 		if u.dead and not (u is Monster and u.has_loot(self)): continue
 		var d := Vector2(u.global_position.x - hit.position.x, u.global_position.z - hit.position.z).length()
 		if d < bd: bd = d; best = u
-	for pk in get_tree().get_nodes_in_group("pickups"):
-		if not pk.visible or not pk.available: continue
-		var d2 := Vector2(pk.global_position.x - hit.position.x, pk.global_position.z - hit.position.z).length()
-		if d2 < 1.3 and d2 < bd + 0.3: bd = d2; best = pk
+	for g in ["pickups", "gather", "stations"]:
+		for pk in get_tree().get_nodes_in_group(g):
+			if not pk.visible or (g == "pickups" and not pk.available): continue
+			var d2 := Vector2(pk.global_position.x - hit.position.x, pk.global_position.z - hit.position.z).length()
+			if d2 < (1.3 if g != "stations" else 1.8) and d2 < bd + 0.3: bd = d2; best = pk
 	if best: return best
 	return hit.position
 
@@ -373,7 +393,7 @@ func _do_interact() -> void:
 		_hud("open_npc", n)
 	elif n is Monster:
 		_hud("open_loot", n)
-	elif n is Pickup:
+	elif n.has_method("take"):
 		n.take(self)
 
 func _check_pickup() -> void:
@@ -406,7 +426,8 @@ func _hover() -> void:
 	if hit is Unit:
 		shape = Input.CURSOR_CROSS if is_enemy(hit) and not hit.dead else Input.CURSOR_POINTING_HAND
 		if hit.dead: shape = Input.CURSOR_DRAG
-	elif hit is Pickup: shape = Input.CURSOR_DRAG
+	elif hit is Node3D and hit.has_method("take"): shape = Input.CURSOR_DRAG
+
 	if Input.get_current_cursor_shape() != shape: Input.set_default_cursor_shape(shape)
 
 func _think(delta: float) -> void:
@@ -537,7 +558,24 @@ func train(id: String, cost: int) -> void:
 	get_tree().call_group("fx", "level_up", self)
 	changed.emit()
 
+# ------------------------------------------------------------------ crafting skills
+
+func skill(id: String) -> int:
+	return int(skills.get(id, 1))
+
+## working at a tier near your skill teaches you (green and yellow recipes, as WoW has them)
+func skill_up(id: String, tier: int, amount := 1) -> void:
+	var s := skill(id)
+	if s >= 300: return
+	var cap := Crafting.skill_needed(tier) + 75
+	if s >= cap: return
+	var chance := 1.0 if s < Crafting.skill_needed(tier) + 40 else 0.5
+	if randf() < chance:
+		skills[id] = mini(300, s + amount)
+		_hud("notice", "Your skill in %s has increased to %d." % [Crafting.SKILLS[id], skills[id]])
+
 # ------------------------------------------------------------------ talents
+
 
 var _tm := {}                        # talent effect cache
 
@@ -722,7 +760,20 @@ func on_talk(npc: String) -> void:
 	if moved: quests_changed.emit()
 
 var _explore_t := 0.0
+var skills := {}                     # crafting and gathering: skill id -> 1..300
+var discovered: Array = []           # named places you've found ("Discovered: the Scree", a little XP)
+
+func _check_discovery() -> void:
+	for pl in Minimap.PLACES.get(WorldData.zone_id, []):
+		var key: String = WorldData.zone_id + ":" + pl[0]
+		if key in discovered: continue
+		if Vector2(global_position.x, global_position.z).distance_to(pl[1]) < 16.0:
+			discovered.append(key)
+			_hud("banner", "Discovered: %s" % pl[0], WorldData.Z.get("name", ""))
+			gain_xp(int(20 + level * 12))
+
 func _check_explore() -> void:
+	_check_discovery()
 	for id in quests:
 		var q: Dictionary = Quests.LIST[id]
 		for i in q["obj"].size():

@@ -50,12 +50,19 @@ func _ready() -> void:
 		if path != "" and ResourceLoader.exists(path):
 			var n: Node = load(path).new(); add_child(n)
 	_signposts(Z)
+	for st in Z.get("stations", []):
+		var s := Station.new(); s.setup(st[0]); add_child(s)
+		s.position = Vector3(st[1].x, WorldData.h(st[1].x, st[1].y), st[1].y); s.rotation.y = st[2]
+		WorldData.clear_disc(st[1], 2.0, 0.5)
+
 	# solid things need a physics frame before the walking grid can see them
 	await get_tree().physics_frame
 	await get_tree().physics_frame
 	Nav.build(get_tree())
 	add_child(load("res://src/world/spawns.gd").new())
 	add_child(Fx.new())
+	if not Z.get("dungeon", false): add_child(Market.new())
+
 	if Z.get("sky", "day") != "cave": add_child(Weather.new())
 	if not args.has("shot"): add_child(Soundscape.new())
 	camera = OrbitCamera.new(); add_child(camera); camera.current = true
@@ -82,11 +89,17 @@ func _ready() -> void:
 			ch["known"] = []
 			for t in Npcs.TRAINING[cls]:
 				if int(t[1]) <= int(ch["level"]): ch["known"].append(t[0])
+			ch["test_gear"] = true
+
 
 		_start_game(ch)
 		if args.has("autoplay"): add_child(load("res://tools/autoplay.gd").new())
 		if args.has("questtest"): add_child(load("res://tools/questtest.gd").new())
 		if args.has("duel"): add_child(load("res://tools/duel.gd").new())
+		if args.has("chattest"): add_child(load("res://tools/chattest.gd").new())
+		if args.has("crafttest"): add_child(load("res://tools/crafttest.gd").new())
+
+
 		if args.has("dbg"): add_child(load("res://tools/dbg.gd").new())
 		if args.has("shot"): _shot()
 	else:

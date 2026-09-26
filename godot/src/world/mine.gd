@@ -67,7 +67,7 @@ func _ready() -> void:
 func _process(_d: float) -> void:
 	var t := Time.get_ticks_msec() / 1000.0
 	for i in lamps.size():
-		lamps[i].light_energy = 1.7 + sin(t * 5.3 + i) * 0.08 + sin(t * 11.0 + i * 2.0) * 0.05
+		lamps[i].light_energy = 2.2 + sin(t * 5.3 + i) * 0.08 + sin(t * 11.0 + i * 2.0) * 0.05
 
 func _mat(c: Color, rough := 0.9) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new(); m.albedo_color = c; m.roughness = rough; return m
@@ -94,7 +94,7 @@ func _lamp(p: Vector2, h: float) -> void:
 	var lm := MeshInstance3D.new(); var cm := CylinderMesh.new(); cm.top_radius = 0.07; cm.bottom_radius = 0.1; cm.height = 0.22
 	var glow := StandardMaterial3D.new(); glow.albedo_color = Color(1.0, 0.8, 0.5); glow.emission_enabled = true; glow.emission = Color(1.0, 0.6, 0.28); glow.emission_energy_multiplier = 3.0
 	cm.material = glow; lm.mesh = cm; add_child(lm); lm.position = Vector3(p.x, y, p.y)
-	var l := OmniLight3D.new(); l.light_color = Color(1.0, 0.62, 0.3); l.omni_range = 9.5; l.light_energy = 1.7; l.shadow_enabled = lamps.size() % 4 == 0
+	var l := OmniLight3D.new(); l.light_color = Color(1.0, 0.62, 0.3); l.omni_range = 12.0; l.light_energy = 2.2; l.shadow_enabled = lamps.size() % 4 == 0
 	lm.add_child(l); lamps.append(l)
 
 func _prop(name: String, c: Vector2, yaw: float) -> void:
