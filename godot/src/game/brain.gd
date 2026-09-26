@@ -358,8 +358,9 @@ func _quest_step() -> void:
 			return
 	# 2. new abilities from the trainer
 	if _trainer_step(): return
-	# 3. junk to sell, or bags full
+	# 3. junk to sell, or bags full; food and drink running low
 	if p.bags.count(null) <= 2 and _sell_step(): return
+	if _supply_step(): return
 	# 4. pick up new quests
 	for id in Quests.LIST:
 		if skip.has(id): continue
@@ -670,6 +671,38 @@ func _fill_bar() -> void:
 		if id in p.known and bar.size() < 5: bar.append(id)
 	while bar.size() < 5: bar.append("")
 	p.bar = bar
+
+## stock up on the best food (and drink, for casters) the nearest vendor has, when we're nearly out
+var supply_cd := 0.0
+func _supply_step() -> bool:
+	supply_cd -= 0.25
+	if supply_cd > 0.0: return false
+	for kind in (["food", "drink"] if p.power_kind == "mana" else ["food"]):
+		var have := 0
+		for it in p.bags:
+			if it == null: continue
+			var d := Items.get_def(it)
+			if d.get("use", "") == kind and float(d.get("heal" if kind == "food" else "mana", 0)) >= p.max_hp * 0.15 * (1.0 if kind == "food" else p.max_power / p.max_hp): have += int(it.get("n", 1))
+		if have >= 4: continue
+		# the nearest vendor in this zone selling something good enough
+		var best_n: Npc = null; var best_id := ""; var bd := 1e9
+		var key := "heal" if kind == "food" else "mana"
+		for n in p.get_tree().get_nodes_in_group("npcs"):
+			if not n.visible: continue
+			var here := ""
+			for id in n.info.get("vendor", []):
+				var d2 := Items.def(id)
+				if d2.get("use", "") == kind and (here == "" or float(d2.get(key, 0)) > float(Items.def(here).get(key, 0))): here = id
+			if here == "": continue
+			var dn := p.global_position.distance_to(n.global_position)
+			if dn < bd: bd = dn; best_n = n; best_id = here
+		if best_n == null or p.gold < Items.buy_price(Items.def(best_id)) * 3 or bd > 150.0: continue
+		if _talk_to(best_n.npc_id, "buying supplies"):
+			for k in 3: p.buy(best_id)
+			supply_cd = 20.0
+		return true
+	supply_cd = 10.0
+	return false
 
 func _sell_step() -> bool:
 	var junk := false

@@ -183,6 +183,8 @@ const LIST := {
 	"straw_bundle": {"name": "Bundle of Straw", "q": 0, "stack": 10, "sell": 4},
 	"rat_tail": {"name": "Rat Tail", "q": 0, "stack": 10, "sell": 3},
 	"chicken_egg": {"name": "Chicken Egg", "q": 1, "stack": 10, "sell": 2, "use": "food", "heal": 40},
+	"hearty_stew": {"name": "Hearty Stew", "q": 1, "use": "food", "heal": 480, "stack": 20, "sell": 20, "desc": "Thick enough to stand a spoon in. Restores health while sitting."},
+	"healing_potion_mid": {"name": "Healing Potion", "q": 1, "use": "potion", "heal": 500, "stack": 5, "sell": 40},
 	# ---- Milestone 7: the Abyssal Sanctum (raid)
 	"colossus_knuckles": {"name": "Gauntlets of the Colossus", "q": 4, "slot": "hands", "ilvl": 66, "st": "str sta", "bind": "bop", "armor_type": "plate"},
 	"cinderstone_ring": {"name": "Cinderstone Ring", "q": 4, "slot": "finger1", "ilvl": 66, "st": "sta int spi", "bind": "bop"},
@@ -384,6 +386,10 @@ static func req_level(d: Dictionary) -> int:
 static func color(d: Dictionary) -> Color:
 	return QUALITY[clampi(int(d.get("q", 1)), 0, 5)]["color"]
 
+## a weapon's damage per second by item level (a little curve, so weapons keep up with monsters past 30)
+static func weapon_dps(il: int) -> float:
+	return 2.0 + 0.6 * il + 0.008 * il * il
+
 static func def(id: String) -> Dictionary:
 	return get_def({"id": id})
 
@@ -428,7 +434,7 @@ static func _expand(id: String, s: Dictionary) -> Dictionary:
 			if fam == "Knight" and slot == "shoulders" and q >= 3: d["look"] = ["Knight_Acc_Pauldron_Spike", "Knight", 3]
 	if wt != "" and not d.has("weapon"):
 		var w: Array = WTYPE[wt]
-		var dps: float = (1.5 + 0.55 * il) * float(w[2]) * {2: 1.0, 3: 1.12, 4: 1.25, 5: 1.4}.get(q, 1.0)
+		var dps: float = weapon_dps(il) * float(w[2]) * {2: 1.0, 3: 1.12, 4: 1.25, 5: 1.4}.get(q, 1.0)
 		var spd: float = w[0]
 		d["weapon"] = [int(dps * spd * 0.75), int(ceil(dps * spd * 1.25)), spd]
 		if not d.has("model"): d["model"] = w[1]
@@ -486,7 +492,7 @@ static func _roll_weapon(level: int, rng: RandomNumberGenerator, quality: int) -
 	var b: Array = WEAPON_BASES[rng.randi() % WEAPON_BASES.size()]
 	var ilvl := maxi(2, level + rng.randi_range(0, 3))
 	var affix: String = AFFIX.keys()[rng.randi() % AFFIX.size()]
-	var dps: float = (1.5 + 0.55 * ilvl) * float(b[4]) * (1.0 if quality == 2 else 1.12)
+	var dps: float = weapon_dps(ilvl) * float(b[4]) * (1.0 if quality == 2 else 1.12)
 	var spd: float = b[2]
 	var stats := {}
 	var budget: float = ilvl * (0.9 if quality == 2 else 1.3) * 0.55 + 1.0

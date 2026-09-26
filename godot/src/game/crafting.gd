@@ -129,7 +129,7 @@ static func make(r: Array, tier: int, quality: int, rng: RandomNumberGenerator) 
 	if spec["slot"] == "back": d["armor"] = int(3.0 + ilvl * 0.6)
 	if spec.has("look"): d["look"] = [spec["look"][0], spec["look"][1], clampi(quality + 1, 1, 3)]
 	if spec.has("wtype"):
-		var dps: float = (1.5 + 0.55 * ilvl) * (1.3 if spec["wtype"] == "staff" else (0.9 if spec["wtype"] == "wand" else 1.0)) * [1.0, 1.05, 1.12, 1.2][quality]
+		var dps: float = Items.weapon_dps(ilvl) * (1.3 if spec["wtype"] == "staff" else (0.9 if spec["wtype"] == "wand" else 1.0)) * [1.0, 1.05, 1.12, 1.2][quality]
 		var spd: float = spec["speed"]
 		d["wtype"] = spec["wtype"]; d["model"] = spec["model"]
 		d["weapon"] = [int(dps * spd * 0.75), int(ceil(dps * spd * 1.25)), spd]
