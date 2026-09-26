@@ -5,15 +5,18 @@ class_name OrbitCamera extends Camera3D
 
 @export var target: Node3D
 var yaw := 0.0                 # radians, 0 = looking north (-z)
-var pitch := deg_to_rad(-42.0)
-var dist := 13.0
-var want_dist := 13.0
+var pitch := deg_to_rad(-56.0)
+var dist := 17.0
+var want_dist := 17.0
+var shake_t := 0.0
+var shake_amt := 0.0
 var focus := Vector3.ZERO
 const MIN_D := 2.8
 const MAX_D := 34.0
 var dragging := false
 
 func _ready() -> void:
+	add_to_group("camera")
 	fov = 50.0; near = 0.1; far = 1200.0
 	if target: focus = target.global_position
 
@@ -43,8 +46,16 @@ func place() -> void:
 	var pos := focus + dir * dist
 	var g := WorldData.h(pos.x, pos.z) + 0.6
 	if pos.y < g: pos.y = g
+	if shake_t > 0.0:
+		shake_t -= get_process_delta_time()
+		var k := shake_amt * clampf(shake_t / 0.35, 0.0, 1.0)
+		pos += Vector3(randf_range(-k, k), randf_range(-k, k), randf_range(-k, k))
 	global_position = pos
 	look_at(focus + Vector3(0, -0.15 * (1.0 - closeness), 0), Vector3.UP)
+
+## a jolt for heavy hits and big spells
+func shake(amount: float) -> void:
+	shake_amt = maxf(shake_amt if shake_t > 0.0 else 0.0, amount); shake_t = 0.35
 
 ## a flat forward/right on the ground, for camera-relative movement
 func ground_basis() -> Array:

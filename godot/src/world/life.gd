@@ -24,7 +24,18 @@ class Villager extends Node3D:
 	var yaw := 0.0
 
 	func setup(model: String, hair: Color) -> void:
-		body = Humanoid.new(); body.model = model; body.hair_color = hair; add_child(body)
+		if Avatar.available():
+			# townsfolk dressed from the outfit kit: mostly peasants, a few nobles and rangers
+			var r := RandomNumberGenerator.new(); r.randomize()
+			var kind: String = ["peasant", "peasant", "peasant", "noble_", "ranger"][r.randi() % 5]
+			var a := Avatar.new()
+			a.look = Avatar.random_look(r, "cleric" if kind == "noble_" else kind)
+			if WorldData.lite: a.look["tint"] = {}      # fewer textures on slow test machines
+			if kind == "noble_": a.look["gear"].erase("neck")
+			body = a
+		else:
+			body = Humanoid.new(); body.model = model; body.hair_color = hair
+		add_child(body)
 
 	func face(dir: Vector3) -> void:
 		if dir.length() > 0.01: yaw = atan2(dir.x, dir.z); body.rotation.y = yaw

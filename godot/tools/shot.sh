@@ -5,4 +5,4 @@ cd "$(dirname "$0")/.."
 OUT="$1"; shift
 W=${W:-1600}; H=${H:-900}
 VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json timeout ${TMO:-480} xvfb-run -a -s "-screen 0 ${W}x${H}x24" \
-  godot --path . --resolution ${W}x${H} --windowed -- --shot="$OUT" "$@" 2>&1 | grep -vE "ALSA|audio|^$|init_output|at: (init|initialize)|dummy driver" | tail -${LINES:-15}
+  godot --path . --resolution ${W}x${H} --windowed --fixed-fps 30 -- --shot="$OUT" "$@" 2>&1 | grep -vE "ALSA|audio|^$|init_output|at: (init|initialize)|dummy driver" | tail -${LINES:-15}

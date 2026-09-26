@@ -6,6 +6,8 @@ set NEED=0
 if not exist "%GODOT%" set NEED=1
 if not exist "%~dp0godot\assets\village" set NEED=1
 if not exist "%~dp0godot\assets\anims\UAL1.glb" set NEED=1
+if not exist "%~dp0godot\assets\licensed\chars\Regular_Male_OnlyHead.gltf" set NEED=1
+if not exist "%~dp0godot\assets\licensed\monsters\Puglin.glb" set NEED=1
 if "%NEED%"=="1" (
   echo Setting up the game for the first time...
   powershell -ExecutionPolicy Bypass -File "%~dp0tools\setup_godot.ps1"

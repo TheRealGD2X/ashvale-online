@@ -33,14 +33,26 @@ static func for_skeleton(sk: Skeleton3D) -> AnimationLibrary:
 	_load_sources()
 	var sig := _signature(sk)
 	if _cache.has(sig): return _cache[sig]
+	# animations are converted when first played (see ensure), so a monster that only ever
+	# walks and swings doesn't carry the whole library
 	var lib := AnimationLibrary.new()
 	var hip_ratio := 1.0
 	var pb := sk.find_bone("pelvis")
 	if pb >= 0 and _src_rest.has("pelvis"): hip_ratio = sk.get_bone_rest(pb).origin.y / (_src_rest["pelvis"] as Transform3D).origin.y
-	for n in _src.get_animation_list():
-		lib.add_animation(n, _retarget(_src.get_animation(n), sk, hip_ratio))
+	lib.set_meta("hip", hip_ratio)
+	var rests := {}
+	for b in sk.get_bone_count(): rests[sk.get_bone_name(b)] = sk.get_bone_rest(b)
+	lib.set_meta("rests", rests)
 	_cache[sig] = lib
 	return lib
+
+## make sure the named animation exists in lib (converting it for lib's skeleton on first use)
+static func ensure(lib: AnimationLibrary, n: String) -> bool:
+	if lib.has_animation(n): return true
+	_load_sources()
+	if not _src.has_animation(n): return false
+	lib.add_animation(n, _retarget(_src.get_animation(n), lib.get_meta("rests"), lib.get_meta("hip")))
+	return true
 
 static func _signature(sk: Skeleton3D) -> String:
 	var s := ""
@@ -50,16 +62,15 @@ static func _signature(sk: Skeleton3D) -> String:
 			s += "%.3f,%.3f,%.3f,%.3f|%s;" % [q.x, q.y, q.z, q.w, str(sk.get_bone_rest(b).origin.snapped(Vector3.ONE * 0.001))]
 	return s
 
-static func _retarget(src: Animation, sk: Skeleton3D, hip_ratio: float) -> Animation:
+static func _retarget(src: Animation, rests: Dictionary, hip_ratio: float) -> Animation:
 	var a: Animation = src.duplicate(true)
 	for t in range(a.get_track_count() - 1, -1, -1):
 		var path := a.track_get_path(t)
 		var bone := path.get_concatenated_subnames()
-		var bi := sk.find_bone(bone)
-		if bi < 0 or not _src_rest.has(bone):
+		if not rests.has(bone) or not _src_rest.has(bone):
 			a.remove_track(t); continue
 		var rs: Transform3D = _src_rest[bone]
-		var rt: Transform3D = sk.get_bone_rest(bi)
+		var rt: Transform3D = rests[bone]
 		match a.track_get_type(t):
 			Animation.TYPE_ROTATION_3D:
 				# q_target = rest_target * (rest_source^-1 * q_source)

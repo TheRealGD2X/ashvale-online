@@ -2,6 +2,8 @@
 #   - Godot 4.7.2 (Godot_v4.7.2-stable_win64.exe.zip)            -> tools\godot\
 #   - the Quaternius kits (Stylized Nature, Medieval Village, Fantasy Props MegaKits and
 #     Universal Animation Library 1 + 2, the [Standard] zips)       -> godot\assets\...
+#   - the paid [Source] packs (Universal Base Characters, Modular Character Outfits - Fantasy,
+#     Bestiary - Dungeon Monsters Kit): zips or already-extracted folders -> godot\assets\licensed\...
 # Safe to run again: it only copies what is missing or newer. Nothing is deleted.
 # (Zip names contain [Standard]; square brackets are wildcards to PowerShell, hence -LiteralPath everywhere.)
 #   powershell -ExecutionPolicy Bypass -File tools\setup_godot.ps1
@@ -62,6 +64,64 @@ foreach ($a in @(@{ zip = "Universal Animation Library[Standard].zip"; glb = "UA
   Copy-Item -LiteralPath $f.FullName -Destination (Join-Path $anims $a.out) -Force
   Write-Host "  $($a.out)"
 }
+
+# ---- the paid [Source] packs (characters, outfits, monsters): unpacked into godot\assets\licensed,
+# which is never uploaded to GitHub (the licence forbids sharing the models themselves)
+$lic = Join-Path $repo "godot\assets\licensed"
+function SourcePack($name) {
+  # use the folder if it was already extracted in Downloads, otherwise unpack the zip ourselves
+  $dir = Get-ChildItem -LiteralPath $dl -Directory | Where-Object { $_.Name -eq "$($name)[Source]" } | Select-Object -First 1
+  if ($dir) { return $dir.FullName }
+  return (Unzip "$($name)[Source].zip" ($name -replace "[^A-Za-z]", ""))
+}
+function CopyFlat($from, $filter, $dest) {
+  if (-not $from -or -not (Test-Path -LiteralPath $from)) { return 0 }
+  New-Item -ItemType Directory -Force -Path $dest | Out-Null
+  $n = 0
+  foreach ($f in (Get-ChildItem -LiteralPath $from -Recurse -File | Where-Object { $_.Name -like $filter })) {
+    $to = Join-Path $dest $f.Name
+    if (-not (Test-Path -LiteralPath $to) -or (Get-Item -LiteralPath $to).LastWriteTime -lt $f.LastWriteTime) { Copy-Item -LiteralPath $f.FullName -Destination $to -Force }
+    $n++
+  }
+  return $n
+}
+Write-Host "Monsters (Bestiary [Source])"
+$b = SourcePack "Bestiary - Dungeon Monsters Kit"
+if ($b) {
+  $glb = Get-ChildItem -LiteralPath $b -Recurse -Directory | Where-Object { $_.Name -like "GLB*" } | Select-Object -First 1
+  if ($glb) { Write-Host "  $(CopyFlat $glb.FullName '*.glb' (Join-Path $lic 'monsters')) monsters" }
+} else { Write-Host "  (not bought yet - the world will have no monsters)" -ForegroundColor Yellow }
+Write-Host "Characters (Universal Base Characters [Source] + Modular Character Outfits - Fantasy [Source])"
+$chars = Join-Path $lic "chars"
+$u = SourcePack "Universal Base Characters"
+if ($u) {
+  $ex = Get-ChildItem -LiteralPath $u -Recurse -Directory | Where-Object { $_.Name -eq "Godot - UE" } | Select-Object -First 1
+  foreach ($n in @("Regular_Male_OnlyHead", "Regular_Female_OnlyHead", "Regular_Male_FullBody", "Regular_Female_FullBody")) {
+    foreach ($e in @(".gltf", ".bin")) { $f = Join-Path $ex.FullName ($n + $e); if (Test-Path -LiteralPath $f) { Copy-Item -LiteralPath $f -Destination $chars -Force } }
+  }
+  CopyFlat $ex.FullName "T_*.png" $chars | Out-Null
+  $tex = Get-ChildItem -LiteralPath $u -Recurse -Directory | Where-Object { $_.Name -eq "Textures" -and $_.Parent.Name -eq "Base Characters" } | Select-Object -First 1
+  if ($tex) { CopyFlat $tex.FullName "T_Regular_*Light*.png" $chars | Out-Null }
+  $hair = Get-ChildItem -LiteralPath $u -Recurse -Directory | Where-Object { $_.Name -like "glTF (Godot*" -and $_.Parent.Name -eq "Rigged to Head Bone" } | Select-Object -First 1
+  if ($hair) {
+    foreach ($f in (Get-ChildItem -LiteralPath $hair.FullName -Recurse -File | Where-Object { $_.Name -notlike "*_Teen*" })) { Copy-Item -LiteralPath $f.FullName -Destination $chars -Force }
+  }
+  $hn = Get-ChildItem -LiteralPath $u -Recurse -Directory | Where-Object { $_.Name -eq "Normals Unity - Godot" } | Select-Object -First 1
+  if ($hn) { CopyFlat $hn.FullName "*.png" $chars | Out-Null }
+  Write-Host "  base bodies and hair ok"
+} else { Write-Host "  (not bought yet)" -ForegroundColor Yellow }
+$m = SourcePack "Modular Character Outfits - Fantasy"
+if ($m) {
+  $parts = Get-ChildItem -LiteralPath $m -Recurse -Directory | Where-Object { $_.Name -eq "Modular Parts" -and $_.Parent.Name -like "glTF*" } | Select-Object -First 1
+  if ($parts) { Write-Host "  $(CopyFlat $parts.FullName '*.gltf' $chars) outfit pieces"; CopyFlat $parts.FullName "*.bin" $chars | Out-Null }
+  $tex2 = Get-ChildItem -LiteralPath $m -Recurse -Directory | Where-Object { $_.Name -eq "Textures" } | Select-Object -First 1
+  if ($tex2) {
+    foreach ($f in (Get-ChildItem -LiteralPath $tex2.FullName -Recurse -File -Filter "*.png" | Where-Object { $_.DirectoryName -notlike "*Unreal*" -and $_.DirectoryName -notlike "*Base Chars*" })) {
+      $to = Join-Path $chars $f.Name
+      if (-not (Test-Path -LiteralPath $to)) { Copy-Item -LiteralPath $f.FullName -Destination $to }
+    }
+  }
+} else { Write-Host "  (outfits not bought yet)" -ForegroundColor Yellow }
 
 Write-Host "Importing assets (first time takes a minute or two)..."
 & (Join-Path $gd "Godot_v4.7.2-stable_win64_console.exe") --headless --path (Join-Path $repo "godot") --import

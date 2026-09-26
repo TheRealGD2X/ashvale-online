@@ -1,7 +1,10 @@
 .godot/
 *.tmp
 /export/
-/assets/licensed/
+# paid kits (Quaternius [Source] packs) are unpacked from Downloads by tools/setup_godot.ps1 and never
+# committed; their import settings are (smaller textures, compressed) so every machine imports them the same
+/assets/licensed/**
+!/assets/licensed/**/
 /shots/
 # kit folders are unpacked from the downloaded zips by tools/setup_godot.ps1
 /assets/nature/
@@ -10,3 +13,5 @@
 /assets/anims/
 # import settings Godot regenerates on each machine
 *.import
+# ...except the paid kits' import settings (see above)
+!/assets/licensed/**/*.import
