@@ -179,6 +179,10 @@ def build_quad2(spec):
     if t == 'bushy': blob('Tail', tb + Vector((0, .22, -.08)), (.13, .3, .13), col, rot=(-35, 0, 0)); blob('TailTip', tb + Vector((0, .42, -.2)), (.09, .13, .09), sp.get('tailTip', belly), rot=(-35, 0, 0))
     elif t == 'tuft': taper('Tail', tb, tb + Vector((0, .2, -.15)), .035, .02, col, 8); blob('TailTip', tb + Vector((0, .21, -.17)), (.05, .05, .08), dark)
     elif t == 'flag': blob('Tail', tb + Vector((0, .07, .02)), (.07, .1, .09), belly)
+    elif t == 'long':   # a long thin tail that curves down and out (rats, cats)
+        L = sp.get('tailLen', .35); r0 = sp.get('tailR', .03)
+        m1 = tb + Vector((0, L * .45, -L * .15)); m2 = tb + Vector((0, L * .9, -L * .05 + sp.get('tailLift', 0)))
+        taper('Tail', tb, m1, r0, r0 * .7, sp.get('tailCol', col), 8); taper('TailB', m1, m2, r0 * .7, r0 * .25, sp.get('tailCol', col), 8)
     else: blob('Tail', tb + Vector((0, .06, 0)), (.06, .1, .06), col)
     # rig
     arm = make_rig({'root': ((0, 0, 0), (0, 0, .3), None), 'body': (tuple(chest.lerp(hip, .5)), tuple(chest.lerp(hip, .5) + Vector((0, 0, .3))), 'root'),
@@ -462,6 +466,12 @@ SPECS = {
                     ears=(.2, .085, 62, 'leaf'), antlers=1, col='#a0703e', belly='#eadcc0', dark='#3a2a20', legR=(.055, .035), tail='flag', eye=.045, stride=38),
     'bear':    dict(plan='quad2', legH=.48, chest=(.44, .48, .42), hips=(.4, .42, .38), len=.55, head=(.33, .32, .3), headUp=.22, snout=(.17, .15, .12, .04), snoutCol='#a08060',
                     ears=(.1, .1, 0, 'round'), hump=1, col='#3e2e24', belly='#4e3e30', foot='paw', footCol='#221a14', legR=(.15, .11), tail='short', eye=.05, stride=24),
+    'rat':     dict(plan='quad2', legH=.1, chest=(.12, .15, .11), hips=(.15, .18, .13), len=.26, head=(.1, .13, .09), headUp=.04, snout=(.1, .06, .025, .01),
+                    disk='#d89a98', ears=(.07, .075, 0, 'round'), col='#7a6a5e', belly='#b8a898', dark='#3a2a24', legR=(.03, .02), tail='long', tailLen=.38, tailR=.022,
+                    tailCol='#c89a90', eye=.032, stride=45),
+    'wildcat': dict(plan='quad2', legH=.3, chest=(.19, .25, .2), hips=(.18, .24, .19), len=.46, head=(.18, .19, .16), headUp=.24, snout=(.06, .08, .06, .01),
+                    ears=(.12, .07, 22, 'sharp'), col='#a8885c', belly='#e6d6b6', dark='#3a2a20', foot='paw', footCol='#8a6a44', legR=(.06, .04),
+                    tail='long', tailLen=.5, tailR=.045, tailLift=.12, eye=.05, stride=40),
     'hen':     dict(plan='hen', col='#f1eadc', wing='#e0d6c4', tail='#8a7a68'),
     'spider':  dict(plan='spider', col='#3a2e2a', mark='#c93a2a'),
     'bat':     dict(plan='flyer', col='#4e3e56', wing='#33263c', snout='#6a5070', hover=1.1),

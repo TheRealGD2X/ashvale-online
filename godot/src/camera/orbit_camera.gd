@@ -5,9 +5,9 @@ class_name OrbitCamera extends Camera3D
 
 @export var target: Node3D
 var yaw := 0.0                 # radians, 0 = looking north (-z)
-var pitch := deg_to_rad(-56.0)
-var dist := 17.0
-var want_dist := 17.0
+var pitch := deg_to_rad(-50.0)
+var dist := 12.0
+var want_dist := 12.0
 var shake_t := 0.0
 var shake_amt := 0.0
 var focus := Vector3.ZERO

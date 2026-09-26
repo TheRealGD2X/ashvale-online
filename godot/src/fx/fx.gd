@@ -156,8 +156,8 @@ func burst(pos: Vector3, col: Color, amount := 24, speed := 4.0, size := 0.25, l
 	pm.scale_min = size * 0.6; pm.scale_max = size * 1.3
 	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE; pm.emission_sphere_radius = radius
 	var g := Gradient.new()
-	g.set_color(0, Color(col.r * 1.6, col.g * 1.6, col.b * 1.6, 1.0)); g.set_color(1, Color(col.r, col.g, col.b, 0.0))
-	g.add_point(0.15, Color(minf(col.r * 2.2, 3.0), minf(col.g * 2.2, 3.0), minf(col.b * 2.2, 3.0), 1.0))
+	g.set_color(0, Color(col.r * 1.3, col.g * 1.3, col.b * 1.3, 1.0)); g.set_color(1, Color(col.r * 0.6, col.g * 0.6, col.b * 0.6, 0.0))
+	g.add_point(0.15, Color(col.r * 1.5, col.g * 1.5, col.b * 1.5, 1.0))
 	var gt := GradientTexture1D.new(); gt.gradient = g; pm.color_ramp = gt
 	var sc := Curve.new(); sc.add_point(Vector2(0, 0.6)); sc.add_point(Vector2(0.2, 1.0)); sc.add_point(Vector2(1, 0.2))
 	var st := CurveTexture.new(); st.curve = sc; pm.scale_curve = st
@@ -183,8 +183,8 @@ func emitter(parent: Node3D, col: Color, rate := 30, size := 0.18, life := 0.6, 
 	pm.scale_min = size * 0.6; pm.scale_max = size * 1.2
 	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE; pm.emission_sphere_radius = radius
 	var g := Gradient.new()
-	g.set_color(0, Color(col.r * 2.0, col.g * 2.0, col.b * 2.0, 0.0)); g.set_color(1, Color(col.r, col.g, col.b, 0.0))
-	g.add_point(0.15, Color(col.r * 2.0, col.g * 2.0, col.b * 2.0, 1.0))
+	g.set_color(0, Color(col.r * 1.4, col.g * 1.4, col.b * 1.4, 0.0)); g.set_color(1, Color(col.r * 0.6, col.g * 0.6, col.b * 0.6, 0.0))
+	g.add_point(0.15, Color(col.r * 1.4, col.g * 1.4, col.b * 1.4, 1.0))
 	var gt := GradientTexture1D.new(); gt.gradient = g; pm.color_ramp = gt
 	var sc := Curve.new(); sc.add_point(Vector2(0, 1.0)); sc.add_point(Vector2(1, 0.1))
 	var st := CurveTexture.new(); st.curve = sc; pm.scale_curve = st
@@ -193,6 +193,16 @@ func emitter(parent: Node3D, col: Color, rate := 30, size := 0.18, life := 0.6, 
 	parent.add_child(p)
 	p.emitting = true
 	return p
+
+## slow golden twinkles: something here can be looted or picked up
+func twinkle(parent: Node3D, col: Color, radius := 0.5) -> Node3D:
+	var n := Node3D.new(); parent.add_child(n)
+	var e := emitter(n, col, 10, 0.16, 1.1, 0.35, 0.3, spark, radius, false)
+	e.process_material.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	e.process_material.emission_box_extents = Vector3(radius, 0.25, radius)
+	var l := OmniLight3D.new(); l.light_color = col; l.light_energy = 0.7; l.omni_range = 2.5; l.shadow_enabled = false
+	n.add_child(l); l.position.y = 0.3
+	return n
 
 func light(pos: Vector3, col: Color, energy := 3.0, rng := 6.0, dur := 0.4, parent: Node3D = null) -> OmniLight3D:
 	var l := OmniLight3D.new(); l.light_color = col; l.light_energy = energy; l.omni_range = rng; l.shadow_enabled = false
@@ -235,7 +245,7 @@ func column(pos: Vector3, col: Color, core: Color, radius: float, height: float,
 	var mi := MeshInstance3D.new()
 	var cm := CylinderMesh.new(); cm.top_radius = radius * 0.7; cm.bottom_radius = radius; cm.height = height; cm.cap_top = false; cm.cap_bottom = false
 	cm.radial_segments = 24; cm.rings = 1
-	var m := energy_mat(col, core, 2.5, 0.8, 2.0, 1.0, 2.0)
+	var m := energy_mat(col, core, 1.3, 0.6, 2.4, 1.0, 2.5)
 	cm.material = m; mi.mesh = cm
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(mi)
@@ -355,14 +365,16 @@ func projectile(src: Node3D, t: Node3D, id: String, on_hit: Callable) -> void:
 	p.global_position = _hand(src) + Vector3(0, 0.2, 0)
 	var size := 0.55
 	match id:
-		"fireball":
-			_head(p, Color(1.0, 0.55, 0.15), 0.9, Color(1, 0.9, 0.6))
-			emitter(p, Color(1.0, 0.45, 0.1), 90, 0.5, 0.45, 0.6, 1.2, glow, 0.15)
-			emitter(p, Color(0.25, 0.2, 0.18), 30, 0.55, 0.9, 0.4, 1.0, smoke, 0.1, false, false)
+		"fireball", "ember_bolt":
+			var big := 1.0 if id == "fireball" else 0.6
+			_head(p, Color(1.0, 0.5, 0.12), 1.5 * big, Color(1, 0.92, 0.65))
+			emitter(p, Color(1.0, 0.42, 0.08), 140, 0.75 * big, 0.5, 0.8, 1.6, glow, 0.2 * big)
+			emitter(p, Color(1.0, 0.75, 0.3), 60, 0.1, 0.5, 2.0, 0.5, spark, 0.25 * big)
+			emitter(p, Color(0.2, 0.16, 0.14), 14, 0.6 * big, 0.9, 0.4, 1.0, smoke, 0.1, false, false)
 			light(Vector3.ZERO, Color(1.0, 0.55, 0.2), 3.0, 7.0, 0.0, p)
 		"frostbolt":
-			_shard(p, Color(0.6, 0.85, 1.0))
-			emitter(p, Color(0.55, 0.85, 1.0), 70, 0.3, 0.5, 0.3, -0.5, glow, 0.1)
+			_shard(p, Color(0.55, 0.8, 1.0))
+			emitter(p, Color(0.4, 0.7, 1.0), 70, 0.35, 0.5, 0.3, -0.5, glow, 0.1)
 			emitter(p, Color(0.8, 0.95, 1.0), 40, 0.08, 0.6, 1.0, -2.0, spark, 0.12)
 			light(Vector3.ZERO, Color(0.5, 0.8, 1.0), 2.5, 6.0, 0.0, p)
 		"arcane_missile":
@@ -373,7 +385,7 @@ func projectile(src: Node3D, t: Node3D, id: String, on_hit: Callable) -> void:
 		_:
 			_head(p, col, 0.6, Color.WHITE)
 			emitter(p, col, 60, 0.3, 0.4, 0.3, 0.0, glow, 0.08)
-	sound({"fireball": "fire_launch", "frostbolt": "frost_launch", "arcane_missile": "arcane"}.get(id, "arcane"), src, -4.0)
+	sound({"fireball": "fire_launch", "ember_bolt": "fire_launch", "frostbolt": "frost_launch", "arcane_missile": "arcane"}.get(id, "arcane"), src, -4.0)
 	var speed: float = float(a.get("speed", 20.0))
 	var wobble := Vector3(randf_range(-1, 1), randf_range(0.2, 1.0), randf_range(-1, 1)) * (1.2 if id == "arcane_missile" else 0.0)
 	var start := p.global_position
@@ -407,11 +419,11 @@ func _physics_process(delta: float) -> void:
 
 func _head(p: Node3D, col: Color, size: float, core: Color) -> void:
 	var s := MeshInstance3D.new(); var q := QuadMesh.new(); q.size = Vector2(size, size)
-	var m := _add_mat(glow).duplicate(); m.vertex_color_use_as_albedo = false; m.albedo_color = Color(col.r * 3.0, col.g * 3.0, col.b * 3.0, 1.0)
+	var m := _add_mat(glow).duplicate(); m.vertex_color_use_as_albedo = false; m.albedo_color = Color(col.r * 1.8, col.g * 1.8, col.b * 1.8, 1.0)
 	m.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 	q.material = m; s.mesh = q; p.add_child(s)
 	var s2 := MeshInstance3D.new(); var q2 := QuadMesh.new(); q2.size = Vector2(size * 0.45, size * 0.45)
-	var m2 := m.duplicate(); m2.albedo_color = Color(core.r * 3.0, core.g * 3.0, core.b * 3.0, 1.0); q2.material = m2; s2.mesh = q2; p.add_child(s2)
+	var m2 := m.duplicate(); m2.albedo_color = Color(core.r * 2.0, core.g * 2.0, core.b * 2.0, 1.0); q2.material = m2; s2.mesh = q2; p.add_child(s2)
 
 func _shard(p: Node3D, col: Color) -> void:
 	var mi := MeshInstance3D.new(); var pm := PrismMesh.new(); pm.size = Vector3(0.18, 0.7, 0.18)
@@ -421,9 +433,9 @@ func _shard(p: Node3D, col: Color) -> void:
 	_head(p, col, 0.5, Color.WHITE)
 
 func _impact(id: String, pos: Vector3, col: Color, t: Node3D) -> void:
-	sound({"fireball": "fire_impact", "frostbolt": "ice_shatter"}.get(id, "hit_1"), pos, -3.0 if id == "fireball" else -5.0)
+	sound({"fireball": "fire_impact", "ember_bolt": "fire_impact", "frostbolt": "ice_shatter"}.get(id, "hit_1"), pos, -3.0 if id == "fireball" else -6.0)
 	match id:
-		"fireball":
+		"fireball", "ember_bolt":
 			burst(pos, Color(1.0, 0.5, 0.12), 46, 6.0, 0.55, 0.55, 1.5, glow, 180.0, Vector3.UP, true, 0.2)
 			burst(pos, Color(1.0, 0.8, 0.3), 30, 9.0, 0.08, 0.5, -6.0, spark, 180.0)
 			burst(pos, Color(0.22, 0.18, 0.16), 14, 1.5, 0.9, 1.3, 0.8, smoke, 180.0, Vector3.UP, false, 0.3)
@@ -500,21 +512,24 @@ func play(id: String, src: Node3D, t: Node3D, pos: Vector3) -> void:
 			light(tp, Color(1.0, 0.5, 0.2), 6.0, 8.0, 0.4); shake(0.12, tp)
 		"frost_nova":
 			var g2 := src.global_position
-			ground_ring(g2, Color(0.55, 0.85, 1.0), 0.5, 9.0, 0.6)
-			burst(g2 + Vector3(0, 0.4, 0), Color(0.75, 0.92, 1.0), 60, 12.0, 0.12, 0.7, -2.0, spark, 95.0, Vector3.UP, true, 0.5)
-			burst(g2 + Vector3(0, 0.3, 0), Color(0.6, 0.85, 1.0), 30, 8.0, 0.8, 0.8, 0.0, glow, 95.0, Vector3.UP, true, 0.5)
-			light(g2 + Vector3(0, 1, 0), Color(0.5, 0.8, 1.0), 6.0, 12.0, 0.5)
+			ground_ring(g2, Color(0.55, 0.85, 1.0), 0.5, 9.0, 0.7)
+			ground_ring(g2, Color(0.85, 0.95, 1.0), 0.3, 6.0, 0.45)
+			_ice_spikes(g2, 8.0)
+			burst(g2 + Vector3(0, 0.3, 0), Color(0.75, 0.92, 1.0), 70, 13.0, 0.1, 0.8, -3.0, spark, 88.0, Vector3.UP, true, 0.6)
+			burst(g2 + Vector3(0, 0.2, 0), Color(0.55, 0.8, 1.0), 40, 10.0, 1.0, 0.9, 0.3, smoke, 88.0, Vector3.UP, true, 0.8)
+			light(g2 + Vector3(0, 1, 0), Color(0.5, 0.8, 1.0), 6.0, 12.0, 0.6)
 		"flamestrike":
 			var at := pos if pos != Vector3.INF else tp
 			at.y = WorldData.h(at.x, at.z)
-			column(at, Color(1.0, 0.35, 0.05), Color(1.0, 0.9, 0.5), 2.4, 9.0, 1.1)
+			column(at, Color(1.0, 0.3, 0.04), Color(1.0, 0.8, 0.35), 1.7, 6.5, 0.9)
+			column(at, Color(1.0, 0.55, 0.1), Color(1.0, 0.95, 0.7), 0.7, 8.0, 0.7)
 			_delay(0.08, func():
-				ground_ring(at, Color(1.0, 0.45, 0.1), 0.5, 6.0, 0.7)
-				burst(at + Vector3(0, 0.3, 0), Color(1.0, 0.5, 0.12), 70, 7.0, 0.7, 0.9, 3.0, glow, 60.0, Vector3.UP, true, 2.0)
-				burst(at + Vector3(0, 0.3, 0), Color(1.0, 0.85, 0.4), 40, 10.0, 0.1, 1.0, -3.0, spark, 70.0, Vector3.UP, true, 1.5)
-				burst(at + Vector3(0, 1.0, 0), Color(0.2, 0.17, 0.15), 20, 2.0, 1.4, 2.0, 1.2, smoke, 60.0, Vector3.UP, false, 1.5)
-				light(at + Vector3(0, 2, 0), Color(1.0, 0.5, 0.2), 10.0, 16.0, 0.9); shake(0.35, at))
-			_ground_fire(at, 5.0, 3.0)
+				ground_ring(at, Color(1.0, 0.4, 0.08), 0.5, 5.5, 0.8)
+				burst(at + Vector3(0, 0.3, 0), Color(1.0, 0.42, 0.08), 90, 8.0, 0.9, 1.1, 5.0, glow, 25.0, Vector3.UP, true, 2.2)
+				burst(at + Vector3(0, 0.3, 0), Color(1.0, 0.7, 0.25), 50, 11.0, 0.1, 1.4, -2.0, spark, 40.0, Vector3.UP, true, 1.8)
+				burst(at + Vector3(0, 1.5, 0), Color(0.18, 0.14, 0.12), 22, 2.5, 1.6, 2.2, 1.5, smoke, 50.0, Vector3.UP, false, 1.5)
+				light(at + Vector3(0, 2, 0), Color(1.0, 0.45, 0.15), 8.0, 16.0, 0.9); shake(0.35, at))
+			_ground_fire(at, 4.5, 3.0)
 		"smite":
 			if t:
 				var base := t.global_position
@@ -552,6 +567,34 @@ func play(id: String, src: Node3D, t: Node3D, pos: Vector3) -> void:
 			light(_chest(src), Color(0.8, 0.5, 1.0), 4.0, 6.0, 0.3)
 		"slash_red":
 			slash(src, Color(1.0, 0.3, 0.2), 1.2, 0.25)
+
+## a ring of ice crystals bursting out of the ground and shattering (Frost Nova)
+func _ice_spikes(at: Vector3, radius: float) -> void:
+	var m := StandardMaterial3D.new(); m.albedo_color = Color(0.72, 0.9, 1.0, 0.8); m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	m.roughness = 0.05; m.metallic = 0.1; m.emission_enabled = true; m.emission = Color(0.35, 0.65, 1.0); m.emission_energy_multiplier = 0.9
+	m.rim_enabled = true; m.rim = 1.0
+	var holder := Node3D.new(); add_child(holder); holder.global_position = at
+	var n := 26
+	for k in n:
+		var ang := TAU * k / n + randf() * 0.2
+		var r := randf_range(1.2, radius)
+		var mi := MeshInstance3D.new(); var pm := PrismMesh.new()
+		var h := randf_range(0.6, 1.5) * (1.3 - r / radius * 0.6)
+		pm.size = Vector3(0.35, h, 0.35); pm.material = m; mi.mesh = pm
+		holder.add_child(mi)
+		var p := Vector3(cos(ang) * r, 0, sin(ang) * r)
+		mi.position = p + Vector3(0, WorldData.h(at.x + p.x, at.z + p.z) - at.y - h, 0)
+		mi.rotation = Vector3(randf_range(-0.5, 0.5), randf() * TAU, randf_range(-0.5, 0.5))
+		var delay := r / radius * 0.18
+		var tw := mi.create_tween()
+		tw.tween_interval(delay)
+		tw.tween_property(mi, "position:y", mi.position.y + h * 0.95, 0.08).set_ease(Tween.EASE_OUT)
+		tw.tween_interval(0.9 + randf() * 0.3)
+		tw.tween_property(mi, "scale", Vector3(1.3, 0.05, 1.3), 0.15)
+	_delay(1.3, func():
+		burst(at + Vector3(0, 0.4, 0), Color(0.85, 0.96, 1.0), 60, 5.0, 0.09, 0.8, -9.0, spark, 90.0, Vector3.UP, true, radius * 0.7)
+		sound("ice_shatter", at, -8.0))
+	get_tree().create_timer(1.8).timeout.connect(holder.queue_free)
 
 func _delay(t: float, f: Callable) -> void:
 	get_tree().create_timer(t).timeout.connect(f)
@@ -594,6 +637,31 @@ func _ground_fire(at: Vector3, radius: float, dur: float) -> void:
 		e.emitting = false
 		var tw := l.create_tween(); tw.tween_property(l, "light_energy", 0.0, 0.8)
 		get_tree().create_timer(1.5).timeout.connect(holder.queue_free))
+
+## a danger zone on the ground: a red circle that fills in until it goes off (step out!)
+func telegraph(at: Vector3, radius: float, dur: float, school: String) -> void:
+	at.y = WorldData.h(at.x, at.z)
+	var col: Color = Color(1.0, 0.2, 0.1) if school == "fire" else Color(0.3, 0.6, 1.0)
+	var holder := Node3D.new(); add_child(holder); holder.global_position = at + Vector3(0, 0.1, 0)
+	var edge := MeshInstance3D.new(); var q := QuadMesh.new(); q.size = Vector2(2, 2); q.orientation = PlaneMesh.FACE_Y
+	var m := _add_mat(ring_tex, false).duplicate(); m.vertex_color_use_as_albedo = false; m.albedo_color = Color(col.r * 1.5, col.g * 1.5, col.b * 1.5, 0.9)
+	q.material = m; edge.mesh = q; edge.scale = Vector3.ONE * radius; holder.add_child(edge)
+	var fill := MeshInstance3D.new(); var q2 := QuadMesh.new(); q2.size = Vector2(2, 2); q2.orientation = PlaneMesh.FACE_Y
+	var m2 := _add_mat(glow, false).duplicate(); m2.vertex_color_use_as_albedo = false; m2.albedo_color = Color(col.r, col.g, col.b, 0.55)
+	q2.material = m2; fill.mesh = q2; fill.scale = Vector3.ONE * 0.05; holder.add_child(fill)
+	edge.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF; fill.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var tw := holder.create_tween()
+	tw.tween_property(fill, "scale", Vector3.ONE * radius * 1.25, dur)
+	tw.tween_callback(func():
+		if school == "fire":
+			burst(at + Vector3(0, 0.3, 0), Color(1.0, 0.4, 0.08), 80, 9.0, 0.7, 0.9, 2.0, glow, 70.0, Vector3.UP, true, radius * 0.7)
+			sound("fire_impact", at, 0.0)
+		else:
+			burst(at + Vector3(0, 0.3, 0), Color(0.5, 0.8, 1.0), 80, 9.0, 0.6, 0.9, -3.0, glow, 70.0, Vector3.UP, true, radius * 0.7)
+			sound("ice_shatter", at, 0.0)
+		ground_ring(at, col, radius * 0.4, radius * 1.3, 0.5)
+		light(at + Vector3(0, 1.5, 0), col, 8.0, radius * 3.0, 0.5); shake(0.4, at))
+	tw.tween_callback(holder.queue_free)
 
 # ------------------------------------------------------------------ lingering effects (auras)
 

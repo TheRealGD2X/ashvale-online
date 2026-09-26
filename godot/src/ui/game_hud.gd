@@ -41,6 +41,10 @@ var swap_from := -1
 var sel_ring: MeshInstance3D
 var sel_mat: StandardMaterial3D
 var menu: PanelContainer
+var win: GameWindows
+var chat: ChatBox
+var notices: VBoxContainer
+var minimap: Minimap
 
 func _ready() -> void:
 	add_to_group("hud"); add_to_group("fct")
@@ -52,9 +56,19 @@ func _ready() -> void:
 	add_child(root)
 	fct_layer = Control.new(); fct_layer.set_anchors_preset(Control.PRESET_FULL_RECT); fct_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE; root.add_child(fct_layer)
 	_player_frame(); _target_frame(); _action_bar(); _cast_bar(); _xp_bar(); _misc()
+	chat = ChatBox.new(); root.add_child(chat)
+	win = GameWindows.new(); root.add_child(win)
+	notices = VBoxContainer.new(); notices.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	notices.set_anchors_preset(Control.PRESET_CENTER_TOP); notices.offset_left = -400; notices.offset_right = 400; notices.offset_top = 96
+	root.add_child(notices)
+	root.move_child(tip, -1)
 
 func bind(p: Player, c: Camera3D) -> void:
 	player = p; cam = c
+	win.bind(self, p); chat.player = p
+	minimap = Minimap.new(); root.add_child(minimap); minimap.setup(p, c)
+	root.move_child(minimap, 0)
+	chat.post("system", "", "Welcome to Ashvale. Press Enter to chat; /who lists who's around.")
 	p.changed.connect(_refresh_player)
 	p.xp_changed.connect(_refresh_xp)
 	p.leveled.connect(func(lv): _banner("Level %d!" % lv, "You feel stronger."))
@@ -203,9 +217,10 @@ func _misc() -> void:
 	hs.border_color = Color(0.89, 0.76, 0.5, 0.5); hs.set_border_width_all(1)
 	help.add_theme_stylebox_override("panel", hs); help.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var t := Label.new(); t.add_theme_font_size_override("font_size", 15)
-	t.text = "Left-click ground: walk (hold to keep walking)    Left-click an enemy: target, again: attack\n1–5: abilities    Tab: nearest enemy    Esc: clear target    P: spellbook\nRight-drag: turn camera    Wheel: zoom    F1: this card    F3: FPS    F11: fullscreen"
+	t.text = "Left-click ground: walk (hold to keep walking)    Left-click an enemy: target, again: attack\n1–5: abilities    Tab: nearest enemy    Esc: clear target    P: spellbook\nClick people with a ! over their heads for quests\nB: bags    C: character    L: quest log    N: talents    M: map    Enter: chat\nRight-drag: turn camera    Wheel: zoom    F1: this card    F3: FPS    F11: fullscreen"
 	help.add_child(t)
-	help.set_anchors_preset(Control.PRESET_BOTTOM_LEFT); help.offset_left = 22; help.offset_top = -170; help.offset_bottom = -30
+	t.text = t.text.replace("    Left-click an enemy", "\nLeft-click an enemy").replace("    P: spellbook", "\nP: spellbook").replace("    F1:", "\nF1:")
+	help.set_anchors_preset(Control.PRESET_CENTER_LEFT); help.offset_left = 22; help.offset_top = 40
 
 # ------------------------------------------------------------------ updating
 
@@ -352,7 +367,7 @@ func toggle_menu() -> void:
 	var v := VBoxContainer.new(); v.add_theme_constant_override("separation", 10); menu.add_child(v)
 	var t := Label.new(); t.text = "Ashvale"; t.add_theme_font_size_override("font_size", 28); t.add_theme_color_override("font_color", GOLD); t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(t)
 	for pair in [["Return to the game", func(): toggle_menu()], ["Spellbook (P)", func(): toggle_menu(); toggle_book()],
-			["Fullscreen (F11)", func(): _fullscreen()], ["Save and quit", func(): get_tree().current_scene._save(); get_tree().quit()]]:
+			["Fullscreen (F11)", func(): _fullscreen()], ["Music: on / off", func(): Soundscape.music_on = not Soundscape.music_on; notice("Music on" if Soundscape.music_on else "Music off")], ["Save and quit", func(): get_tree().current_scene._save(); get_tree().quit()]]:
 		var b := Button.new(); b.text = pair[0]; b.custom_minimum_size = Vector2(260, 42); b.add_theme_font_size_override("font_size", 18); b.focus_mode = Control.FOCUS_NONE
 		b.pressed.connect(pair[1]); v.add_child(b)
 
@@ -367,7 +382,7 @@ func _update_nameplates() -> void:
 	var seen := {}
 	for u in get_tree().get_nodes_in_group("units"):
 		if u == player or not u.visible: continue
-		var show: bool = not u.dead and u.global_position.distance_to(player.global_position) < 38.0 and (u.faction == "hostile" or u.faction == "friendly")
+		var show: bool = not u.dead and u.global_position.distance_to(player.global_position) < (38.0 if u.faction != "npc" else 22.0) and (u.faction in ["hostile", "friendly", "npc"])
 		if not show: continue
 		var head: Vector3 = u.global_position + Vector3(0, 2.25 * (u.model.scale.y if u.model else 1.0), 0)
 		if cam.is_position_behind(head): continue
@@ -379,7 +394,9 @@ func _update_nameplates() -> void:
 		var hb: Dictionary = np.get_meta("hp")
 		var enemy: bool = player.is_enemy(u)
 		np.get_node("Name").add_theme_color_override("font_color", Rules.con_color(player.level, u.level) if enemy else Color(0.55, 1.0, 0.55))
-		(np.get_node("Name") as Label).text = u.uname if u == player.target or not enemy or u.in_combat else ""
+		var nm: String = u.uname
+		if u is Npc and u.info.get("title", "") != "": nm += "\n<%s>" % u.info["title"]
+		(np.get_node("Name") as Label).text = nm if u == player.target or not enemy or u.in_combat else ""
 		hb["bg"].visible = enemy and (u.in_combat or u == player.target or u.hp < u.max_hp)
 		_set_bar(hb, u.hp / maxf(1.0, u.max_hp), "")
 		np.modulate.a = 1.0 if u == player.target else 0.85
@@ -509,6 +526,45 @@ func _show_tip(id: String, near: Control) -> void:
 func _hide_tip() -> void:
 	tip.visible = false
 
+## a tooltip with any text, beside a control (items, talents)
+func _show_text_tip(bb: String, near: Control) -> void:
+	tip_l.text = bb
+	tip.visible = true
+	tip.reset_size()
+	var r := near.get_global_rect()
+	var vs := get_viewport().get_visible_rect().size
+	var x := r.position.x + r.size.x + 10
+	if x + tip.size.x > vs.x - 8: x = r.position.x - tip.size.x - 10
+	tip.position = Vector2(clampf(x, 8, vs.x - tip.size.x - 8), clampf(r.position.y, 8, vs.y - tip.size.y - 8))
+
+# ------------------------------------------------------------------ messages the game sends us
+
+## a yellow line in the middle of the screen (and the chat)
+func notice(msg: String) -> void:
+	_center_line(msg, Color(1.0, 0.92, 0.35))
+	chat.post("system", "", msg)
+
+## quest progress: "Field Rats slain: 3/8"
+func quest_progress(msg: String) -> void:
+	_center_line(msg, Color(1.0, 0.92, 0.35))
+
+func _center_line(msg: String, col: Color) -> void:
+	var l := _label(notices, msg, 21, Vector2.ZERO, col, true)
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8)); l.add_theme_constant_override("outline_size", 5)
+	while notices.get_child_count() > 4: notices.get_child(0).free()
+	var tw := l.create_tween(); tw.tween_interval(3.0); tw.tween_property(l, "modulate:a", 0.0, 1.0); tw.tween_callback(l.queue_free)
+
+func loot_line(d: Dictionary, n: int) -> void:
+	var c := Items.color(d).to_html(false)
+	chat.post("loot", "", "You receive loot: [color=#%s][%s][/color]%s" % [c, d["name"], ("x%d" % n) if n > 1 else ""])
+
+func open_npc(n: Npc) -> void:
+	win.open_npc(n)
+
+func open_loot(m: Monster) -> void:
+	win.open_loot(m)
+
 func toggle_book() -> void:
 	if book == null:
 		book = PanelContainer.new(); root.add_child(book)
@@ -540,10 +596,17 @@ func _refresh_book() -> void:
 
 func _unhandled_input(e: InputEvent) -> void:
 	if e is InputEventKey and e.pressed and not e.echo:
+		if chat.is_typing(): return
 		match e.physical_keycode:
 			KEY_P: toggle_book()
+			KEY_B: win.toggle_bags()
+			KEY_C: win.toggle_char()
+			KEY_L: win.toggle_log()
+			KEY_N: win.toggle_talents()
+			KEY_M: minimap.toggle_big(root)
 			KEY_ESCAPE:
 				if book and book.visible: book.visible = false
+				elif win.close_one(): pass
 				elif player and player.target == null: toggle_menu()
 			KEY_F1: help_t = 30.0 if help.modulate.a < 0.5 else 0.0; help.modulate.a = 1.0 if help_t > 0 else 0.0
 			KEY_F3: fps.visible = not fps.visible

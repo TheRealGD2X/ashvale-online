@@ -34,7 +34,7 @@ func _ready() -> void:
 	if args.has("gi"): day_night.env.sdfgi_enabled = true; day_night.env.ssil_enabled = true
 	if args.has("shot"): DayNight.paused = true
 	add_child(Terrain.new())
-	for s in ["res://src/world/village.gd", "res://src/world/water.gd", "res://src/world/vegetation.gd", "res://src/world/life.gd"]:
+	for s in ["res://src/world/village.gd", "res://src/world/landmarks.gd", "res://src/world/water.gd", "res://src/world/vegetation.gd", "res://src/world/life.gd"]:
 		if ResourceLoader.exists(s):
 			var n: Node = load(s).new(); add_child(n)
 	# solid things need a physics frame before the walking grid can see them
@@ -43,6 +43,8 @@ func _ready() -> void:
 	Nav.build(get_tree())
 	add_child(load("res://src/world/spawns.gd").new())
 	add_child(Fx.new())
+	add_child(Weather.new())
+	if not args.has("shot"): add_child(Soundscape.new())
 	camera = OrbitCamera.new(); add_child(camera); camera.current = true
 	add_child(load("res://src/camera/see_through.gd").new())
 	print("world built in %d ms" % (Time.get_ticks_msec() - t0))
@@ -52,6 +54,8 @@ func _ready() -> void:
 		var ch := {"name": "Tester", "cls": cls, "level": int(args.get("level", "1")), "look": Avatar.random_look(rng, cls, args.get("sex", "m"))}
 		_start_game(ch)
 		if args.has("autoplay"): add_child(load("res://tools/autoplay.gd").new())
+		if args.has("questtest"): add_child(load("res://tools/questtest.gd").new())
+		if args.has("duel"): add_child(load("res://tools/duel.gd").new())
 		if args.has("dbg"): add_child(load("res://tools/dbg.gd").new())
 		if args.has("shot"): _shot()
 	else:
@@ -77,6 +81,7 @@ func _start_game(ch: Dictionary) -> void:
 	camera.target = p; camera.focus = start + Vector3(0, 1.35, 0); p.set_camera(camera)
 	hud = load("res://src/ui/game_hud.gd").new(); add_child(hud)
 	hud.bind(p, camera)
+	if not args.has("questtest"): add_child(load("res://src/world/society.gd").new())
 
 func _process(delta: float) -> void:
 	save_t += delta
@@ -164,7 +169,7 @@ func _demo(what: String) -> void:
 			if d < bd: bd = d; best = u
 	if best == null: return
 	best.set_physics_process(false)
-	var dist := float(args.get("dist", "10"))
+	var dist := float(args.get("gap", "10"))
 	var dir: Vector3 = (p.global_position - best.global_position); dir.y = 0; dir = dir.normalized()
 	var pos: Vector3 = best.global_position + dir * dist; pos.y = WorldData.h(pos.x, pos.z)
 	p.global_position = pos
@@ -175,13 +180,24 @@ func _demo(what: String) -> void:
 	if args.has("level"): p.power = p.max_power
 	for i in 8: await get_tree().process_frame
 	best.set_physics_process(true)
-	for id in what.split(","):
-		p.power = p.max_power; p.gcd = 0.0; p.cds.clear()
-		var why := p.use(id, best if not Abilities.LIST[id].get("helpful", false) else p)
+	# each entry: ability[:frames to wait before the picture]; a picture is taken after every entry
+	var list := what.split(",")
+	for k in list.size():
+		var parts := list[k].split(":")
+		var id := parts[0]
+		p.power = p.max_power; p.gcd = 0.0; p.cds.clear(); p.hp = p.max_hp
+		if is_instance_valid(best) and best.dead: best.revive(1.0)
+		if not is_instance_valid(best) or best.dead: break
+		var ab: Dictionary = Abilities.LIST[id]
+		var why := p.use(id, best if not ab.get("helpful", false) else p)
 		if why != "": print("demo: ", id, " -> ", why)
-		var wait := int(Abilities.LIST[id].get("cast", 0.0) * 30.0) + 4
+		var wait := int(float(ab.get("cast", 0.0)) * 30.0) + (int(parts[1]) if parts.size() > 1 else 6)
 		for i in wait: await get_tree().process_frame
-	for i in int(args.get("at", "6")): await get_tree().process_frame
+		if list.size() > 1:
+			var img := get_viewport().get_texture().get_image()
+			var out: String = String(args["shot"]).get_basename() + "_%d.png" % k
+			img.save_png(out); print("saved ", out)
+			for i in 30: await get_tree().process_frame
 
 func _shot() -> void:
 	if args.has("cam"):

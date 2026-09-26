@@ -5,6 +5,57 @@ extends SceneTree
 
 var args := {}
 
+## a hero and a monster on the town square; the hero uses abilities and we take pictures
+##   --what=fx --class=wizard --demo=fireball:4,frost_nova:5 --gap=8 --out=/tmp/x.png
+func _fx_demo(root: Node3D, cam: Camera3D) -> void:
+	create_timer(float(args.get("timeout", "400"))).timeout.connect(func(): print("TIMEOUT"); quit(1))
+	await process_frame
+	WorldData.bake()
+	var g := WorldData.h(0, 0)
+	for c in root.get_children():
+		if c is MeshInstance3D: c.position.y = g
+	var fx := Fx.new(); root.add_child(fx)
+	var hud = load("res://src/ui/game_hud.gd").new(); root.add_child(hud)
+	var rng := RandomNumberGenerator.new(); rng.seed = int(args.get("seed", "5"))
+	var cls: String = args.get("class", "wizard")
+	var p := Player.new()
+	p.setup_from({"name": "Tester", "cls": cls, "level": int(args.get("level", "6")), "look": Avatar.random_look(rng, cls, args.get("sex", "m"))})
+	root.add_child(p); p.global_position = Vector3(0, g, 0)
+	var m := Monster.new(); m.setup(args.get("mon", "puglin"), int(args.get("mlevel", "4")))
+	root.add_child(m)
+	var gap := float(args.get("gap", "9"))
+	m.global_position = Vector3(0, g, -gap); m.home = m.global_position
+	await process_frame
+	p.yaw = PI; p.model.rotation.y = PI
+	m.yaw = 0.0; m.model.rotation.y = 0.0
+	m.set_physics_process(false)
+	var ang := deg_to_rad(float(args.get("yaw", "70")))
+	var focus := Vector3(0, g + 1.0, -gap * 0.4)
+	var dist := float(args.get("dist", "10"))
+	var pitch := deg_to_rad(float(args.get("pitch", "38")))
+	cam.fov = 50
+	cam.look_at_from_position(focus + Vector3(sin(ang) * cos(pitch), sin(pitch), cos(ang) * cos(pitch)) * dist, focus)
+	hud.bind(p, cam)
+	p.target = m
+	for i in 6: await process_frame
+	var list: PackedStringArray = String(args.get("demo", "fireball:4")).split(",")
+	for k in list.size():
+		var parts := list[k].split(":")
+		var id := parts[0]
+		p.power = p.max_power; p.gcd = 0.0; p.cds.clear(); p.hp = p.max_hp
+		if m.dead: m.revive(1.0)
+		m.hp = m.max_hp
+		var ab: Dictionary = Abilities.LIST[id]
+		var why := p.use(id, m if not ab.get("helpful", false) else p)
+		if why != "": print("demo: ", id, " -> ", why)
+		var wait := int(float(ab.get("cast", 0.0)) * 30.0) + (int(parts[1]) if parts.size() > 1 else 6)
+		for i in wait: await process_frame
+		var img := get_root().get_viewport().get_texture().get_image()
+		var out: String = String(args.get("out", "/tmp/fx.png")).get_basename() + "_%d.png" % k
+		img.save_png(out); print("saved ", out)
+		for i in 20: await process_frame
+	quit()
+
 func _initialize() -> void:
 	for a in OS.get_cmdline_user_args():
 		var kv := a.trim_prefix("--").split("=", true, 1)
@@ -23,6 +74,9 @@ func _initialize() -> void:
 	var cam := Camera3D.new(); root.add_child(cam); cam.current = true; cam.fov = 40
 	var what: String = args.get("what", "avatars")
 	var actors: Array = []
+	if what == "fx":
+		await _fx_demo(root, cam)
+		return
 	var rng := RandomNumberGenerator.new(); rng.seed = int(args.get("seed", "7"))
 	match what:
 		"avatars", "classes":

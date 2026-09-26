@@ -72,11 +72,11 @@ func refresh_stats(fill := false) -> void:
 		var a := Rules.attrs(cls, level)
 		for k in a: attrs[k] = a[k] + int(gear_stats.get(k, 0))
 		var old := max_hp
-		max_hp = Rules.base_hp(cls, level) + attrs["sta"] * 10
+		max_hp = (Rules.base_hp(cls, level) + attrs["sta"] * 10) * (1.0 + tmod("hp_pct")) + _aura_sum("max_hp")
 		power_kind = Rules.CLASSES[cls]["power"]
 		if power_kind == "mana": max_power = Rules.base_mp(cls, level) + attrs["int"] * 15
 		else: max_power = 100.0
-		armor = float(gear_stats.get("armor", 0)) + attrs["agi"] * 2.0 + _aura_sum("armor")
+		armor = float(gear_stats.get("armor", 0)) * (1.0 + tmod("armor_pct")) + attrs["agi"] * 2.0 + _aura_sum("armor")
 		if fill: hp = max_hp; power = max_power if power_kind == "mana" else 0.0
 		elif old > 0: hp = minf(hp, max_hp)
 	changed.emit()
@@ -90,8 +90,19 @@ func attack_power() -> float:
 func spell_power() -> float:
 	return float(gear_stats.get("sp", 0)) + _aura_sum("sp")
 
+## talent effects (see Talents); only players have talents
+func tmod(_key: String) -> float:
+	return 0.0
+
+## how much harder this unit hits with a school / ability, from talents and auras
+func dmg_mult(school: String, id := "") -> float:
+	var m := 1.0 + tmod("dmg_all") + tmod("dmg_" + school) + _aura_sum("dmg_pct")
+	if school == "physical": m += tmod("dmg_melee")
+	if id != "": m += tmod("dmg_" + id)
+	return m
+
 func crit_chance(spell: bool) -> float:
-	var c := 0.05 + float(gear_stats.get("crit", 0)) / 100.0
+	var c := 0.05 + float(gear_stats.get("crit", 0)) / 100.0 + (tmod("crit_spell") if spell else tmod("crit"))
 	c += (attrs["int"] if spell else attrs["agi"]) / 2000.0 * (20.0 if spell else 20.0)
 	return clampf(c, 0.0, 0.5)
 
@@ -108,10 +119,11 @@ func has_aura(id: String) -> bool:
 		if a["id"] == id: return true
 	return false
 
+## hostile monsters fight you on sight; neutral ones (boars, hens) only if you start it
 func is_enemy(o: Unit) -> bool:
 	if o == null or o == self: return false
-	if faction == "hostile": return o.faction in ["player", "friendly"]
-	if faction in ["player", "friendly"]: return o.faction == "hostile"
+	if faction in ["hostile", "neutral"]: return o.faction in ["player", "friendly"]
+	if faction in ["player", "friendly"]: return o.faction in ["hostile", "neutral"]
 	return false
 
 func distance_to(o: Unit) -> float:
@@ -202,7 +214,8 @@ func _armed() -> bool:
 func act(anim: String, speed := 1.0) -> void:
 	if model == null or anim == "" or not model.has_anim(anim): return
 	model.play_once(anim, speed)
-	busy_anim = model.anim.get_animation(anim).length / speed * 0.85
+	var real: String = model._map(anim) if model.has_method("_map") else anim
+	if model.anim.has_animation(real): busy_anim = model.anim.get_animation(real).length / speed * 0.85
 
 # ------------------------------------------------------------------ timers
 
@@ -235,9 +248,9 @@ func leave_combat() -> void:
 func _tick_regen(delta: float) -> void:
 	if power_kind == "mana":
 		var rate: float = attrs["spi"] * 0.06 + max_power * 0.004
-		if last_cast_t < 5.0: rate *= 0.15
+		if last_cast_t < 5.0: rate *= 0.15 + tmod("combat_regen")
 		if not in_combat: rate *= 2.0
-		power = minf(max_power, power + rate * delta)
+		power = minf(max_power, power + (rate + _aura_sum("mana_regen")) * delta)
 	elif power_kind == "rage" and not in_combat:
 		power = maxf(0.0, power - 3.0 * delta)
 	if not in_combat and hp < max_hp and hp > 0:
@@ -260,10 +273,14 @@ func _tick_swing(delta: float) -> void:
 	if not casting.is_empty() or stunned > 0.0: return
 	if distance_to(target) > swing_range(): return
 	if swing_t > 0.0: return
-	var spd: float = weapon["speed"] * (1.0 + _aura_sum("slow_attack"))
+	var spd: float = weapon["speed"] * (1.0 + _aura_sum("slow_attack")) / (1.0 + tmod("haste"))
 	swing_t = spd
 	var dmg: float = randf_range(weapon["min"], weapon["max"]) + attack_power() / 14.0 * weapon["speed"]
 	melee_hit(target, dmg, "white")
+	# Sweeping Strikes: the swing also catches one more enemy nearby
+	if tmod("cleave") > 0.0:
+		for u in enemies_near(target.global_position, 3.0):
+			if u != target: melee_hit(u, dmg * 0.6, "white"); break
 	act(["Sword_Regular_A", "Sword_Regular_B"][randi() % 2] if _armed() else "Punch_Jab", 1.0)
 
 ## one melee hit through the hit table; returns the damage dealt (0 on miss/dodge)
@@ -271,14 +288,15 @@ func melee_hit(t: Unit, dmg: float, kind := "white", threat_mult := 1.0) -> int:
 	var r := randf()
 	var miss := 0.05 + 0.01 * maxi(0, t.level - level)
 	if r < miss: t.show_text("Miss", Color(1, 1, 1), self); _swing_sound(t, "miss"); return 0
-	if r < miss + 0.05: t.show_text("Dodge", Color(1, 1, 1), self); t._on_dodge(); _swing_sound(t, "miss"); return 0
+	if r < miss + 0.05 + t.tmod("dodge"): t.show_text("Dodge", Color(1, 1, 1), self); t._on_dodge(); _swing_sound(t, "miss"); return 0
 	var crit := randf() < crit_chance(false)
 	if kind == "white": _swing_sound(t, "crit" if crit else "hit")
-	if crit: dmg *= 2.0 if kind == "white" else 2.0
+	if crit: dmg *= 2.0 + tmod("crit_bonus")
+	dmg *= dmg_mult("physical", cur_ability)
 	dmg *= 1.0 - Rules.armor_dr(t.armor, level)
 	var got := t.take_damage(self, dmg, "physical", crit, kind, threat_mult)
 	if power_kind == "rage":
-		gain_rage(7.5 * got / maxf(1.0, 8.0 + 2.2 * level) * (1.15 if kind == "white" else 0.0))
+		gain_rage(7.5 * got / maxf(1.0, 8.0 + 2.2 * level) * (1.15 if kind == "white" else 0.0) * (1.0 + tmod("rage_gen")))
 	return got
 
 func _swing_sound(t: Unit, result: String) -> void:
@@ -308,7 +326,7 @@ func take_damage(src: Unit, amount: float, school := "physical", crit := false, 
 	enter_combat()
 	if src and is_instance_valid(src):
 		src.enter_combat()
-		add_threat(src, (dmg + absorbed) * threat_mult)
+		add_threat(src, (dmg + absorbed) * threat_mult * (1.0 + src.tmod("threat")))
 		if target == null and faction != "player": target = src
 	if power_kind == "rage" and dmg > 0: gain_rage(2.5 * dmg / maxf(1.0, max_hp) * 100.0 * 0.5)
 	# roots break on damage (after a short grace)
@@ -323,6 +341,7 @@ func take_damage(src: Unit, amount: float, school := "physical", crit := false, 
 
 func heal(src: Unit, amount: float, crit := false) -> int:
 	if dead: return 0
+	if src and is_instance_valid(src): amount *= 1.0 + src.tmod("heal") + src.tmod("heal_" + src.cur_ability) - _aura_sum("heal_taken_down")
 	var h := int(round(amount))
 	var real := mini(h, int(max_hp - hp))
 	hp = minf(max_hp, hp + h)
@@ -335,7 +354,7 @@ func heal(src: Unit, amount: float, crit := false) -> int:
 	return real
 
 func add_threat(src: Unit, amount: float) -> void:
-	if faction != "hostile" or src == null: return
+	if not (faction in ["hostile", "neutral"]) or src == null: return
 	threat[src] = float(threat.get(src, 0.0)) + amount
 
 func show_text(text: String, col: Color, _src: Unit = null) -> void:
@@ -431,8 +450,14 @@ func check_use(id: String, t: Unit) -> String:
 func cost_of(id: String) -> float:
 	var c := float(Abilities.LIST[id].get("cost", 0))
 	if c <= 0: return 0.0
-	if power_kind == "rage": return c
-	return base_mana() * c / 100.0
+	if power_kind == "rage": return maxf(0.0, c + tmod("cost_" + id))
+	return base_mana() * c / 100.0 * maxf(0.2, 1.0 + tmod("cost_pct"))
+
+func cast_time_of(id: String) -> float:
+	var ct := float(Abilities.LIST[id].get("cast", 0.0))
+	if ct <= 0.0: return 0.0
+	if has_aura("presence_of_mind"): return 0.0
+	return maxf(0.5, ct + tmod("cast_" + id))
 
 ## start using an ability; returns "" or the reason it failed
 func use(id: String, t: Unit = null, at := Vector3.INF) -> String:
@@ -443,9 +468,11 @@ func use(id: String, t: Unit = null, at := Vector3.INF) -> String:
 	if a.get("helpful", false) and (t == null or is_enemy(t) or t.dead): t = self
 	if a.get("self", false) or a["kind"] == "aoe": t = self if a.get("self", false) else t
 	if a.get("gcd", true): gcd = Rules.GCD
-	var cast_time := float(a.get("cast", 0.0))
+	var cast_time := cast_time_of(id)
+	if cast_time == 0.0 and float(a.get("cast", 0.0)) > 0.0 and has_aura("presence_of_mind"): remove_aura("presence_of_mind")
 	var chan := float(a.get("channel", 0.0))
-	if a["kind"] == "ground" and at == Vector3.INF: at = t.global_position if t else global_position
+	if a["kind"] in ["ground", "telegraph"] and at == Vector3.INF:
+		at = global_position if a.get("self_center", false) else (t.global_position if t else global_position)
 	if cast_time > 0.0 or chan > 0.0:
 		stop_moving()
 		casting = {"id": id, "t": 0.0, "dur": cast_time if cast_time > 0 else chan, "target": t, "pos": at, "channel": chan > 0.0,
@@ -454,6 +481,7 @@ func use(id: String, t: Unit = null, at := Vector3.INF) -> String:
 		if a["kind"] != "heal" and t and is_enemy(t): enter_combat()
 		act("Spell_Simple_Enter", 1.2)
 		get_tree().call_group("fx", "cast_start", self, id)
+		if a["kind"] == "telegraph": get_tree().call_group("fx", "telegraph", at, float(a["radius"]), cast_time, a.get("school", "fire"))
 		changed.emit()
 		return ""
 	_pay(id)
@@ -467,7 +495,7 @@ func _pay(id: String) -> void:
 	power -= c
 	if int(a.get("cost", 0)) < 0 and power_kind == "rage": gain_rage(-float(a["cost"]))
 	if c > 0 and power_kind == "mana": last_cast_t = 0.0
-	if a.has("cd"): cds[id] = float(a["cd"])
+	if a.has("cd"): cds[id] = maxf(0.5, float(a["cd"]) + tmod("cd_" + id))
 	changed.emit()
 
 func _tick_cast(delta: float) -> void:
@@ -488,7 +516,7 @@ func _tick_cast(delta: float) -> void:
 		var pos: Vector3 = casting["pos"]
 		casting.clear()
 		# the target must still be valid and in range at the end
-		if not a.get("helpful", false) and a["kind"] != "ground" and (t == null or t.dead):
+		if not a.get("helpful", false) and not (a["kind"] in ["ground", "telegraph"]) and (t == null or t.dead):
 			changed.emit(); return
 		_pay(id)
 		_fire(id, t, pos)
@@ -520,7 +548,14 @@ func _fire(id: String, t: Unit, at: Vector3) -> void:
 	get_tree().call_group("fx", "play", id, self, t, at)
 	_effect(id, t, at)
 
+var cur_ability := ""                # the ability whose effect is being applied (talent mods by ability)
+
 func _effect(id: String, t: Unit, at: Vector3) -> void:
+	cur_ability = id
+	_effect2(id, t, at)
+	cur_ability = ""
+
+func _effect2(id: String, t: Unit, at: Vector3) -> void:
 	var a: Dictionary = Abilities.LIST[id]
 	var kind: String = a["kind"]
 	var school: String = a.get("school", "physical")
@@ -542,7 +577,7 @@ func _effect(id: String, t: Unit, at: Vector3) -> void:
 			if a.has("slow"): t.add_aura(id + "_slow", self, float(a["slow_dur"]), {"slow": a["slow"]})
 		"dot":
 			if t == null or t.dead: return
-			var total := Abilities.value(id, "total", level, pw)
+			var total := Abilities.value(id, "total", level, pw) * dmg_mult(school, id)
 			var ticks := float(a["dur"]) / float(a["tick"])
 			t.add_aura(id, self, float(a["dur"]), {"dot": total / ticks, "school": school, "debuff": true}, float(a["tick"]))
 			t.add_threat(self, 10.0 + level); t.enter_combat()
@@ -580,6 +615,11 @@ func _effect(id: String, t: Unit, at: Vector3) -> void:
 			if t == null: return
 			if a.has("dmg"): melee_hit(t, Abilities.value(id, "dmg", level), "special")
 			t.add_aura(id, self, float(a["dur"]), {"slow": a.get("slow", 0.0), "debuff": true})
+		"telegraph":
+			# a marked area that goes off after a warning (the cast time was the warning)
+			var c: Vector3 = global_position if a.get("self_center", false) else (at if at != Vector3.INF else (t.global_position if t else global_position))
+			var victims := enemies_near(c, float(a["radius"]))
+			for u in victims: spell_hit(u, Abilities.value(id, "dmg", level), school)
 		"taunt":
 			if t == null: return
 			var top := 0.0
@@ -590,10 +630,13 @@ func _effect(id: String, t: Unit, at: Vector3) -> void:
 func spell_hit(t: Unit, dmg: float, school: String) -> int:
 	if randf() < 0.04 + 0.01 * maxi(0, t.level - level):
 		t.show_text("Resist", Color(0.8, 0.8, 1.0), self); t.add_threat(self, 1.0); t.enter_combat(); return 0
-	var crit := randf() < crit_chance(true)
-	if crit: dmg *= 1.5
+	var crit := randf() < crit_chance(true) + tmod("crit_" + school)
+	if crit: dmg *= 1.5 + tmod("crit_bonus_" + school)
+	dmg *= dmg_mult(school, cur_ability)
 	dmg *= 1.0 - clampf(float(t.level) * 0.004, 0.0, 0.25)
-	return t.take_damage(self, dmg, school, crit, "spell")
+	var got := t.take_damage(self, dmg, school, crit, "spell", 1.0)
+	if tmod("vampiric") > 0.0 and school == "shadow": heal(self, got * tmod("vampiric"))
+	return got
 
 func _charge(t: Unit, id: String) -> void:
 	var a: Dictionary = Abilities.LIST[id]

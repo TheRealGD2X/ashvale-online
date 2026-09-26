@@ -87,6 +87,16 @@ const LIST := {
 	"inner_fire": {"name": "Inner Fire", "cls": "cleric", "level": 1, "school": "holy", "cost": 5,
 		"kind": "buff", "self": true, "aura": "inner_fire", "armor": [60, 10.0], "ap": [6, 1.2], "dur": 600.0, "anim": "Spell_Simple_Shoot", "fx": "inner_fire",
 		"icon": ["♆", Color(1.0, 0.7, 0.3)], "desc": "A holy fire within you: +{armor} armour and +{ap} attack power for 10 minutes."},
+
+	# ------------------------------------------------------------------ monsters
+	"ember_bolt": {"name": "Ember Bolt", "cls": "monster", "level": 1, "school": "fire", "cost": 0, "cast": 2.2,
+		"kind": "spell", "range": 26.0, "dmg": [5, 2.3], "speed": 16.0, "anim": "cast", "fx": "fireball", "icon": ["🔥", Color(1, 0.5, 0.1)], "desc": ""},
+	"ravage": {"name": "Ravage", "cls": "monster", "level": 1, "school": "physical", "cost": 0, "cd": 12.0,
+		"kind": "dot", "range": Rules.MELEE_RANGE, "total": [12, 4.0], "dur": 12.0, "tick": 3.0, "anim": "Zombie_Scratch", "fx": "rend", "icon": ["✂", Color(0.8, 0.2, 0.2)], "desc": ""},
+	"tidal_slam": {"name": "Tidal Slam", "cls": "monster", "level": 1, "school": "frost", "cost": 0, "cd": 14.0, "cast": 2.0,
+		"kind": "telegraph", "range": 20.0, "radius": 5.0, "dmg": [30, 6.0], "anim": "Sword_Attack", "fx": "tidal_slam", "icon": ["❄", Color(0.4, 0.7, 1.0)], "desc": ""},
+	"hellfire_ring": {"name": "Hellfire", "cls": "monster", "level": 1, "school": "fire", "cost": 0, "cd": 16.0, "cast": 2.5,
+		"kind": "telegraph", "self_center": true, "radius": 8.0, "dmg": [35, 7.0], "anim": "Sword_Heavy_Combo", "fx": "hellfire", "icon": ["🔥", Color(1, 0.3, 0.05)], "desc": ""},
 }
 
 ## the five each class starts with on the bar, in key order 1–5

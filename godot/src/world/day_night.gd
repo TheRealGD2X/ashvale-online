@@ -9,6 +9,8 @@ static var night := 0.0            # 0 day .. 1 night (smooth)
 static var dusk := 0.0             # 1 at sunrise / sunset
 static var time_s := 0.0           # game seconds since start (clouds, wind)
 static var paused := false
+static var cloud := 0.0            # 0 clear .. 1 overcast (Weather sets it)
+static var rain := 0.0             # 0 dry .. 1 pouring
 
 var sun: DirectionalLight3D
 var moon: DirectionalLight3D
@@ -91,7 +93,7 @@ func _apply() -> void:
 	moon.global_transform = Transform3D(Basis.looking_at(-mo, Vector3.UP), Vector3.ZERO)
 	var sun_col: Color = _curve(elev, [[-0.05, Color(1.0, 0.45, 0.25)], [0.08, Color(1.0, 0.62, 0.36)], [0.25, Color(1.0, 0.86, 0.68)], [0.5, Color(1.0, 0.96, 0.9)]])
 	sun.light_color = sun_col
-	sun.light_energy = _curve(elev, [[-0.06, 0.0], [0.02, 0.35], [0.15, 1.3], [0.4, 1.9]])
+	sun.light_energy = _curve(elev, [[-0.06, 0.0], [0.02, 0.35], [0.15, 1.3], [0.4, 1.9]]) * (1.0 - 0.6 * cloud)
 	sun.visible = elev > -0.07
 	sun.shadow_enabled = elev > -0.02
 	moon.light_energy = 0.32 * night
@@ -101,12 +103,15 @@ func _apply() -> void:
 	env.tonemap_exposure = _curve(elev, [[-0.3, 1.5], [0.0, 1.15], [0.3, 0.95]])
 	var fog: Color = _curve(elev, [[-0.3, Color(0.05, 0.07, 0.13)], [-0.02, Color(0.3, 0.26, 0.34)], [0.08, Color(0.95, 0.66, 0.46)], [0.3, Color(0.72, 0.82, 0.93)]])
 	env.fog_light_color = fog
-	env.fog_density = 0.0015
+	env.fog_density = 0.0015 + 0.004 * rain
+	env.fog_light_color = fog.lerp(Color(0.5, 0.55, 0.6) * (1.0 - night * 0.8), cloud * 0.6)
+	env.adjustment_saturation = 1.0 - 0.18 * cloud
 	env.volumetric_fog_albedo = fog.lerp(Color.WHITE, 0.5)
 	# mist gathers at dawn and in the evening
-	env.volumetric_fog_density = 0.003 + 0.012 * dusk + 0.004 * night
+	env.volumetric_fog_density = 0.003 + 0.012 * dusk + 0.004 * night + 0.01 * rain
 	sky_mat.set_shader_parameter("day", 1.0 - night)
-	sky_mat.set_shader_parameter("dusk", dusk)
+	sky_mat.set_shader_parameter("dusk", dusk * (1.0 - 0.6 * cloud))
+	sky_mat.set_shader_parameter("cloud_cover", 0.45 + 0.5 * cloud)
 	sky_mat.set_shader_parameter("time_s", time_s)
 
 static func day_values(elev: float) -> void:

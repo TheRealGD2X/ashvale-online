@@ -20,6 +20,8 @@ const ROADS := [
 	{"pts": [Vector2(0, 0), Vector2(-3, -24), Vector2(-9, -52), Vector2(2, -86), Vector2(-4, -128)], "w": 2.0, "kind": 0},
 	{"pts": [Vector2(2, 6), Vector2(-8, 22), Vector2(-24, 34), Vector2(-29, 37.5)], "w": 1.4, "kind": 0},
 	{"pts": [Vector2(22, -1), Vector2(36, 16), Vector2(46, 34)], "w": 1.5, "kind": 0},
+	# the path from the Mill up to the Old Shrine
+	{"pts": [Vector2(60, 4), Vector2(64, -20), Vector2(62, -46), Vector2(68, -66), Vector2(72, -77)], "w": 1.2, "kind": 0},
 	# town streets: cobbled inside the town
 	{"pts": [Vector2(-30, 3), Vector2(-14, 1), Vector2(14, -1), Vector2(30, -2)], "w": 2.6, "kind": 1},
 	{"pts": [Vector2(0, 0), Vector2(-2, -22)], "w": 2.2, "kind": 1},

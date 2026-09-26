@@ -24,13 +24,12 @@ class Villager extends Node3D:
 	var yaw := 0.0
 
 	func setup(model: String, hair: Color) -> void:
-		if Avatar.available():
+		if Avatar.available() and not WorldData.lite:
 			# townsfolk dressed from the outfit kit: mostly peasants, a few nobles and rangers
 			var r := RandomNumberGenerator.new(); r.randomize()
 			var kind: String = ["peasant", "peasant", "peasant", "noble_", "ranger"][r.randi() % 5]
 			var a := Avatar.new()
 			a.look = Avatar.random_look(r, "cleric" if kind == "noble_" else kind)
-			if WorldData.lite: a.look["tint"] = {}      # fewer textures on slow test machines
 			if kind == "noble_": a.look["gear"].erase("neck")
 			body = a
 		else:

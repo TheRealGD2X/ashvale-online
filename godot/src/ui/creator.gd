@@ -29,6 +29,7 @@ var rows := {}
 
 func setup(pos: Vector3, camera: Camera3D) -> void:
 	stage_pos = pos; cam = camera
+	stage_pos.y = WorldData.h(pos.x, pos.z)
 
 func _ready() -> void:
 	layer = 8

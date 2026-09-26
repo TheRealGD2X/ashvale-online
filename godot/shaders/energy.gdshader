@@ -20,7 +20,7 @@ void fragment() {
 	float e = n * 0.6 + n2 * 0.6;
 	float fres = pow(1.0 - clamp(abs(dot(NORMAL, VIEW)), 0.0, 1.0), rim);
 	float body = mix(1.0, fres, clamp(rim / 3.0, 0.0, 1.0));
-	float vf = mix(1.0, pow(clamp(1.0 - UV.y, 0.0, 1.0), 1.5), v_fade);
+	float vf = mix(1.0, pow(clamp(UV.y, 0.0, 1.0), 1.6), v_fade);
 	float a = clamp(body * e * vf * alpha, 0.0, 1.0);
 	vec3 c = mix(color.rgb, core.rgb, smoothstep(0.55, 1.1, e * body));
 	ALBEDO = c * intensity * a;

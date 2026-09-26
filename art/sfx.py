@@ -319,6 +319,62 @@ def death():
     return reverb(thud + np.sin(2 * np.pi * 90 * x * np.exp(-x)) * np.exp(-x * 5), 0.3, 0.7)
 
 
+# ----------------------------------------------------------------- interface and world
+
+def quest_accept():
+    # a warm two-note horn-ish chime
+    return reverb(mix((bell(392.0, 1.2, 2.2) * 0.7, 0), (bell(587.33, 1.4, 2.0) * 0.8, 0.12)), 0.4, 0.9)
+
+
+def quest_done():
+    notes = [392.0, 493.88, 587.33, 783.99]
+    s = mix(*[(bell(f, 1.8, 1.4) * 0.7, i * 0.11) for i, f in enumerate(notes)])
+    return reverb(mix((s, 0), (pluck(196.0, 1.6, 0.3) * 0.5, 0.33)), 0.5, 1.1)
+
+
+def coins():
+    parts = []
+    for i in range(7):
+        f = rng.uniform(2800, 5200)
+        parts.append((bell(f, 0.25, 18, ((1, 1.0), (2.4, 0.5), (3.9, 0.3))) * rng.uniform(0.4, 1.0), i * rng.uniform(0.025, 0.05)))
+    return mix(*parts)
+
+
+def anvil():
+    x = t(1.2)
+    ring = bell(880, 1.2, 3.0, ((1, 1.0), (2.1, 0.6), (3.3, 0.4), (4.7, 0.2)))
+    return mix((ring * 0.6 + lp(noise(len(x)), 1500) * np.exp(-x * 40) * 0.8, 0), (ring * 0.35, 0.35))
+
+
+def learn():
+    notes = [659.25, 783.99, 987.77, 1318.5]
+    return reverb(mix(*[(bell(f, 1.5, 1.8) * 0.6, i * 0.07) for i, f in enumerate(notes)]), 0.5, 1.0)
+
+
+def pickup():
+    x = t(0.25)
+    return lp(noise(len(x)), 1800) * np.exp(-x * 30) * 0.6 + bell(1200, 0.25, 12) * 0.3
+
+
+def loot_open():
+    x = t(0.4)
+    return lp(noise(len(x)), 900) * adsr(len(x), 0.01, 0.15, 0.7) * 0.8 + bp(noise(len(x)), 2000, 4000) * np.exp(-x * 25) * 0.15
+
+
+def whisper():
+    return reverb(mix((bell(1046.5, 0.8, 3.0) * 0.5, 0), (bell(1318.5, 0.8, 3.0) * 0.4, 0.08)), 0.3, 0.6)
+
+
+def bag():
+    x = t(0.3)
+    return lp(noise(len(x)), 1200) * adsr(len(x), 0.02, 0.1, 0.8) * 0.7
+
+
+def page():
+    x = t(0.45)
+    return sweep_filter(noise(len(x)), 3000, 1200, 1.5) * adsr(len(x), 0.02, 0.3, 0.7) * 0.5
+
+
 if __name__ == "__main__":
     for i in range(3):
         save(f"swing_{i}", swing(i), 0.55)
@@ -346,3 +402,6 @@ if __name__ == "__main__":
     save("ui_click", ui_click(), 0.4)
     save("ui_open", ui_open(), 0.5)
     save("death", death(), 0.7)
+    for n, g in (("quest_accept", 0.6), ("quest_done", 0.7), ("coins", 0.5), ("anvil", 0.55), ("learn", 0.6), ("pickup", 0.5),
+                 ("loot_open", 0.45), ("whisper", 0.5), ("bag", 0.4), ("page", 0.4)):
+        save(n, globals()[n](), g)

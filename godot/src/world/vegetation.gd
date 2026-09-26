@@ -57,6 +57,10 @@ func _trunk(x: float, z: float, r: float, h: float) -> void:
 
 func _scatter() -> void:
 	var H := WorldData.HALF
+	# the landmark trees the quests name: the split oak (a great dead tree, riven down the middle)
+	# and the hollow oak where Old Scratch dens
+	_add("DeadTree_3", 94, 24, 2.3, 0.4, 0.15); _trunk(94, 24, 1.0, 6.0)
+	_add("TwistedTree_4", 108, -40, 1.7, 2.0, 0.15); _trunk(108, -40, 1.3, 6.0)
 	# trees on a jittered 4.5 m grid
 	var step := 4.5
 	var z := -H
