@@ -56,7 +56,7 @@ const PLACES := {
 	"wrecker": "wreckers are at the cove on the south shore, the puglins", "puglin": "puglins are down at wrecker's cove, south shore",
 	"merrow": "the wreck of the merrow is on the southern shore, drowned sailors all round it", "sailor": "drowned sailors are at the merrow wreck, south shore",
 	"serpent": "serpents bask on the north shore past the lighthouse road", "tidecaller": "tidecallers are on the rocks north-east, past the serpents",
-	"snapjaw": "old snapjaw sits on the kelp flats, bring a group", "gutbag": "gutbag's in the wreck at the back of the cove. group it",
+	"snapjaw": "old snapjaw sits on the rocks below the lighthouse, bring a group", "gutbag": "gutbag's in the wreck at the back of the cove. group it",
 	"driftwood": "driftwood's on the beaches east of the lighthouse, the pale bits", "hold": "the drowned hold is the sea cave under the lighthouse",
 	"vesk": "admiral vesk is the last boss in the drowned hold", "forgehold": "forgehold is north of the coast, up the cinder stair",
 	"brunna": "brunna's the forgemaster in forgehold, by the forge hall", "ketch": "ketch the drake hunter hangs about in forgehold, east side",
@@ -169,7 +169,19 @@ func event(b: Bot, kind: String, info := {}) -> void:
 			if rng.randf() < 0.5: say(b, "emote", null, _pick(["waves at %s." % info["who"], "nods at %s." % info["who"], "bows to %s." % info["who"]]))
 			else: say(b, "say", null, _style(b, _pick(["hi", "hey", "o/", "hello", "evening", "hey there"])))
 		"joined":
-			say(b, "party", null, _style(b, _pick(["hey! where to?", "sure, lead the way", "hi! what are you on?", "ok, i'll follow you"])))
+			if b.party_with and b.party_with.raid:
+				say(b, "party", null, _style(b, _pick(["hi all", "o/", "ty for the inv", "hey raid", "%s here, ready when you are" % b.raid_role, "hi! first time in here, be nice",
+					"got pots and food, lets go", "brb 1 min... jk here"])))
+			else: say(b, "party", null, _style(b, _pick(["hey! where to?", "sure, lead the way", "hi! what are you on?", "ok, i'll follow you"])))
+		"lfm_answer":
+			say(b, "whisper", info["to"], _style(b, _pick(["inv pls, %s %s 60" % [b.raid_role, Rules.CLASSES[b.cls]["name"].to_lower()], "hey, need a %s for sanctum? i'm 60" % b.raid_role,
+				"can i come? %s here" % Rules.CLASSES[b.cls]["name"].to_lower(), "inv", "omw to the gate, inv me"])))
+		"loot_win":
+			say(b, "party", null, _style(b, _pick(["yay!", "ty ty", "omg finally", "thanks all <3", "grats me lol", "been after this for weeks"])))
+		"raid_wipe":
+			if rng.randf() < 0.4: say(b, "party", null, _style(b, _pick(["ok that was my fault", "wipe it, go again", "sry, missed the ring", "we'll get it", "res pls... oh wait", "who pulled lol"])))
+		"raid_kill":
+			if rng.randf() < 0.5: say(b, "party", null, _style(b, _pick(["gg!", "GG", "nice!!", "yesss", "gz all", "that was clean"])))
 		"idle":
 			if general_t > 0.0 or b.party_with: return
 			var t: String = info.get("task", "")

@@ -183,6 +183,50 @@ const LIST := {
 	"straw_bundle": {"name": "Bundle of Straw", "q": 0, "stack": 10, "sell": 4},
 	"rat_tail": {"name": "Rat Tail", "q": 0, "stack": 10, "sell": 3},
 	"chicken_egg": {"name": "Chicken Egg", "q": 1, "stack": 10, "sell": 2, "use": "food", "heal": 40},
+	# ---- Milestone 7: the Abyssal Sanctum (raid)
+	"colossus_knuckles": {"name": "Gauntlets of the Colossus", "q": 4, "slot": "hands", "ilvl": 66, "st": "str sta", "bind": "bop", "armor_type": "plate"},
+	"cinderstone_ring": {"name": "Cinderstone Ring", "q": 4, "slot": "finger1", "ilvl": 66, "st": "sta int spi", "bind": "bop"},
+	"ashfall_cord": {"name": "Ashfall Cord", "q": 4, "slot": "waist", "ilvl": 66, "st": "int spi", "bind": "bop", "armor_type": "cloth"},
+	"golemheart": {"name": "Golemheart", "q": 4, "slot": "trinket1", "ilvl": 66, "st": "sta str", "bind": "bop"},
+	"colossus_maul": {"name": "Maul of the Colossus", "q": 4, "slot": "main_hand", "ilvl": 66, "st": "str sta", "bind": "bop", "wtype": "mace", "model": "worldbreaker"},
+	"tome_of_the_archivist": {"name": "Last Page of the Archive", "q": 4, "slot": "trinket1", "ilvl": 68, "st": "int spi sta", "bind": "bop"},
+	"inkstained_wraps": {"name": "Inkstained Wraps", "q": 4, "slot": "wrist", "ilvl": 68, "st": "int spi", "bind": "bop", "armor_type": "cloth"},
+	"lorekeepers_legplates": {"name": "Lorekeeper's Legplates", "q": 4, "slot": "legs", "ilvl": 68, "st": "str sta", "bind": "bop", "armor_type": "plate"},
+	"runed_quill": {"name": "The Runed Quill", "q": 4, "slot": "main_hand", "ilvl": 68, "st": "int spi", "bind": "bop", "wtype": "wand"},
+	"silent_word": {"name": "The Silent Word", "q": 4, "slot": "neck", "ilvl": 68, "st": "str sta", "bind": "bop"},
+	"ashurs_edge": {"name": "Ashur's Edge", "q": 4, "slot": "main_hand", "ilvl": 70, "st": "str sta", "bind": "bop", "wtype": "sword", "model": "dragonblade"},
+	"seths_gaze": {"name": "Seth's Gaze", "q": 4, "slot": "main_hand", "ilvl": 70, "st": "int spi sta", "bind": "bop", "wtype": "staff", "model": "abyssstaff"},
+	"chainlinked_girdle": {"name": "Chainlinked Girdle", "q": 4, "slot": "waist", "ilvl": 70, "st": "str sta", "bind": "bop", "armor_type": "plate"},
+	"twinbound_band": {"name": "Twinbound Band", "q": 4, "slot": "finger1", "ilvl": 70, "st": "int spi", "bind": "bop"},
+	"wardens_cloak": {"name": "Cloak of the Wardens", "q": 4, "slot": "back", "ilvl": 70, "st": "sta str int", "bind": "bop"},
+	"vaals_eye": {"name": "Eye of Vaal", "q": 4, "slot": "trinket1", "ilvl": 72, "st": "int spi sta", "bind": "bop"},
+	"undying_greaves": {"name": "Undying Sabatons", "q": 4, "slot": "feet", "ilvl": 72, "st": "str sta", "bind": "bop", "armor_type": "plate"},
+	"voidstep_slippers": {"name": "Voidstep Slippers", "q": 4, "slot": "feet", "ilvl": 72, "st": "int spi", "bind": "bop", "armor_type": "cloth"},
+	"crown_of_the_undying": {"name": "Crown of the Undying", "q": 4, "slot": "head", "ilvl": 72, "st": "int spi sta", "bind": "bop", "armor_type": "cloth"},
+	"soulreaver": {"name": "Soulreaver", "q": 4, "slot": "main_hand", "ilvl": 72, "st": "str sta", "bind": "bop", "wtype": "axe", "model": "abyssfang"},
+	"token_hands": {"name": "Gauntlets of the Unbroken Oath", "q": 4, "bind": "bop", "token": "hands", "sell": 0, "desc": "Take it to the Keeper of the Sanctum Vault at the Last Watch, and it becomes a piece of your Order's set."},
+	"token_head": {"name": "Helm of the Unbroken Oath", "q": 4, "bind": "bop", "token": "head", "sell": 0, "desc": "Take it to the Keeper of the Sanctum Vault at the Last Watch, and it becomes a piece of your Order's set."},
+	"token_legs": {"name": "Legguards of the Unbroken Oath", "q": 4, "bind": "bop", "token": "legs", "sell": 0, "desc": "Take it to the Keeper of the Sanctum Vault at the Last Watch, and it becomes a piece of your Order's set."},
+	"token_shoulders": {"name": "Mantle of the Unbroken Oath", "q": 4, "bind": "bop", "token": "shoulders", "sell": 0, "desc": "Take it to the Keeper of the Sanctum Vault at the Last Watch, and it becomes a piece of your Order's set."},
+	"token_chest": {"name": "Breastplate of the Unbroken Oath", "q": 4, "bind": "bop", "token": "chest", "sell": 0, "desc": "Take it to the Keeper of the Sanctum Vault at the Last Watch, and it becomes a piece of your Order's set."},
+	"set_warrior_head": {"name": "Oathbreaker's Crown", "q": 4, "slot": "head", "ilvl": 70, "st": "str sta", "bind": "bop", "armor_type": "plate", "set": "warrior"},
+	"set_warrior_shoulders": {"name": "Oathbreaker's Pauldrons", "q": 4, "slot": "shoulders", "ilvl": 70, "st": "str sta", "bind": "bop", "armor_type": "plate", "set": "warrior"},
+	"set_warrior_chest": {"name": "Oathbreaker's Chestguard", "q": 4, "slot": "chest", "ilvl": 70, "st": "str sta", "bind": "bop", "armor_type": "plate", "set": "warrior"},
+	"set_warrior_hands": {"name": "Oathbreaker's Gloves", "q": 4, "slot": "hands", "ilvl": 70, "st": "str sta", "bind": "bop", "armor_type": "plate", "set": "warrior"},
+	"set_warrior_legs": {"name": "Oathbreaker's Legguards", "q": 4, "slot": "legs", "ilvl": 70, "st": "str sta", "bind": "bop", "armor_type": "plate", "set": "warrior"},
+	"set_wizard_head": {"name": "Voidweave Circlet", "q": 4, "slot": "head", "ilvl": 70, "st": "int spi sta", "bind": "bop", "armor_type": "cloth", "set": "wizard"},
+	"set_wizard_shoulders": {"name": "Voidweave Mantle", "q": 4, "slot": "shoulders", "ilvl": 70, "st": "int spi sta", "bind": "bop", "armor_type": "cloth", "set": "wizard"},
+	"set_wizard_chest": {"name": "Voidweave Robe", "q": 4, "slot": "chest", "ilvl": 70, "st": "int spi sta", "bind": "bop", "armor_type": "cloth", "set": "wizard"},
+	"set_wizard_hands": {"name": "Voidweave Handwraps", "q": 4, "slot": "hands", "ilvl": 70, "st": "int spi sta", "bind": "bop", "armor_type": "cloth", "set": "wizard"},
+	"set_wizard_legs": {"name": "Voidweave Leggings", "q": 4, "slot": "legs", "ilvl": 70, "st": "int spi sta", "bind": "bop", "armor_type": "cloth", "set": "wizard"},
+	"set_cleric_head": {"name": "Embersworn Circlet", "q": 4, "slot": "head", "ilvl": 70, "st": "spi int sta", "bind": "bop", "armor_type": "cloth", "set": "cleric"},
+	"set_cleric_shoulders": {"name": "Embersworn Mantle", "q": 4, "slot": "shoulders", "ilvl": 70, "st": "spi int sta", "bind": "bop", "armor_type": "cloth", "set": "cleric"},
+	"set_cleric_chest": {"name": "Embersworn Robe", "q": 4, "slot": "chest", "ilvl": 70, "st": "spi int sta", "bind": "bop", "armor_type": "cloth", "set": "cleric"},
+	"set_cleric_hands": {"name": "Embersworn Handwraps", "q": 4, "slot": "hands", "ilvl": 70, "st": "spi int sta", "bind": "bop", "armor_type": "cloth", "set": "cleric"},
+	"set_cleric_legs": {"name": "Embersworn Leggings", "q": 4, "slot": "legs", "ilvl": 70, "st": "spi int sta", "bind": "bop", "armor_type": "cloth", "set": "cleric"},
+	"mythic_worldbreaker": {"name": "Worldbreaker", "q": 5, "slot": "main_hand", "ilvl": 78, "st": "str sta", "bind": "bop", "wtype": "axe", "model": "worldbreaker", "use_power": "myth_quake", "desc": "Use (R): split the earth — heavy damage to every enemy within 10 metres. 2 min cooldown."},
+	"mythic_eternity": {"name": "Eternity, Staff of Hours", "q": 5, "slot": "main_hand", "ilvl": 78, "st": "int spi sta", "bind": "bop", "wtype": "staff", "model": "eternity", "use_power": "myth_hours", "desc": "Use (R): stop the hours — your spells cost nothing and cast twice as fast for 10 seconds. 3 min cooldown."},
+	"mythic_dawnbringer": {"name": "Dawnbringer", "q": 5, "slot": "main_hand", "ilvl": 78, "st": "spi int sta", "bind": "bop", "wtype": "mace", "model": "moon", "use_power": "myth_dawn", "desc": "Use (R): a second sunrise — heals you and everyone near you for a third of their health. 3 min cooldown."},
 	# ---- Milestone 6 (levels 40–60)
 	"crab_shell": {"name": "Cracked Crab Shell", "q": 0, "stack": 10, "sell": 64},
 	"wreckers_trinket": {"name": "Wrecker's Trinket", "q": 0, "stack": 10, "sell": 72},
@@ -335,7 +379,7 @@ static func can_use(cls: String, d: Dictionary, level: int) -> bool:
 static func req_level(d: Dictionary) -> int:
 	if d.has("req"): return int(d["req"])
 	var il := int(d.get("ilvl", 1))
-	return maxi(1, il - [0, 0, 5, 8, 10, 12][int(d.get("q", 1))])
+	return clampi(il - [0, 0, 5, 8, 10, 12][int(d.get("q", 1))], 1, Rules.MAX_LEVEL)
 
 static func color(d: Dictionary) -> Color:
 	return QUALITY[clampi(int(d.get("q", 1)), 0, 5)]["color"]
@@ -359,7 +403,7 @@ static func _expand(id: String, s: Dictionary) -> Dictionary:
 	var d := s.duplicate(true); d.erase("st")
 	var il := int(d.get("ilvl", 40)); var q := int(d.get("q", 2))
 	var slot := slot_of(d)
-	var qm: float = {2: 1.0, 3: 1.45, 4: 1.85}.get(q, 0.8)
+	var qm: float = {2: 1.0, 3: 1.45, 4: 1.85, 5: 2.3}.get(q, 0.8)
 	var budget: float = il * 0.62 * qm * float(SLOT_BUDGET.get(slot, 0.75))
 	var keys := String(s["st"]).split(" ", false)
 	var wt: String = d.get("wtype", "")
@@ -374,21 +418,21 @@ static func _expand(id: String, s: Dictionary) -> Dictionary:
 	if "sp" in keys or wt in ["staff", "wand"]: d["sp"] = int(il * 0.45 * qm * (1.4 if wt == "staff" else 0.8))
 	if d.has("armor_type") and not d.has("armor"):
 		var at: String = d["armor_type"]
-		d["armor"] = int(ARMOR_PER[at] * float(SLOT_ARMOR.get(slot, 0.5)) * (1.0 + il * 0.35) * {2: 2.2, 3: 2.6, 4: 3.0}.get(q, 2.0))
+		d["armor"] = int(ARMOR_PER[at] * float(SLOT_ARMOR.get(slot, 0.5)) * (1.0 + il * 0.35) * {2: 2.2, 3: 2.6, 4: 3.0, 5: 3.4}.get(q, 2.0))
 		if SLOT_LOOK.has(slot) and not d.has("look"):
 			var fam: String = LOOK_FAMILY[at]
 			var part: String = SLOT_LOOK[slot][0] if fam == "Knight" else SLOT_LOOK[slot][1]
 			if part != "": d["look"] = ["%s_%s" % [fam, part], fam, 3 if q >= 3 else 2]
 			if fam == "Wizard" and slot == "shoulders": d["look"] = ["Noble_Acc_Pauldron", "Noble", 3 if q >= 3 else 2]
-			if fam == "Knight" and slot == "head" and q >= 4: d["look"] = ["Knight_Head_Horns", "Knight", 3]
+			if fam == "Knight" and slot == "head" and q >= 4 and not d.has("set"): d["look"] = ["Knight_Head_Horns", "Knight", 3]
 			if fam == "Knight" and slot == "shoulders" and q >= 3: d["look"] = ["Knight_Acc_Pauldron_Spike", "Knight", 3]
 	if wt != "" and not d.has("weapon"):
 		var w: Array = WTYPE[wt]
-		var dps: float = (1.5 + 0.55 * il) * float(w[2]) * {2: 1.0, 3: 1.12, 4: 1.25}.get(q, 1.0)
+		var dps: float = (1.5 + 0.55 * il) * float(w[2]) * {2: 1.0, 3: 1.12, 4: 1.25, 5: 1.4}.get(q, 1.0)
 		var spd: float = w[0]
 		d["weapon"] = [int(dps * spd * 0.75), int(ceil(dps * spd * 1.25)), spd]
 		if not d.has("model"): d["model"] = w[1]
-	if not d.has("sell"): d["sell"] = int(il * il * 1.6 * {2: 1.4, 3: 2.2, 4: 3.0}.get(q, 1.0))
+	if not d.has("sell"): d["sell"] = int(il * il * 1.6 * {2: 1.4, 3: 2.2, 4: 3.0, 5: 4.0}.get(q, 1.0))
 	_gen[id] = d
 	return d
 

@@ -2,6 +2,57 @@
 
 Newest first. One line per commit. Tags: `[contract]` change to `src/shared/*`, `[cross]` touched the other worker's files, `[need]` a request for the other worker, `[design]` DESIGN.md changed.
 
+## 2026-09-26 (day) — Claude, milestones 3 to 6
+**In plain English:** Ashvale Online now goes all the way from level 1 to level 60. After Ashvale you travel the road through ten more zones and six dungeons, each with its own town, people, quests, monsters and bosses. You can gather, refine and craft your own gear, buy and sell on a market, earn a stag to ride from level 40, and learn new abilities up to level 56.
+
+**What changed**
+- **Milestone 3 (Hollow Cliffs, 10–16):**
+  - Travel between zones by walking off the edge of the map on a road, with a loading screen.
+  - The Miners' Camp, the Hollow Cliffs, and the Hollow Mine dungeon with three bosses. Dungeons need a group of two or more.
+- **Milestone 4 (crafting and the market):**
+  - Mining and herbalism in the world. Refining at a forge, tannery or loom.
+  - Smithing, leatherworking, tailoring and alchemy, now in eight tiers.
+  - A shared market where the other players post, buy and sell.
+- **Milestone 5 (levels 14–40, and mounts):**
+  - Mirewood and the Warrens, the Ash Slopes and the Temple of Ash, the Ashen Highlands and the Sunken Crypts, and the Varn Plateau and the Varn Catacombs.
+  - The stag mount quest chain. Press **Z** to ride from level 40.
+- **Milestone 6 (levels 40–60):**
+  - **Saltmere Coast (40–46):**
+    - The fishing town of Gullhaven, with a lighthouse whose beam turns at night.
+    - A pier, shipwrecks and puglin wreckers.
+    - The Drowned Hold dungeon.
+  - **Emberreach (46–52):**
+    - Forgehold, a walled forge-town above a lava lake.
+    - Drakes, magma worms and obsidian guardians.
+    - The Molten Deep dungeon.
+  - **The Pale Reach (52–57):**
+    - Snow, pines and a frozen lake.
+    - Wintermere, a lodge town with a big bonfire.
+    - Barrows full of the frozen dead, and the Frostspire Halls dungeon.
+  - **Vaal's Scar (57–60):**
+    - The Last Watch, a siege camp at the edge of the world.
+    - Void creatures and the Doomherald.
+    - The Sanctum Gate, which leads to the raid (next milestone).
+  - About 50 new quests and around 90 new items, including dungeon blues.
+  - New animals and monsters: crabs, sea serpents, drakes, magma worms, frost wolves, snow bears and mountain rams.
+  - **21 new abilities** between levels 14 and 56. Examples:
+    - Warrior: Mortal Strike, Whirlwind, Shield Wall.
+    - Wizard: Pyroblast, Meteor, Time Warp.
+    - Cleric: Greater Mend, Prayer of Healing, Salvation.
+  - **Masters of the Three Orders** in every big camp can train any class, so you don't have to go back to Ashvale.
+- **Fixes:**
+  - Cave floors and low ground were wrongly treated as water, which blocked paths in dungeons.
+  - Bots can now do "once a day" quests.
+  - NPCs that stood inside walls have been moved.
+
+**What to try**
+- Make a character and follow the road. Every zone ends with a letter sending you on to the next.
+- At level 40, take Marshal Greaves' requisition down the Salt Road to Gullhaven.
+
+**What's next**
+- Milestone 7: the raids, starting with the Abyssal Sanctum behind the Sanctum Gate.
+- Milestone 8: polish.
+
 ## 2026-09-26 (overnight) — Claude, milestones 1 and 2
 **In plain English:** Ashvale is now a game you can play from level 1 to about 10. You make a Warrior, Wizard or Cleric, meet the people of the town and the Mill, take their quests, fight rats, scarecrows, boars, wildcats and the walking dead at the Old Shrine, loot what you kill, wear what you find, and level up. Other adventurers (simulated players) quest around you, say ding, ask where things are, answer when you talk to them, and join your group if you invite them.
 

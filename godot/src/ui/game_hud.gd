@@ -360,9 +360,13 @@ func _update_party() -> void:
 		var d := {"panel": p, "name": _label(p, "", 15, Vector2(10, 3), INK, true), "hp": _bar(p, Vector2(10, 24), Vector2(210, 13), Color(0.2, 0.72, 0.22)), "pw": _bar(p, Vector2(10, 39), Vector2(210, 8), Color(0.18, 0.38, 0.9))}
 		d["hp"]["text"].add_theme_font_size_override("font_size", 10)
 		party_frames.append(d)
+	# a raid: smaller frames, two columns
+	var compact := members.size() > 4
 	for i in party_frames.size():
 		var f: Dictionary = party_frames[i]
 		f["panel"].visible = i < members.size()
+		f["panel"].scale = Vector2.ONE * (0.66 if compact else 1.0)
+		f["panel"].position = Vector2(26 + (i / 5) * 160, 190 + (i % 5) * 40) if compact else Vector2(26, 190 + i * 62)
 		if i >= members.size(): continue
 		var m: Unit = members[i]
 		f["name"].text = "%s   %d %s" % [m.uname, m.level, Rules.CLASSES[m.cls]["name"]]
@@ -617,6 +621,12 @@ func open_loot(m: Monster) -> void:
 
 func open_station(kind: String) -> void:
 	win.open_station(kind)
+
+func open_roll(it: Dictionary, loot: RaidLoot) -> void:
+	win.open_roll(it, loot)
+
+func close_roll() -> void:
+	win.close_roll()
 
 
 func toggle_book() -> void:

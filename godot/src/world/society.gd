@@ -44,3 +44,62 @@ func bring(save: Dictionary, leader: Player) -> void:
 	b.global_position = p; b.home = p
 	b.party_with = leader; leader.party.append(b); b.brain.leader = leader
 	bots.append(b)
+
+## call for a raid (/lfm, or the Keeper at the Gate): nine level-60 players answer, walk over and
+## join. Two warriors to tank, three clerics to heal, and damage. They come in their best (blues).
+func gather_raid(leader: Player) -> void:
+	var chat := get_tree().get_first_node_in_group("chat")
+	if leader.level < 58:
+		if chat: chat.post("system", "", "Nobody answers. (Raids are for level 58 and up.)")
+		return
+	if leader.party.size() >= 9:
+		if chat: chat.post("system", "", "Your raid is already full.")
+		return
+	leader.raid = true
+	if chat:
+		chat.post("general", leader.uname, "LFM Abyssal Sanctum, need all")
+	var want := [["warrior", "tank"], ["warrior", "offtank"], ["cleric", "heal"], ["cleric", "heal"], ["cleric", "heal"], ["wizard", "dps"], ["wizard", "dps"], ["wizard", "dps"], ["warrior", "dps"]]
+	if leader.cls == "cleric": want.erase(["cleric", "heal"]); want.append(["wizard", "dps"])
+	# people already with you count
+	for m in leader.party:
+		if is_instance_valid(m) and m is Bot:
+			if m.raid_role == "": m.raid_role = "tank" if m.cls == "warrior" and not _has_role(leader, "tank") else ("heal" if m.cls == "cleric" else "dps")
+			for w in want:
+				if w[0] == m.cls: want.erase(w); break
+	var rng := RandomNumberGenerator.new(); rng.randomize()
+	var names := NAMES.duplicate(); names.shuffle()
+	var taken := []
+	for b in get_tree().get_nodes_in_group("bots"): taken.append(b.uname)
+	var delay := 2.0
+	for w in want.slice(0, 9 - leader.party.size()):
+		var nm := ""
+		for n in names:
+			if not (n in taken): nm = n; taken.append(n); break
+		if nm == "": nm = "Raider%d" % rng.randi_range(10, 99)
+		get_tree().create_timer(delay).timeout.connect(_raider.bind(leader, nm, w[0], w[1]))
+		delay += rng.randf_range(1.5, 4.0)
+
+func _has_role(leader: Player, role: String) -> bool:
+	for m in leader.party:
+		if is_instance_valid(m) and m is Bot and m.raid_role == role: return true
+	return false
+
+func _raider(leader: Player, nm: String, cls: String, role: String) -> void:
+	if not is_instance_valid(leader) or not leader.raid or leader.party.size() >= 9: return
+	var rng := RandomNumberGenerator.new(); rng.randomize()
+	var b := Bot.new()
+	b.gear_q = 3
+	b.setup_bot(nm, cls, 60, rng)
+	b.raid_role = role
+	b.add_item({"id": "sanctum_key", "n": 1})
+	add_child(b)
+	# they come walking in from somewhere nearby
+	var a := rng.randf() * TAU
+	var p := Nav.nearest_open(leader.global_position + Vector3(cos(a), 0, sin(a)) * rng.randf_range(12.0, 22.0)); p.y = WorldData.h(p.x, p.z)
+	b.global_position = p; b.home = p
+	bots.append(b)
+	var v := get_tree().get_first_node_in_group("voice")
+	if v: v.event(b, "lfm_answer", {"to": leader})
+	get_tree().create_timer(rng.randf_range(1.0, 2.5)).timeout.connect(func():
+		if is_instance_valid(b) and is_instance_valid(leader): b.invited(leader, b.uname))
+

@@ -141,25 +141,31 @@ static func bake() -> void:
 	if heights.size() == RES * RES: return
 	_init_noise()
 	heights.resize(RES * RES)
-	_mb.resize(RES * RES * 4)
+	# each row writes its own buffer (packed arrays are copy-on-write: sharing one across threads
+	# sometimes left a row writing into an empty copy); the rows are joined afterwards
+	var mb_rows := []; mb_rows.resize(RES)
 	var rows := func(j: int) -> void:
 		var z := -HALF + j * STEP
+		var row := PackedByteArray(); row.resize(RES * 4)
 		for i in RES:
 			var x := -HALF + i * STEP
 			var p := Vector2(x, z)
 			heights[j * RES + i] = height(x, z)
 			var r := road(p)
-			var o := (j * RES + i) * 4
+			var o := i * 4
 			var on_road := 1.0 - smoothstep(-0.6, 0.9, r.x)
 			var cob := 1.0 if (r.y > 0.5 and on_road > 0.0) else 0.0
 			var sq := (1.0 - smoothstep(SQUARE_R - 1.0, SQUARE_R + 0.6, p.distance_to(TOWN))) if SQUARE_R > 0.0 else 0.0
 
-			_mb[o] = int(maxf(on_road, sq) * 255.0)
-			_mb[o + 1] = int(maxf(cob, sq) * 255.0)
-			_mb[o + 2] = int(town_w(p) * 255.0)
-			_mb[o + 3] = int((1.0 - smoothstep(0.9, 1.3, pond_d(p))) * 255.0)
+			row[o] = int(maxf(on_road, sq) * 255.0)
+			row[o + 1] = int(maxf(cob, sq) * 255.0)
+			row[o + 2] = int(town_w(p) * 255.0)
+			row[o + 3] = int((1.0 - smoothstep(0.9, 1.3, pond_d(p))) * 255.0)
+		mb_rows[j] = row
 	var task := WorkerThreadPool.add_group_task(rows, RES, -1, true, "bake world")
 	WorkerThreadPool.wait_for_group_task_completion(task)
+	_mb = PackedByteArray()
+	for rw in mb_rows: _mb.append_array(rw)
 	mask = Image.create_from_data(RES, RES, false, Image.FORMAT_RGBA8, _mb)
 
 ## ground height from the baked grid (bilinear); falls back to the formula before baking

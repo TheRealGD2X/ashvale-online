@@ -13,6 +13,7 @@ var greeted := {}
 var last_task := ""
 var mood := 0.0                  # grumpier after dying, happier after a ding
 var party_with: Player
+var raid_role := ""              # in a raid: tank | offtank | heal | dps
 
 func setup_bot(nm: String, c: String, lv: int, rng: RandomNumberGenerator) -> void:
 	is_bot = true
@@ -32,8 +33,13 @@ func setup_bot(nm: String, c: String, lv: int, rng: RandomNumberGenerator) -> vo
 	style = ["tidy", "casual", "casual", "terse", "chatty"][rng.randi() % 5]
 	chat_t = rng.randf_range(20.0, 120.0)
 
+var gear_q := 2                  # the gear they've picked up on the way (raid bots come in blues)
+
 func _ready() -> void:
 	is_bot = true
+	if equipped.size() <= 3 and level >= 5:
+		var r := RandomNumberGenerator.new(); r.randomize()
+		gear_up(level - 1, gear_q, r)
 	super._ready()
 	brain = Brain.new(self)
 	add_child(brain)
@@ -83,7 +89,7 @@ func invited(by: Player, nm: String) -> void:
 	var v := get_tree().get_first_node_in_group("voice")
 	if party_with == by:
 		return
-	if absi(by.level - level) > 4 or not by.party.size() < 4:
+	if absi(by.level - level) > 4 or not by.party.size() < (9 if by.raid else 4):
 		if v: v.say(self, "whisper", by, "sorry, i'm a bit off your level" if absi(by.level - level) > 4 else "your group looks full")
 		return
 	party_with = by
@@ -95,17 +101,18 @@ func invited(by: Player, nm: String) -> void:
 func leave_party(by: Player) -> void:
 	if party_with != by: return
 	by.party.erase(self)
+	if by.party.is_empty(): by.raid = false
 	party_with = null; brain.leader = null
 	get_tree().call_group("hud", "notice", "%s leaves your group." % uname)
 
 ## what a group member carries to the next zone
 func to_bot_save() -> Dictionary:
 	var d := to_save()
-	d["look"] = Save.encode_look(look); d["style"] = style
+	d["look"] = Save.encode_look(look); d["style"] = style; d["raid_role"] = raid_role
 	return d
 
 func restore(d: Dictionary) -> void:
-	style = d.get("style", style)
+	style = d.get("style", style); raid_role = d.get("raid_role", "")
 	var l: Dictionary = d.get("look", {}).duplicate(true)
 	if l.get("hair_color") is Array: var a: Array = l["hair_color"]; l["hair_color"] = Color(a[0], a[1], a[2])
 	look = l

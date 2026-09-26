@@ -74,6 +74,7 @@ func _ready() -> void:
 		_start_game(tr["ch"], tr)
 		if loading: loading.queue_free()
 		if args.has("questtest"): add_child(load("res://tools/questtest.gd").new())
+		if args.has("raidtest"): add_child(load("res://tools/raidtest.gd").new())
 		if args.has("shot"): _shot()
 		return
 
@@ -107,6 +108,7 @@ func _ready() -> void:
 		if args.has("chattest"): add_child(load("res://tools/chattest.gd").new())
 		if args.has("crafttest"): add_child(load("res://tools/crafttest.gd").new())
 		if args.has("zonetour"): add_child(load("res://tools/zonetour.gd").new())
+		if args.has("raidtest"): add_child(load("res://tools/raidtest.gd").new())
 
 
 
@@ -159,6 +161,13 @@ func _check_exits() -> void:
 		if d > float(ex["r"]): exit_warned.erase(ex["name"]); continue
 		if ex["to"] == "":
 			if not exit_warned.has(ex["name"]): exit_warned[ex["name"]] = true; hud.error(ex["sign"])
+			continue
+		# the Sanctum: a key, and the level for it
+		if ex.has("needs_level") and hero.level < int(ex["needs_level"]):
+			if not exit_warned.has(ex["name"]): exit_warned[ex["name"]] = true; hud.error("You must be level %d to enter" % int(ex["needs_level"]))
+			continue
+		if ex.has("needs_item") and hero.count_item(ex["needs_item"]) <= 0:
+			if not exit_warned.has(ex["name"]): exit_warned[ex["name"]] = true; hud.error("The Gate will not open for you. You need the %s." % Items.def(ex["needs_item"]).get("name", "key"))
 			continue
 		var need := int(Zones.get_def(ex["to"]).get("group", 1))
 		if need > 1 and hero.party_members().size() < need:

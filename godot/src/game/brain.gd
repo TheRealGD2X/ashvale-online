@@ -22,6 +22,7 @@ var log_lines := false          # print what we decide (for the tests)
 var no_quest_until := 0.0
 var skip := {}                  # quests we gave up on (too hard for now)
 var focus: Unit                 # fight only this (tests)
+var idle := false               # only fight back; don't go questing (the raid test drives the leader)
 var _last_level := 0
 
 
@@ -34,11 +35,18 @@ func _physics_process(delta: float) -> void:
 	think_t -= delta
 	if p.dead:
 		dead_t += delta
-		if dead_t > 4.0: dead_t = 0.0; p.release(); task = "back from the graveyard"
+		# in a raid, the dead wait for the fight to end (you can't run back into a boss fight)
+		var raiding := _in_raid() or p.raid
+		if raiding and not _raid_bosses().is_empty(): dead_t = 0.0; return
+		# and after it, a while for a cleric to bring them back
+		var wait := 4.0
+		if raiding and not _raid_mates("heal").is_empty(): wait = 40.0
+		if dead_t > wait: dead_t = 0.0; p.release(); task = "back from the graveyard"
 		return
 	if think_t > 0.0: return
 	think_t = 0.25
 	if p.level != _last_level: _last_level = p.level; skip.clear()
+	if idle and not (p.in_combat or _attacked()): return
 	_unstick(0.25)
 	if focus and is_instance_valid(focus) and not focus.dead:
 		p.target = focus
@@ -50,6 +58,16 @@ func _physics_process(delta: float) -> void:
 		_fight(); return
 
 	fight_t = 0.0
+	if p.cls == "cleric" and (leader or p.raid) and "resurrection" in p.known and p.casting.is_empty():
+		var lead: Player = leader if leader and is_instance_valid(leader) else p
+		for m in lead.party_members():
+			if is_instance_valid(m) and m.dead and m != p and p.global_position.distance_to(m.global_position) < 40.0:
+				if m.has_meta("res_by") and m.get_meta("res_by") != p: continue
+				if p.distance_to(m) > 28.0: p.move_to(m.global_position); task = "going to res %s" % m.uname; return
+				if p.check_use("resurrection", m) == "":
+					m.set_meta("res_by", p); p.stop_moving(); p.use("resurrection", m); task = "resurrecting %s" % m.uname
+					p.get_tree().create_timer(8.0).timeout.connect(func(): if is_instance_valid(m) and m.has_meta("res_by"): m.remove_meta("res_by"))
+					return
 	if p.has_meta("sitting"): return
 	if _rest(): return
 	if leader and is_instance_valid(leader): _follow(); return
@@ -84,6 +102,9 @@ func _fight() -> void:
 			if leader and is_instance_valid(leader) and leader.target and is_instance_valid(leader.target) and not leader.target.dead and p.is_enemy(leader.target): t = leader.target
 			else: return
 		p.target = t
+	if _in_raid():
+		var rt := _raid_target()
+		if rt: t = rt; p.target = rt
 	match p.cls:
 		"warrior": _warrior(t)
 		"wizard": _caster(t, ["fireball", "frostbolt"], "fire_blast", "frost_armor")
@@ -102,8 +123,10 @@ func _use(id: String, t: Unit) -> bool:
 	return p.use(id, t) == ""
 
 func _warrior(t: Unit) -> void:
+	if _in_raid() and p.raid_role in ["tank", "offtank"]:
+		if _raid_taunt(t): return
 	# in a group, the warrior holds the monsters' attention: taunt whatever is hitting someone else
-	if leader and is_instance_valid(leader) and "taunt" in p.known:
+	elif leader and is_instance_valid(leader) and "taunt" in p.known:
 		for u in p.get_tree().get_nodes_in_group("units"):
 			if u is Monster and not u.dead and u.in_combat and u.target and u.target != p and u.target.faction == "player" and p.check_use("taunt", u) == "":
 				p.use("taunt", u); p.target = u; p.start_attack(u); return
@@ -402,8 +425,92 @@ func _find_group(id: String) -> bool:
 			return true
 	return false
 
+# ------------------------------------------------------------------ raids
+
+var fumbles := {}               # mechanics we got wrong this time (people do, about one time in eight)
+
+func _in_raid() -> bool:
+	return p is Bot and p.raid_role != "" and leader and is_instance_valid(leader) and leader.raid
+
+func _raid_bosses() -> Array:
+	var out := []
+	for u in p.get_tree().get_nodes_in_group("units"):
+		if u is Monster and not u.dead and u.in_combat and Monster.KINDS[u.kind].get("raid", false): out.append(u)
+	return out
+
+func _raid_mates(role: String) -> Array:
+	var out := []
+	var lead: Player = leader if leader and is_instance_valid(leader) else p
+	for m in lead.party_members():
+		if is_instance_valid(m) and m is Bot and m.raid_role == role and not m.dead: out.append(m)
+	return out
+
+## who to hit: tanks take the bosses, damage kills the adds that matter first
+func _raid_target() -> Unit:
+	var bosses := _raid_bosses()
+	var adds := []
+	for u in p.get_tree().get_nodes_in_group("units"):
+		if u is Monster and not u.dead and u.in_combat and not u.evading and not Monster.KINDS[u.kind].get("raid", false) and p.global_position.distance_to(u.global_position) < 45.0: adds.append(u)
+	match p.raid_role:
+		"tank":
+			for b in bosses:
+				if b.kind != "warden_seth": return b
+			return adds[0] if not adds.is_empty() else null
+		"offtank":
+			for b in bosses:
+				if b.kind == "warden_seth": return b
+			for a in adds:
+				if a.kind != "lore_rune": return a
+			if not bosses.is_empty(): return bosses[0]
+			return null
+		"dps":
+			for k in ["lore_rune", "void_spawn", "ash_golem"]:
+				for a in adds:
+					if a.kind == k: return a
+			# the Twin Wardens: keep them even, so they fall together
+			var twins := bosses.filter(func(b): return Monster.KINDS[b.kind].has("twin"))
+			if twins.size() == 2:
+				return twins[0] if twins[0].hp / twins[0].max_hp > twins[1].hp / twins[1].max_hp + 0.02 else twins[1]
+			if leader.target and is_instance_valid(leader.target) and leader.target is Monster and not leader.target.dead: return leader.target
+			if not bosses.is_empty(): return bosses[0]
+			return adds[0] if not adds.is_empty() else null
+	return null
+
+## tanks: hold what's yours; swap on the Colossus at four Crush
+func _raid_taunt(t: Unit) -> bool:
+	if not ("taunt" in p.known) or t == null or not (t is Monster): return false
+	if t.target == p: return false
+	var other: Array = _raid_mates("offtank" if p.raid_role == "tank" else "tank")
+	if t.kind == "ashen_colossus":
+		var holder: Unit = t.target
+		if holder and is_instance_valid(holder) and Raid._stacks(holder, "crush") >= 4 and Raid._stacks(p, "crush") < 2 and p.check_use("taunt", t) == "":
+			p.use("taunt", t); p.start_attack(t); return true
+		if p.raid_role == "offtank": return false
+	if t.target in other and not (t.kind == "ashen_colossus"): return false
+	if p.check_use("taunt", t) == "" and rng.randf() < 0.9:
+		p.use("taunt", t); p.start_attack(t); return true
+	return false
+
+func _fumble(key: String) -> bool:
+	if not fumbles.has(key): fumbles[key] = rng.randf() < 0.12
+	if fumbles.size() > 200: fumbles.clear()
+	return fumbles[key]
+
 ## dungeon sense: free a caged friend, step out of a marked circle
 func _dodge() -> bool:
+	if _in_raid() or p.has_meta("chained_to"):
+		# chained: get close to whoever you're chained to
+		if p.has_meta("chained_to"):
+			var mate = p.get_meta("chained_to")
+			if is_instance_valid(mate) and p.global_position.distance_to(mate.global_position) > 4.0 and not _fumble("chain%d" % mate.get_instance_id()):
+				p.move_to(Nav.nearest_open(mate.global_position)); task = "staying close"; return true
+		# the Archivist's silence: casters step out of it
+		if p.cls != "warrior":
+			var z := RaidZone.inside(p.get_tree(), p.global_position)
+			if z and not _fumble("zone%d" % z.get_instance_id()):
+				var away := p.global_position - z.global_position; away.y = 0
+				if away.length() < 0.1: away = Vector3(1, 0, 0)
+				p.move_to(Nav.nearest_open(z.global_position + away.normalized() * (z.radius + 2.5))); task = "out of the silence"; return true
 	for u in p.get_tree().get_nodes_in_group("units"):
 		if not (u is Monster) or u.dead: continue
 		if Monster.KINDS[u.kind].get("cage", false):
@@ -416,6 +523,7 @@ func _dodge() -> bool:
 			task = "breaking the bone prison"
 			return true
 		if not u.casting.is_empty() and Abilities.LIST.get(u.casting["id"], {}).get("kind", "") == "telegraph":
+			if _in_raid() and _fumble("tg%d_%d" % [u.get_instance_id(), int(u.casting.get("t0", Time.get_ticks_msec() / 3000))]): continue
 			var a: Dictionary = Abilities.LIST[u.casting["id"]]
 			var c: Vector3 = u.global_position if a.get("self_center", false) else u.casting["pos"]
 			var d := Vector2(p.global_position.x - c.x, p.global_position.z - c.z)

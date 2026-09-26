@@ -84,6 +84,10 @@ const LIST := {
 
  "title": "Ashvale Militia", "at": [61.0, 12.0], "face": 160, "sex": "f", "look": "warrior", "hair": "Hair_Bob", "hair_color": 0,
 		"greet": "Militia business. Unless you're here to help, in which case it's your business too.", "anim": "Idle_Shield"},
+	"gatekeeper": {"zone": "scar", "name": "Keeper Orlane", "title": "Warden of the Sanctum Gate", "at": [9.0, -70.0], "face": 250, "sex": "f", "look": "cleric", "hair": "Hair_Long", "hair_color": 6, "skin": 3,
+		"greet": "Ten go in. Sometimes ten come out. Show me the key, and gather your ten.", "raid_gather": true, "anim": "Idle"},
+	"vaultkeeper": {"zone": "scar", "name": "Vaultkeeper Mirel", "title": "Keeper of the Sanctum Vault", "at": [-8.0, 91.0], "face": 80, "sex": "m", "look": "noble", "hair": "Hair_Balding", "beard": "Hair_Beard", "hair_color": 5, "skin": 1,
+		"greet": "The Orders swore an oath at the Gate, long ago. Bring me what's left of it, and I'll make it whole for you.", "vault": true, "anim": "Idle"},
 	# ---- masters of the three Orders: train any class, in the bigger camps
 	"trainer_hollin": {"zone": "hollow", "name": "Master Hollin", "title": "Master of the Three Orders", "at": [7.0, 34.0], "face": 0, "sex": "m", "look": "warrior", "hair": "Hair_Buzzed", "hair_color": 1, "skin": 1,
 		"greet": "Warrior, wizard or cleric, I can teach you. The Orders send their masters out to where the fighting is.", "trainer": "all", "anim": "Idle"},
@@ -128,7 +132,7 @@ const TRAINING := {
 	"wizard": [["fireball", 1, 0], ["frost_armor", 1, 0], ["frostbolt", 2, 10], ["fire_blast", 4, 60], ["arcane_missiles", 6, 100], ["frost_nova", 8, 200], ["blink", 10, 300], ["flamestrike", 12, 500],
 		["ice_barrier", 16, 2400], ["pyroblast", 20, 6000], ["cone_of_cold", 26, 12000], ["arcane_power", 32, 20000], ["evocation", 40, 32000], ["meteor", 50, 50000], ["time_warp", 56, 64000]],
 	"cleric": [["smite", 1, 0], ["mend", 1, 0], ["inner_fire", 2, 10], ["shadow_rot", 4, 60], ["ward_of_light", 6, 100], ["renewal", 8, 200], ["holy_nova", 10, 300],
-		["greater_mend", 14, 1800], ["mind_blast", 20, 6000], ["prayer_of_healing", 26, 12000], ["divine_protection", 32, 20000], ["radiance", 40, 32000], ["holy_fire", 50, 50000], ["salvation", 56, 64000]],
+		["greater_mend", 14, 1800], ["mind_blast", 20, 6000], ["resurrection", 20, 4000], ["prayer_of_healing", 26, 12000], ["divine_protection", 32, 20000], ["radiance", 40, 32000], ["holy_fire", 50, 50000], ["salvation", 56, 64000]],
 }
 
 static func starting_abilities(cls: String) -> Array:

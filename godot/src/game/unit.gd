@@ -433,6 +433,7 @@ func check_use(id: String, t: Unit) -> String:
 	if not Abilities.LIST.has(id): return "Unknown ability"
 	var a: Dictionary = Abilities.LIST[id]
 	if stunned > 0.0: return "You are stunned"
+	if a.get("school", "physical") != "physical" and _aura_sum("silence") > 0.0 and a.get("cls", "") != "monster": return "You are silenced"
 	if not casting.is_empty(): return "You are busy"
 	if a.get("gcd", true) and gcd > 0.0: return "Not ready yet"
 	if cds.has(id): return "Not ready yet"
@@ -440,6 +441,11 @@ func check_use(id: String, t: Unit) -> String:
 	if c > power + 0.01: return "Not enough rage" if power_kind == "rage" else "Not enough mana"
 	var kind: String = a["kind"]
 	if a.get("self", false) or kind == "aoe": return ""
+	if a.get("dead_ok", false):
+		if t == null or not is_instance_valid(t) or not t.dead or is_enemy(t): return "Target must be a dead friend"
+		if distance_to(t) > float(a.get("range", Rules.SPELL_RANGE)): return "Out of range"
+		if in_combat: return "You are in combat"
+		return ""
 	if t == null or not is_instance_valid(t) or t.dead:
 		if a.get("helpful", false): return ""
 		return "You have no target"
@@ -455,7 +461,7 @@ func check_use(id: String, t: Unit) -> String:
 
 func cost_of(id: String) -> float:
 	var c := float(Abilities.LIST[id].get("cost", 0))
-	if c <= 0: return 0.0
+	if c <= 0 or _aura_sum("free_cast") > 0.0: return 0.0
 	if power_kind == "rage": return maxf(0.0, c + tmod("cost_" + id))
 	return base_mana() * c / 100.0 * maxf(0.2, 1.0 + tmod("cost_pct"))
 
@@ -611,7 +617,9 @@ func _effect2(id: String, t: Unit, at: Vector3) -> void:
 					else: u.take_damage(self, Abilities.value(id, "dmg", level) * (1.0 - Rules.armor_dr(u.armor, level)), school, false, "special", 1.75)
 				if a.has("root"): u.add_aura(id, self, float(a["root"]), {"root": true, "debuff": true})
 				if a.has("slow_attack"): u.add_aura(id, self, float(a["dur"]), {"slow_attack": a["slow_attack"], "debuff": true})
-			if a.has("heal"):
+			if a.has("heal_pct"):
+				for u in friends_near(global_position, float(a["radius"])): u.heal(self, u.max_hp * float(a["heal_pct"]))
+			elif a.has("heal"):
 				for u in friends_near(global_position, float(a["radius"])): u.heal(self, Abilities.value(id, "heal", level, spell_power() * 0.5))
 		"ground":
 			for u in enemies_near(at, float(a["radius"])):
@@ -621,7 +629,7 @@ func _effect2(id: String, t: Unit, at: Vector3) -> void:
 			var data := {}
 			for key in ["ap", "armor", "sp", "max_hp", "mana_regen"]:
 				if a.has(key): data[key] = Abilities.value(id, key, level)
-			for key in ["dmg_pct", "dmg_taken", "haste"]:
+			for key in ["dmg_pct", "dmg_taken", "haste", "free_cast"]:
 				if a.has(key): data[key] = float(a[key])
 			if a.has("heal_pct"): t.heal(self, t.max_hp * float(a["heal_pct"]))
 			t.add_aura(String(a.get("aura", id)), self, float(a["dur"]), data)
@@ -634,6 +642,11 @@ func _effect2(id: String, t: Unit, at: Vector3) -> void:
 			var c: Vector3 = global_position if a.get("self_center", false) else (at if at != Vector3.INF else (t.global_position if t else global_position))
 			var victims := enemies_near(c, float(a["radius"]))
 			for u in victims: spell_hit(u, Abilities.value(id, "dmg", level), school)
+		"res":
+			if t and is_instance_valid(t) and t.dead:
+				t.revive(0.4)
+				if t.power_kind == "mana": t.power = t.max_power * 0.4
+				get_tree().call_group("hud", "notice", "%s has been resurrected by %s." % [t.uname, uname])
 		"hearth":
 			if has_method("go_home"): call("go_home")
 		"mount":

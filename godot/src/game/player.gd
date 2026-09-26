@@ -65,12 +65,7 @@ func setup_from(ch: Dictionary) -> void:
 	# tests that start further along get the greens a player would have found by now
 	if ch.get("test_gear", false):
 		var r := RandomNumberGenerator.new(); r.seed = 77
-		var got := 0
-		while got < 6:
-			var it := Items.roll(level - 2, r)
-			var d := Items.get_def(it)
-			var sl: String = d["slot"]
-			if Items.can_use(cls, d, level) and (not equipped.has(sl) or sl == "main_hand" and not equipped[sl].has("rolled")): equipped[sl] = it; got += 1
+		gear_up(level - 1, 2, r)
 
 	quests = ch.get("quests", {}).duplicate(true)
 
@@ -81,6 +76,7 @@ func setup_from(ch: Dictionary) -> void:
 	durability = float(ch.get("durability", 1.0))
 	hearth = String(ch.get("hearth", "ashvale")).to_lower()
 	discovered = ch.get("discovered", []).duplicate()
+	raid_locks = ch.get("raid_locks", {}).duplicate(); pity = ch.get("pity", {}).duplicate(); raid = bool(ch.get("raid", false))
 	skills = ch.get("skills", {}).duplicate()
 
 
@@ -98,7 +94,7 @@ func to_save() -> Dictionary:
 	return {"name": uname, "cls": cls, "level": level, "look": look, "xp": xp, "gold": gold, "bar": bar,
 		"pos": [global_position.x, global_position.z], "known": known, "bags": bags, "equipped": equipped,
 		"quests": quests, "done_quests": done_quests, "talents": talents, "titles": titles, "title": title, "rep": rep, "durability": durability,
-		"rested": rested, "hearth": hearth, "discovered": discovered, "skills": skills, "logout": Time.get_unix_time_from_system(), "at_inn": global_position.distance_to(Vector3(-19, 0, 9)) < 14.0}
+		"rested": rested, "hearth": hearth, "discovered": discovered, "skills": skills, "raid_locks": raid_locks, "pity": pity, "raid": raid, "logout": Time.get_unix_time_from_system(), "at_inn": global_position.distance_to(Vector3(-19, 0, 9)) < 14.0}
 
 # ------------------------------------------------------------------ bags
 
@@ -340,6 +336,7 @@ func _unhandled_input(e: InputEvent) -> void:
 		if k >= KEY_1 and k <= KEY_5: press_slot(k - KEY_1)
 		elif k == KEY_TAB: tab_target()
 		elif k == KEY_Z: toggle_mount()
+		elif k == KEY_R: use_mythic()
 		elif k == KEY_ESCAPE and target: target = null; attacking = false; changed.emit(); get_viewport().set_input_as_handled()
 
 func press_slot(i: int) -> void:
@@ -509,6 +506,9 @@ func _think(delta: float) -> void:
 # ------------------------------------------------------------------ loot and the group
 
 var party: Array = []                # other members of our group (simulated players)
+var raid := false                    # a raid group: up to ten, not five
+var raid_locks := {}                 # raid boss kind -> the raid week it died (weekly lockout)
+var pity := {}                       # raid boss kind -> kills without a Mythic of your own
 
 func party_members() -> Array:
 	var out: Array = [self]
@@ -822,6 +822,34 @@ func _check_discovery() -> void:
 
 ## tests can pretend each minute is a new day
 ## the day number for "once a day" things (with --fastdays a day lasts a minute, for tests)
+## a Mythic's power, on R
+func use_mythic() -> void:
+	for sl in equipped:
+		var d := Items.get_def(equipped[sl])
+		if d.has("use_power"):
+			var id: String = d["use_power"]
+			var t: Unit = target if target and is_instance_valid(target) else self
+			var why := check_use(id, t)
+			if why != "": _hud("error", why); return
+			use(id, t, t.global_position)
+			return
+	_hud("error", "Nothing to use")
+
+## dress in a full set of rolled gear for this level (tests, and the other players, who'd have
+## been picking things up all along the road). quality 2 green, 3 blue.
+func gear_up(lv: int, quality: int, r: RandomNumberGenerator) -> void:
+	var slots := ["head", "shoulders", "chest", "wrist", "hands", "waist", "legs", "feet", "back", "finger1", "neck", "main_hand"]
+	for tries in 400:
+		var it := Items.roll(maxi(1, lv), r, quality)
+		var d := Items.get_def(it)
+		var sl: String = d["slot"]
+		if not (sl in slots) or not Items.can_use(cls, d, 99): continue
+		if cls != "warrior" and sl == "main_hand" and not (d.get("wtype", "") in ["staff", "wand"]): continue
+		if cls == "warrior" and d.has("armor_type") and d["armor_type"] == "cloth": continue
+		if equipped.has(sl) and equipped[sl].get("id", "") == "rolled": continue
+		equipped[sl] = it
+		if slots.all(func(x): return equipped.has(x) and equipped[x].get("id", "") == "rolled"): break
+
 static func today() -> int:
 	if Main_fast_days(): return int(Time.get_ticks_msec() / 60000)
 	return int(Time.get_unix_time_from_system() / 86400.0)

@@ -72,10 +72,14 @@ static func con_color(level: int, mon_level: int) -> Color:
 
 ## ---- monsters by level (normal; elites, rares and bosses multiply) ----
 static func mon_hp(level: int) -> int:
-	return int(42 + 14.0 * level + 0.5 * level * level)
+	# quadratic to 30, then gentle: abilities grow in a straight line, so fights would drag at 50+
+	var l := mini(level, 30)
+	return int(42 + 14.0 * level + 0.5 * l * l + 8.0 * maxi(0, level - 30))
 
 static func mon_hit(level: int) -> float:
-	return 3.0 + 1.3 * level + 0.045 * level * level
+	# WoW-like curve to 30, then straight (a quadratic keeps outgrowing player health past 40)
+	var l := mini(level, 30)
+	return 3.0 + 1.3 * l + 0.045 * l * l + 3.6 * maxi(0, level - 30)
 
 static func mon_armor(level: int) -> int:
 	return 25 * level

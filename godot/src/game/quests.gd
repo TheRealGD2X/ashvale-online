@@ -422,8 +422,8 @@ const LIST := {
 		"obj": [{"kind": "kill", "mon": "tidecaller", "n": 6}], "xp": 8000, "money": 48000, "choice": ["tidecallers_mantle", "brinewarden_helm", "coral_band"], "rep": 75, "where": "the rocks on the north-east shore"},
 	"old_snapjaw": {"title": "Old Snapjaw", "giver": "cask", "level": 44, "min": 42, "group": true,
 		"offer": "There's a crab out on the flats older than this town. Snapjaw, the boys call him. He took my brother's boat in half with one claw, thirty years ago. My brother's fine. The boat isn't. He's come ashore with the others and I want him in my pot. Bring friends.",
-		"goal": "Kill Old Snapjaw, the great crab of the Kelp Flats. (Group)", "progress": "Big as a cart. You can't miss him.", "done": "You got him! My brother's going to cry. Look — a shell like that, you could make armour of it. Take this.",
-		"obj": [{"kind": "kill", "mon": "snapjaw", "n": 1}], "xp": 8000, "money": 48000, "items": ["snapjaw_shell_buckler"], "rep": 150, "where": "the Kelp Flats, east of town"},
+		"goal": "Kill Old Snapjaw, the great crab, on the rocks below the lighthouse. (Group)", "progress": "Big as a cart. You can't miss him.", "done": "You got him! My brother's going to cry. Look — a shell like that, you could make armour of it. Take this.",
+		"obj": [{"kind": "kill", "mon": "snapjaw", "n": 1}], "xp": 8000, "money": 48000, "items": ["snapjaw_shell_buckler"], "rep": 150, "where": "the rocks below the lighthouse"},
 	"gutbag": {"title": "Gutbag, the Wrecker King", "giver": "maren", "level": 45, "min": 43, "after": ["wreckers_cove"], "chain": "The Wreckers", "group": true,
 		"offer": "The puglins have a king. Of course they do. Gutbag. He sits in the wreck of the Gull's Pride with a crown made from a ship's bell and gives orders. Cut the head off and the rest will go home. Take a friend. Take two.",
 		"goal": "Kill Gutbag, the Wrecker King, at the back of Wrecker's Cove. (Group)", "progress": "Is he still wearing my bell?", "done": "He was wearing the bell? It's the Gull's Pride's bell. We'll hang it back on the pier. Here — you've earned the harbour's thanks, and a little of its money.",
@@ -562,8 +562,8 @@ const LIST := {
 		"obj": [{"kind": "kill", "mon": "doomherald_kess", "n": 1}], "xp": 22150, "money": 132900, "choice": ["heralds_bane", "kesss_voidmantle", "crown_breaker_band"], "rep": 150, "where": "the Broken Crown, north-east"},
 	"the_gate_breathes": {"title": "The Gate Breathes", "giver": "amara", "level": 60, "min": 58, "after": ["void_horrors"], "chain": "The Lost",
 		"offer": "I've seen it in the bowl. Now I need someone to see it with their eyes. Go to the Gate at the top of the Broken Road — don't go through, just look — and come back and tell me what's there. Take the Ember with you.",
-		"goal": "Go to the Sanctum Gate at the head of the Broken Road and look through it.", "progress": "Did you see it?", "done": "You saw him. Vaal. Asleep, but not deeply. When he wakes, the Sanctum wakes with him, and then everything. Rest now. When it's time, it will take ten of you to go through that Gate.",
-		"obj": [{"kind": "explore", "at": [0, -76], "r": 10.0, "name": "the Sanctum Gate"}], "xp": 11800, "money": 70800, "rep": 75},
+		"goal": "Go to the Sanctum Gate at the head of the Broken Road and look through it.", "progress": "Did you see it?", "done": "You saw him. Vaal. Asleep, but not deeply. When he wakes, the Sanctum wakes with him, and then everything. Rest now. Take this key — the Keeper at the Gate will know it. When it's time, it will take ten of you to go through.",
+		"obj": [{"kind": "explore", "at": [0, -76], "r": 10.0, "name": "the Sanctum Gate"}], "xp": 11800, "money": 70800, "items": ["sanctum_key"], "rep": 75},
 }
 
 ## how much experience a quest gives at your level (WoW: much less once it's grey to you)

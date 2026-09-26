@@ -172,6 +172,31 @@ const KINDS := {
 		"attack": ["Sword_Regular_A"], "spells": ["void_bolt"], "loot": ["cultist_robe_scrap"]},
 	"doomherald_kess": {"model": "Hellwarden", "type": "demon", "scale": 1.75, "attack": ["Sword_Heavy_Combo", "Sword_Attack"], "speed": 3.0, "names": ["Doomherald Kess"], "named": true,
 		"walk": "Walk", "spells": ["hellfire_ring", "void_nova"], "loot": ["voidstone"]},
+	# ---- the Abyssal Sanctum (raid, 60): every boss has two mechanics, a turn at half health, and a six-minute enrage
+	"sanctum_knight": {"model": "Hellwarden", "type": "demon", "scale": 1.25, "attack": ["Sword_Heavy_Combo", "Sword_Attack"], "speed": 3.0, "names": ["Sanctum Knight"], "walk": "Walk",
+		"raid_trash": true, "loot": ["voidstone"]},
+	"sanctum_voidcaller": {"avatar": "wizard", "tool": "abyssstaff", "type": "humanoid", "scale": 1.1, "speed": 2.6, "names": ["Sanctum Voidcaller"], "caster": true, "tint": 3,
+		"attack": ["Sword_Regular_A"], "spells": ["void_bolt"], "raid_trash": true, "loot": ["cultist_robe_scrap"]},
+	"ash_golem": {"model": "Tidebreaker", "type": "elemental", "scale": 1.5, "attack": ["Sword_Attack", "Sword_Regular_C"], "speed": 3.0, "names": ["Ash Golem"], "raid_trash": true},
+	"lore_rune": {"model": "Imp", "type": "elemental", "scale": 0.8, "attack": ["Sword_Regular_A"], "speed": 2.0, "names": ["Rune of Lore"], "caster": true, "still": true, "hp_mult": 2.0,
+		"spells": ["void_bolt"], "raid_trash": true},
+	"void_spawn": {"model": "Imp", "type": "demon", "scale": 1.2, "attack": ["Sword_Regular_A", "Melee_Hook"], "speed": 1.9, "names": ["Spawn of Vaal"], "walk": "Walk", "raid_trash": true},
+	"ashen_colossus": {"model": "Tidebreaker", "type": "elemental", "scale": 2.9, "attack": ["Sword_Attack", "Sword_Regular_C"], "speed": 3.2, "names": ["The Ashen Colossus"],
+		"boss": "colossus", "raid": true, "nova": "colossus_stomp", "yell_pull": "INTRUDERS. IN THE SANCTUM.", "yell_die": "The... fire... goes... out.",
+		"raid_loot": ["colossus_knuckles", "cinderstone_ring", "ashfall_cord", "golemheart", "colossus_maul"], "token": "token_hands", "mythic": "mythic_worldbreaker"},
+	"the_archivist": {"avatar": "wizard", "tool": "abyssstaff", "type": "humanoid", "scale": 1.7, "speed": 2.6, "names": ["The Archivist"], "caster": true, "tint": 3,
+		"attack": ["Sword_Regular_A"], "spells": ["void_bolt"], "boss": "archivist", "raid": true, "yell_pull": "You are late. You were always going to be late. It is written.",
+		"yell_die": "The last... page...", "raid_loot": ["tome_of_the_archivist", "inkstained_wraps", "lorekeepers_legplates", "runed_quill", "silent_word"], "token": "token_head",
+		"mythic": "mythic_eternity"},
+	"warden_ashur": {"model": "Hellwarden", "type": "demon", "scale": 2.0, "attack": ["Sword_Heavy_Combo", "Sword_Attack"], "speed": 3.0, "names": ["Ashur, the Left Hand"], "walk": "Walk",
+		"boss": "twins", "twin": "warden_seth", "raid": true, "hp_mult": 42.0, "spells": ["hellfire_ring"], "yell_pull": "Two doors. Two keys. Two deaths.", "yell_die": "Brother...",
+		"raid_loot": ["ashurs_edge", "chainlinked_girdle", "wardens_cloak"], "token": "token_legs", "mythic": "mythic_dawnbringer"},
+	"warden_seth": {"model": "Skeleton_B", "type": "undead", "scale": 2.1, "attack": ["Sword_Heavy_Combo", "Sword_Regular_C"], "speed": 3.0, "names": ["Seth, the Right Hand"],
+		"walk": "Zombie_Walk_Fwd", "idle": "Zombie_Idle", "boss": "twins", "twin": "warden_ashur", "raid": true, "hp_mult": 42.0, "spells": ["void_nova"], "yell_die": "Brother...",
+		"raid_loot": ["seths_gaze", "twinbound_band", "wardens_cloak"], "token": "token_shoulders"},
+	"vaal": {"model": "Hellwarden", "type": "demon", "scale": 2.7, "attack": ["Sword_Heavy_Combo", "Sword_Attack"], "speed": 3.0, "names": ["Vaal the Undying"], "walk": "Walk",
+		"boss": "vaal", "raid": true, "nova": "vaal_nova", "yell_pull": "Ten of you. Only ten. I have eaten kingdoms.", "yell_die": "I... am... undying...",
+		"raid_loot": ["vaals_eye", "undying_greaves", "voidstep_slippers", "crown_of_the_undying", "soulreaver"], "token": "token_chest", "mythic": "mythic_worldbreaker"},
 	"puglin": {"model": "Puglin", "type": "humanoid", "scale": 1.0, "attack": ["Punch_Jab", "Punch_Cross"], "speed": 2.0,
 		"names": ["Puglin Scavenger", "Puglin Snout", "Puglin Tusker"], "walk": "Walk", "loot": ["puglin_trinket"]},
 	"imp": {"model": "Imp", "type": "demon", "scale": 1.0, "attack": ["Sword_Regular_A", "Melee_Hook"], "speed": 1.8,
@@ -266,16 +291,22 @@ func _ready() -> void:
 	move_speed = Rules.RUN_SPEED * 0.95
 	_stats()
 	wander_t = rng.randf_range(2.0, 8.0)
+	if KINDS[kind].get("raid", false): (func(): Raid.check_lock(self)).call_deferred()
 
 func _stats() -> void:
 	var named: bool = KINDS[kind].get("named", false)
 	max_hp = Rules.mon_hp(level) * (2.5 if elite else (1.8 if named else 1.0))
 	if boss: max_hp = Rules.mon_hp(level) * 9.0
+	# the raid: bosses built for ten (DESIGN §12: raid boss ×60 of a dungeon trash mob, here scaled to our damage)
+	if KINDS[kind].get("raid", false): max_hp = Rules.mon_hp(level) * float(KINDS[kind].get("hp_mult", 70.0)); leash = 90.0
+	elif KINDS[kind].get("raid_trash", false): max_hp = Rules.mon_hp(level) * float(KINDS[kind].get("hp_mult", 5.0))
 	if KINDS[kind].get("cage", false): max_hp = 40 * level
 	if critter: max_hp = 6 + level * 2
 	hp = max_hp
 	armor = Rules.mon_armor(level)
 	var hit := Rules.mon_hit(level) * (1.5 if elite else 1.0)
+	if KINDS[kind].get("raid", false): hit = Rules.mon_hit(level) * 3.2
+	elif KINDS[kind].get("raid_trash", false): hit = Rules.mon_hit(level) * 1.7
 	var spd: float = KINDS[kind]["speed"]
 	weapon = {"min": hit * spd / 2.0 * 0.85, "max": hit * spd / 2.0 * 1.15, "speed": spd}
 	loot_gold = int((level * 3 + rng.randi_range(0, level * 4)) * (3 if elite else 1))
@@ -421,6 +452,8 @@ func _boss_tick(delta: float) -> void:
 				var ny: Array = KINDS[kind].get("nova_yell", ["Burn!"])
 				_yell(ny[rng.randi() % ny.size()])
 				stop_moving(); use(KINDS[kind].get("nova", "hellfire_ring"), self, global_position)
+		"colossus", "archivist", "twins", "vaal":
+			Raid.boss_tick(self, delta)
 		"bone_king":
 			# Bone Prison: a cage of bone closes on someone; break it in 6 seconds or it crushes them
 			if boss_t > 20.0 and threat.size() >= 1:
@@ -504,6 +537,8 @@ func _think(delta: float) -> void:
 		if not is_instance_valid(k) or k.dead: threat.erase(k)
 	if in_combat:
 		if global_position.distance_to(home) > leash or (threat.is_empty() and combat_t > 1.0):
+			if KINDS[kind].get("raid", false) and OS.get_cmdline_user_args().has("--raidtest"):
+				print("  EVADE %s: %.0f m from home (leash %.0f), threat %d, combat_t %.1f" % [uname, global_position.distance_to(home), leash, threat.size(), combat_t])
 			_evade(); return
 		_pick_target()
 		if critter:
@@ -518,6 +553,11 @@ func _think(delta: float) -> void:
 			attacking = true
 			if not casting.is_empty(): return
 			var caster: bool = KINDS[kind].get("caster", false)
+			if KINDS[kind].get("still", false):
+				stop_moving()
+				for sp2 in KINDS[kind].get("spells", []):
+					if check_use(sp2, target) == "": use(sp2, target); return
+				return
 			# special attacks when they are ready
 			for sp in KINDS[kind].get("spells", []):
 				if check_use(sp, target) == "" and (not caster or distance_to(target) > 4.0 or rng.randf() < 0.3):
@@ -577,6 +617,7 @@ var evade_t := 0.0
 
 func _evade() -> void:
 	evading = true; attacking = false; target = null; evade_t = 0.0
+	if KINDS[kind].get("raid", false): Raid.reset(self)
 
 	threat.clear(); casting.clear()
 	path = Nav.path(global_position, home)
@@ -609,6 +650,8 @@ func _on_death(k: Unit) -> void:
 	threat.clear()
 	corpse_t = 60.0 if not loot.is_empty() or loot_money > 0 else 18.0
 	respawn_t = rng.randf_range(40.0, 70.0) * (3.0 if elite else 1.0)
+	if boss and WorldData.Z.get("dungeon", false): respawn_t = 1e9          # a cleared boss stays cleared
+	if KINDS[kind].get("raid", false): Raid.boss_died(self)
 
 var looter: Unit                     # who may loot this corpse
 var sparkle: Node3D

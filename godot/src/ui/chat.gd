@@ -5,7 +5,8 @@ class_name ChatBox extends Control
 ## Simulated players read what you write (the "bots" group gets hear()) and may answer.
 
 const COLORS := {"say": Color(1, 1, 1), "general": Color(1.0, 0.78, 0.6), "whisper": Color(1.0, 0.5, 1.0),
-	"party": Color(0.55, 0.75, 1.0), "system": Color(1.0, 0.95, 0.4), "loot": Color(0.2, 0.9, 0.3), "npc": Color(1.0, 1.0, 0.62), "yell": Color(1.0, 0.25, 0.2)}
+	"party": Color(0.55, 0.75, 1.0), "system": Color(1.0, 0.95, 0.4), "loot": Color(0.2, 0.9, 0.3), "npc": Color(1.0, 1.0, 0.62), "yell": Color(1.0, 0.25, 0.2),
+	"raid": Color(1.0, 0.5, 0.0), "raid_warning": Color(1.0, 0.82, 0.1)}
 
 var log_box: RichTextLabel
 var input: LineEdit
@@ -78,6 +79,18 @@ func _send(text: String) -> void:
 			"/invite", "/inv":
 				if parts.size() < 2: return
 				get_tree().call_group("bots", "invited", player, parts[1]); return
+			"/raid", "/ra":
+				if parts.size() < 2 or not player.raid: ch = "party"; text = text.substr(parts[0].length()).strip_edges()
+				else: ch = "party"; text = text.substr(parts[0].length()).strip_edges()
+			"/raidinfo", "/ri":
+				var lines2 := []
+				for k in Raid.ORDER:
+					var nm: String = "The Twin Wardens" if k == "warden_ashur" else Monster.KINDS[k]["names"][0]
+					lines2.append("%s: %s" % [nm, "defeated this week" if Raid.locked(player, k) else "available"])
+				post("system", "", "The Abyssal Sanctum (resets Wednesday 06:00). " + "; ".join(lines2))
+				return
+			"/lfm":
+				get_tree().call_group("society", "gather_raid", player); return
 			"/leave":
 				get_tree().call_group("bots", "leave_party", player); return
 			"/who":
@@ -85,7 +98,7 @@ func _send(text: String) -> void:
 				for b in get_tree().get_nodes_in_group("bots"): names.append("%s (%d %s)" % [b.uname, b.level, Rules.CLASSES[b.cls]["name"]])
 				post("system", "", "%d players in Ashvale: %s" % [names.size(), ", ".join(names)]); return
 			_:
-				post("system", "", "Unknown command. Try /s /g /p /w Name /r /invite Name /leave /who"); return
+				post("system", "", "Unknown command. Try /s /g /p /w Name /r /invite Name /leave /who /lfm"); return
 		channel = ch
 		if ch == "whisper": last_whisper = to
 	if text == "": return
@@ -104,7 +117,8 @@ func post(ch: String, who: String, text: String) -> void:
 		"say": line = "[color=#%s][url=%s][%s][/url] says: %s[/color]" % [c, who, who, _esc(text)]
 		"yell": line = "[color=#%s][url=%s][%s][/url] yells: %s[/color]" % [c, who, who, _esc(text)]
 		"general": line = "[color=#%s][1. General] [url=%s][%s][/url]: %s[/color]" % [c, who, who, _esc(text)]
-		"party": line = "[color=#%s][Party] [url=%s][%s][/url]: %s[/color]" % [c, who, who, _esc(text)]
+		"party": line = "[color=#%s][%s] [url=%s][%s][/url]: %s[/color]" % [c, "Raid" if player and player.raid else "Party", who, who, _esc(text)]
+		"raid_warning": line = "[color=#%s][b]%s[/b][/color]" % [c, _esc(text)]
 		"whisper":
 			line = "[color=#%s][url=%s][%s][/url] whispers: %s[/color]" % [c, who, who, _esc(text)]
 			last_whisper = who

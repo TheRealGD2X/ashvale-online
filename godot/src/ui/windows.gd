@@ -217,7 +217,14 @@ func _gossip() -> void:
 	elif info.has("trainer"): v.add_child(_para("\"You're no %s. Go and find your own kind.\"" % Rules.CLASSES[info["trainer"]]["name"], 16, Color(0.75, 0.7, 0.6)))
 	if info.get("market", false): v.add_child(_option("⚖", "Show me the market board.", INK, func(): open_market()))
 	if info.get("inn", false): v.add_child(_option("⌂", "Make this inn your home.", INK, func():
-		player.hearth = WorldData.zone_id; hud.notice("%s is now your home." % ("Ashvale Inn" if WorldData.zone_id == "ashvale" else "The Miners' Camp")); npc_win.visible = false))
+		player.hearth = WorldData.zone_id; hud.notice("%s is now your home." % ("Ashvale Inn" if WorldData.zone_id == "ashvale" else Zones.get_def(WorldData.zone_id)["name"])); npc_win.visible = false))
+	if info.get("raid_gather", false):
+		v.add_child(_option("⚔", "Call for a raid (ten players)." if player.party.size() < 9 else "My raid is ready.", INK, func():
+			get_tree().call_group("society", "gather_raid", player); npc_win.visible = false))
+	if info.get("vault", false):
+		v.add_child(_option("◈", "Exchange my Oath tokens for my Order's set.", INK, func():
+			var n := RaidLoot.exchange_tokens(player)
+			hud.notice("The Keeper hands you %d piece%s of your set." % [n, "" if n == 1 else "s"] if n > 0 else "You have no Oath tokens."); _gossip()))
 
 	if info.get("repair", false) and player.repair_cost() > 0:
 		v.add_child(_option("⚒", "Repair my gear (%s)" % Items.money(player.repair_cost()), INK, func(): player.repair(); _gossip()))
@@ -784,3 +791,27 @@ func _fill_market() -> void:
 				h4.add_child(_money_row(int(l["price"]), 15))
 				var k2 := int(l["key"])
 				h4.add_child(_btn("Take down", func(): mk.cancel(player, k2); _fill_market()))
+
+# ------------------------------------------------------------------ raid loot rolls
+
+var roll_win: PanelContainer
+func open_roll(it: Dictionary, loot: RaidLoot) -> void:
+	if roll_win == null:
+		roll_win = _window("Roll for loot", 360)
+		roll_win.position = Vector2(get_viewport().get_visible_rect().size.x / 2.0 - 180, 120)
+	roll_win.visible = true
+	var v := _body(roll_win, "Roll for loot")
+	var d := Items.get_def(it)
+	var h := HBoxContainer.new(); h.add_theme_constant_override("separation", 10); v.add_child(h)
+	h.add_child(_slot(it, 52.0))
+	var nl := _lbl(d.get("name", "?"), 18, Items.color(d)); nl.custom_minimum_size = Vector2(230, 0); nl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; h.add_child(nl)
+	var row := HBoxContainer.new(); row.add_theme_constant_override("separation", 8); v.add_child(row)
+	var can := d.has("token") or Items.can_use(player.cls, d, player.level)
+	var nb := _btn("Need", func(): loot.choose("need"), 100); nb.disabled = not can; row.add_child(nb)
+	row.add_child(_btn("Greed", func(): loot.choose("greed"), 100))
+	row.add_child(_btn("Pass", func(): loot.choose("pass"), 100))
+	v.add_child(_lbl("30 seconds to choose", 14, Color(0.7, 0.7, 0.65)))
+
+func close_roll() -> void:
+	if roll_win: roll_win.visible = false
+

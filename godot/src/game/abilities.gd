@@ -132,6 +132,9 @@ const LIST := {
 		"kind": "buff", "self": true, "aura": "inner_fire", "armor": [60, 10.0], "ap": [6, 1.2], "dur": 600.0, "anim": "Spell_Simple_Shoot", "fx": "inner_fire",
 		"icon": ["♆", Color(1.0, 0.7, 0.3)], "desc": "A holy fire within you: +{armor} armour and +{ap} attack power for 10 minutes."},
 
+	"resurrection": {"name": "Resurrection", "cls": "cleric", "level": 20, "school": "holy", "cost": 30, "cast": 6.0, "helpful": true, "dead_ok": true,
+		"kind": "res", "range": Rules.SPELL_RANGE, "anim": "cast", "fx": "mend", "icon": ["✞", Color(1.0, 0.95, 0.75)],
+		"desc": "Brings a dead friend back to life with some of their health and mana. Out of combat only.", "ooc": true},
 	"greater_mend": {"name": "Greater Mend", "cls": "cleric", "level": 14, "school": "holy", "cost": 16, "cast": 3.0, "helpful": true,
 		"kind": "heal", "range": Rules.SPELL_RANGE, "heal": [60, 17.0], "coef": 1.2, "anim": "cast", "fx": "mend",
 		"icon": ["✙", Color(1.0, 0.9, 0.45)], "desc": "A slow, deep heal: restores {heal} health to a friend."},
@@ -156,6 +159,15 @@ const LIST := {
 
 	# ------------------------------------------------------------------ monsters
 	# ------------------------------------------------------------------ everyone
+	"myth_quake": {"name": "Worldbreaker", "cls": "all", "level": 60, "school": "physical", "cost": 0, "cd": 120.0, "gcd": false,
+		"kind": "aoe", "radius": 10.0, "dmg": [300, 30.0], "anim": "NinjaJump_Land", "fx": "thunderclap", "icon": ["☄", Color(1.0, 0.55, 0.1)],
+		"desc": "Split the earth: {dmg} damage to every enemy within 10 metres."},
+	"myth_hours": {"name": "Stop the Hours", "cls": "all", "level": 60, "school": "arcane", "cost": 0, "cd": 180.0, "gcd": false,
+		"kind": "buff", "self": true, "aura": "myth_hours", "haste": 1.0, "free_cast": 1.0, "dur": 10.0, "anim": "Spell_Simple_Shoot", "fx": "blink", "icon": ["⧗", Color(1.0, 0.6, 0.2)],
+		"desc": "Your spells cost nothing and cast twice as fast for 10 seconds."},
+	"myth_dawn": {"name": "Second Sunrise", "cls": "all", "level": 60, "school": "holy", "cost": 0, "cd": 180.0, "gcd": false, "helpful": true,
+		"kind": "aoe", "radius": 30.0, "heal": [0, 0.0], "heal_pct": 0.33, "anim": "Spell_Simple_Shoot", "fx": "holy_nova", "icon": ["☀", Color(1.0, 0.7, 0.2)],
+		"desc": "Heals you and everyone near you for a third of their health."},
 	"summon_stag": {"name": "Highland Stag", "cls": "all", "level": 40, "school": "nature", "cost": 0, "cast": 1.5, "self": true, "ooc": true,
 		"kind": "mount", "anim": "cast", "fx": "", "icon": ["♞", Color(0.7, 0.55, 0.35)], "desc": "Summons your Highland Stag. Riding, you move 60% faster. Anything you do other than walk gets you off."},
 
@@ -189,6 +201,10 @@ const LIST := {
 		"kind": "telegraph", "self_center": true, "radius": 8.0, "dmg": [34, 7.0], "anim": "Sword_Heavy_Combo", "fx": "hellfire", "icon": ["✦", Color(0.6, 0.3, 1.0)], "desc": ""},
 	"pyre_nova": {"name": "Pyre Nova", "cls": "monster", "level": 1, "school": "fire", "cost": 0, "cast": 3.0, "gcd": false,
 		"kind": "telegraph", "self_center": true, "radius": 11.0, "dmg": [60, 12.0], "anim": "Sword_Heavy_Combo", "fx": "hellfire", "icon": ["🔥", Color(1, 0.3, 0.05)], "desc": ""},
+	"colossus_stomp": {"name": "Stomp", "cls": "monster", "level": 1, "school": "fire", "cost": 0, "cast": 2.0, "gcd": false,
+		"kind": "telegraph", "self_center": true, "radius": 8.0, "dmg": [120, 26.0], "anim": "Sword_Heavy_Combo", "fx": "hellfire", "icon": ["☄", Color(1, 0.4, 0.1)], "desc": ""},
+	"vaal_nova": {"name": "Void Nova", "cls": "monster", "level": 1, "school": "shadow", "cost": 0, "cast": 2.5, "gcd": false,
+		"kind": "telegraph", "self_center": true, "radius": 13.0, "dmg": [140, 30.0], "anim": "Sword_Heavy_Combo", "fx": "hellfire", "icon": ["✦", Color(0.6, 0.3, 1.0)], "desc": ""},
 	"grub_eruption": {
 "name": "Eruption", "cls": "monster", "level": 1, "school": "nature", "cost": 0, "cast": 2.6, "gcd": false,
 		"kind": "telegraph", "radius": 4.5, "dmg": [30, 8.0], "range": 99.0, "anim": "", "fx": "", "icon": ["☄", Color(0.6, 0.5, 0.3)], "desc": ""},
