@@ -182,20 +182,20 @@ const KINDS := {
 		"spells": ["void_bolt"], "raid_trash": true},
 	"void_spawn": {"model": "Imp", "type": "demon", "scale": 1.2, "attack": ["Sword_Regular_A", "Melee_Hook"], "speed": 1.9, "names": ["Spawn of Vaal"], "walk": "Walk", "raid_trash": true},
 	"ashen_colossus": {"model": "Tidebreaker", "type": "elemental", "scale": 2.9, "attack": ["Sword_Attack", "Sword_Regular_C"], "speed": 3.2, "names": ["The Ashen Colossus"],
-		"boss": "colossus", "raid": true, "nova": "colossus_stomp", "yell_pull": "INTRUDERS. IN THE SANCTUM.", "yell_die": "The... fire... goes... out.",
+		"boss": "colossus", "raid": true, "aggro": 6.0, "nova": "colossus_stomp", "yell_pull": "INTRUDERS. IN THE SANCTUM.", "yell_die": "The... fire... goes... out.",
 		"raid_loot": ["colossus_knuckles", "cinderstone_ring", "ashfall_cord", "golemheart", "colossus_maul"], "token": "token_hands", "mythic": "mythic_worldbreaker"},
 	"the_archivist": {"avatar": "wizard", "tool": "abyssstaff", "type": "humanoid", "scale": 1.7, "speed": 2.6, "names": ["The Archivist"], "caster": true, "tint": 3,
-		"attack": ["Sword_Regular_A"], "spells": ["void_bolt"], "boss": "archivist", "raid": true, "yell_pull": "You are late. You were always going to be late. It is written.",
+		"attack": ["Sword_Regular_A"], "spells": ["void_bolt"], "boss": "archivist", "raid": true, "aggro": 6.0, "yell_pull": "You are late. You were always going to be late. It is written.",
 		"yell_die": "The last... page...", "raid_loot": ["tome_of_the_archivist", "inkstained_wraps", "lorekeepers_legplates", "runed_quill", "silent_word"], "token": "token_head",
 		"mythic": "mythic_eternity"},
 	"warden_ashur": {"model": "Hellwarden", "type": "demon", "scale": 2.0, "attack": ["Sword_Heavy_Combo", "Sword_Attack"], "speed": 3.0, "names": ["Ashur, the Left Hand"], "walk": "Walk",
-		"boss": "twins", "twin": "warden_seth", "raid": true, "hp_mult": 42.0, "spells": ["hellfire_ring"], "yell_pull": "Two doors. Two keys. Two deaths.", "yell_die": "Brother...",
+		"boss": "twins", "twin": "warden_seth", "raid": true, "aggro": 6.0, "hp_mult": 36.0, "hit_mult": 1.5, "spells": ["hellfire_ring"], "yell_pull": "Two doors. Two keys. Two deaths.", "yell_die": "Brother...",
 		"raid_loot": ["ashurs_edge", "chainlinked_girdle", "wardens_cloak"], "token": "token_legs", "mythic": "mythic_dawnbringer"},
 	"warden_seth": {"model": "Skeleton_B", "type": "undead", "scale": 2.1, "attack": ["Sword_Heavy_Combo", "Sword_Regular_C"], "speed": 3.0, "names": ["Seth, the Right Hand"],
-		"walk": "Zombie_Walk_Fwd", "idle": "Zombie_Idle", "boss": "twins", "twin": "warden_ashur", "raid": true, "hp_mult": 42.0, "spells": ["void_nova"], "yell_die": "Brother...",
+		"walk": "Zombie_Walk_Fwd", "idle": "Zombie_Idle", "boss": "twins", "twin": "warden_ashur", "raid": true, "aggro": 6.0, "hp_mult": 36.0, "hit_mult": 1.5, "spells": ["void_nova"], "yell_die": "Brother...",
 		"raid_loot": ["seths_gaze", "twinbound_band", "wardens_cloak"], "token": "token_shoulders"},
 	"vaal": {"model": "Hellwarden", "type": "demon", "scale": 2.7, "attack": ["Sword_Heavy_Combo", "Sword_Attack"], "speed": 3.0, "names": ["Vaal the Undying"], "walk": "Walk",
-		"boss": "vaal", "raid": true, "nova": "vaal_nova", "yell_pull": "Ten of you. Only ten. I have eaten kingdoms.", "yell_die": "I... am... undying...",
+		"boss": "vaal", "raid": true, "aggro": 6.0, "nova": "vaal_nova", "yell_pull": "Ten of you. Only ten. I have eaten kingdoms.", "yell_die": "I... am... undying...",
 		"raid_loot": ["vaals_eye", "undying_greaves", "voidstep_slippers", "crown_of_the_undying", "soulreaver"], "token": "token_chest", "mythic": "mythic_worldbreaker"},
 	"puglin": {"model": "Puglin", "type": "humanoid", "scale": 1.0, "attack": ["Punch_Jab", "Punch_Cross"], "speed": 2.0,
 		"names": ["Puglin Scavenger", "Puglin Snout", "Puglin Tusker"], "walk": "Walk", "loot": ["puglin_trinket"]},
@@ -298,15 +298,15 @@ func _stats() -> void:
 	max_hp = Rules.mon_hp(level) * (2.5 if elite else (1.8 if named else 1.0))
 	if boss: max_hp = Rules.mon_hp(level) * 9.0
 	# the raid: bosses built for ten (DESIGN §12: raid boss ×60 of a dungeon trash mob, here scaled to our damage)
-	if KINDS[kind].get("raid", false): max_hp = Rules.mon_hp(level) * float(KINDS[kind].get("hp_mult", 70.0)); leash = 90.0
-	elif KINDS[kind].get("raid_trash", false): max_hp = Rules.mon_hp(level) * float(KINDS[kind].get("hp_mult", 5.0))
+	if KINDS[kind].get("raid", false): max_hp = Rules.mon_hp(level) * float(KINDS[kind].get("hp_mult", 55.0)); leash = 90.0
+	elif KINDS[kind].get("raid_trash", false): max_hp = Rules.mon_hp(level) * float(KINDS[kind].get("hp_mult", 3.5))
 	if KINDS[kind].get("cage", false): max_hp = 40 * level
 	if critter: max_hp = 6 + level * 2
 	hp = max_hp
 	armor = Rules.mon_armor(level)
 	var hit := Rules.mon_hit(level) * (1.5 if elite else 1.0)
-	if KINDS[kind].get("raid", false): hit = Rules.mon_hit(level) * 3.2
-	elif KINDS[kind].get("raid_trash", false): hit = Rules.mon_hit(level) * 1.7
+	if KINDS[kind].get("raid", false): hit = Rules.mon_hit(level) * float(KINDS[kind].get("hit_mult", 2.6))
+	elif KINDS[kind].get("raid_trash", false): hit = Rules.mon_hit(level) * 1.25
 	var spd: float = KINDS[kind]["speed"]
 	weapon = {"min": hit * spd / 2.0 * 0.85, "max": hit * spd / 2.0 * 1.15, "speed": spd}
 	loot_gold = int((level * 3 + rng.randi_range(0, level * 4)) * (3 if elite else 1))

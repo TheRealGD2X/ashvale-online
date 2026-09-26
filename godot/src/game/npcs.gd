@@ -127,7 +127,7 @@ const LIST := {
 
 ## abilities each class learns, and when (from its trainer, for a fee in copper)
 const TRAINING := {
-	"warrior": [["heroic_strike", 1, 0], ["battle_shout", 1, 0], ["charge", 2, 10], ["rend", 4, 60], ["thunder_clap", 6, 100], ["hamstring", 8, 200], ["taunt", 10, 300], ["execute", 12, 500],
+	"warrior": [["heroic_strike", 1, 0], ["battle_shout", 1, 0], ["charge", 2, 10], ["rend", 4, 60], ["thunder_clap", 6, 100], ["hamstring", 8, 200], ["taunt", 10, 300], ["defensive_stance", 10, 300], ["execute", 12, 500],
 		["shield_block", 16, 2400], ["mortal_strike", 20, 6000], ["whirlwind", 26, 12000], ["recklessness", 32, 20000], ["shield_wall", 40, 32000], ["rallying_cry", 50, 50000], ["cleaving_slam", 56, 64000]],
 	"wizard": [["fireball", 1, 0], ["frost_armor", 1, 0], ["frostbolt", 2, 10], ["fire_blast", 4, 60], ["arcane_missiles", 6, 100], ["frost_nova", 8, 200], ["blink", 10, 300], ["flamestrike", 12, 500],
 		["ice_barrier", 16, 2400], ["pyroblast", 20, 6000], ["cone_of_cold", 26, 12000], ["arcane_power", 32, 20000], ["evocation", 40, 32000], ["meteor", 50, 50000], ["time_warp", 56, 64000]],

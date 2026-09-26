@@ -2,6 +2,56 @@
 
 Newest first. One line per commit. Tags: `[contract]` change to `src/shared/*`, `[cross]` touched the other worker's files, `[need]` a request for the other worker, `[design]` DESIGN.md changed.
 
+## 2026-09-26 (evening) — Claude, milestone 7: the raid
+**In plain English:** At level 60, the Sanctum Gate at the top of Vaal's Scar opens onto the Abyssal Sanctum, a raid for ten people. You bring nine others (simulated players answer your call), fight four bosses that each have their own tricks, and roll for purple loot, class set pieces and, very rarely, an orange Mythic.
+
+**What changed**
+- **Getting in:**
+  - Finish the Scar's story ("The Gate Breathes") to get the Sanctum Key.
+  - Talk to Keeper Orlane at the Gate, or type `/lfm`. Nine level-60 players whisper you, walk over and join: two warrior tanks, three cleric healers and damage dealers.
+  - Raid frames are smaller and sit in two columns.
+- **The four bosses** (each goes berserk at six minutes):
+  - **The Ashen Colossus:**
+    - Stomp: get out of the burning ring.
+    - Crush stacks on the tank, so the two tanks trade him at four stacks.
+    - At half health, two Ash Golems climb out of the floor.
+  - **The Archivist:**
+    - Silence drifts across the floor.
+    - A Rune of Lore every 25 seconds. Kill it within 10 seconds or he grows stronger.
+    - At half health he Opens the Book: eight seconds of damage to everyone, which the healers must heal through.
+  - **The Twin Wardens:**
+    - They must die within 10 seconds of each other, or the dead one gets up again.
+    - They trade places every 30 seconds.
+    - At half health, two people are chained together and must stay close.
+  - **Vaal the Undying:**
+    - His spawn every 18 seconds.
+    - Soul Drain on someone. Hit him hard to break it.
+    - At half health, Void Nova rings: run out.
+- **Loot:**
+  - Each boss drops purple (Epic) items and a set token. Everyone rolls **Need**, **Greed** or **Pass**, and a window gives you 30 seconds to choose.
+  - Take tokens to the Vaultkeeper at the Last Watch for your class's set piece.
+  - Mythics (orange) drop once in about twenty kills. After twenty kills without one of your own, the next one is yours. Each has a power on **R**.
+- **Raid rules:**
+  - A weekly lockout: bosses you've beaten stay down until Wednesday 06:00. Type `/raidinfo` to check.
+  - A yellow "Server first!" message the first time any boss dies.
+- **New abilities:**
+  - Clerics learn **Resurrection**. The other players raise the dead between fights.
+  - Warriors learn **Defensive Stance** for tanking.
+- **Balance:**
+  - Monsters past level 30 hit and last a bit less, so fights at 50+ don't drag.
+  - You get a little more health past 30.
+  - The other players now wear gear for their level.
+  - Camps in the 40–60 zones are less crowded.
+- **Fixes:**
+  - The ground under the world sometimes baked with holes in its paint.
+  - Fixed the inn message in new towns.
+
+**What to try**
+- Get to 60, finish the Scar, and type `/lfm` at the Sanctum Gate.
+
+**What's next**
+- Milestone 8: polish. That means screenshots and tuning of every zone, quest tests all the way to 60, and anything that feels rough.
+
 ## 2026-09-26 (day) — Claude, milestones 3 to 6
 **In plain English:** Ashvale Online now goes all the way from level 1 to level 60. After Ashvale you travel the road through ten more zones and six dungeons, each with its own town, people, quests, monsters and bosses. You can gather, refine and craft your own gear, buy and sell on a market, earn a stag to ride from level 40, and learn new abilities up to level 56.
 

@@ -76,7 +76,24 @@ const PLACES := {
 	"scar": "vaal's scar is north of the pale reach up the last road", "corvin": "high marshal corvin, at the last watch", "amara": "seer amara's at the last watch, by the fire",
 	"wraith": "soul wraiths are in the hollow field north-west of the watch", "voidforged": "voidforged knights hold the broken road north of the watch",
 	"chosen": "vaal's chosen are dug in on the east rim", "horror": "void horrors come out of the void pool, north-east", "voidcaller": "voidcallers sing at the cult ring north-west of the gate",
-	"kess": "doomherald kess is at the broken crown, north-east. bring your best", "sanctum": "the sanctum gate is at the top of the broken road in the scar. raid only"
+	"kess": "doomherald kess is at the broken crown, north-east. bring your best", "sanctum": "the sanctum gate is at the top of the broken road in the scar. raid only",
+	# ---- levels 14–40
+	"mirewood": "mirewood's east of the hollow cliffs down the cliff road", "landing": "mirewood landing is the dock village on the west side of the marsh",
+	"elsbeth": "warden elsbeth is at the landing", "dodd": "dodd the ferryman, down on the landing", "fenn": "corporal fenn, south side of the landing",
+	"goblin": "goblins camp in the shallows south of the east road in mirewood", "shaman": "goblin shamans are in the goblin camps, south of the east road",
+	"totem": "totems are in the goblin camps south of the east road, smash em", "warlord": "the warlord's at the sunken camp, east. group it",
+	"viper": "vipers are in the reed banks north-west of the landing", "moth": "moths are in the hollow north-west, further than the vipers",
+	"stalker": "marsh stalkers are by the old bridge, far east", "warrens": "the warrens are under the big hollow tree north-east in mirewood",
+	"temple": "temple of ash is at the top of the stair on the ash slopes", "sorin": "abbot sorin is at temple gate", "nell": "captain nell, temple gate, south side",
+	"pell": "pell the stonemason is at temple gate", "sentinel": "stone sentinels are in the cinder fields west of temple gate", "cultist": "cultists are on the charnel steps north-west",
+	"archer": "temple archers are on the pilgrims road east of the gate", "statue": "the four statues are all over the slopes, check the map",
+	"highlands": "ashen highlands are through the high pass, east of the ash slopes", "roark": "captain roark runs highland watch", "mira": "mira the herbalist is at highland watch",
+	"ned": "old ned is at highland watch, loves a story", "khar": "the khar are up at their outpost on the north-east ridge", "bull": "the bull of khar is east on the trail. big group",
+	"stag": "the wild stag's by the western oat field in the highlands", "oats": "oats grow in the fields west and south-west in the highlands",
+	"varn": "varn plateau is up the plateau road, north of the highlands", "greaves": "marshal greaves is at varn's rest", "tessaly": "tessaly the lich-hunter, varn's rest",
+	"acolyte": "the acolytes are at the standing stones east of varn's rest", "knight": "abyssal knights are on the killing ground south of castle varn",
+	"catacombs": "catacomb arch is at the foot of castle varn, north", "herald": "vaal's herald is at the black chapel, far west. group it",
+	"master": "the masters of the three orders train any class, there's one in every big camp from the hollow cliffs on"
 }
 
 

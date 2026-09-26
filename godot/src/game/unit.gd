@@ -36,6 +36,8 @@ var attacking := false
 var swing_t := 0.0
 var in_combat := false
 var combat_t := 0.0                  # time since last hostile action
+var dmg_done := 0                    # running totals (a damage meter, for the tests)
+var heal_done := 0
 var casting := {}                    # {id, t, dur, target, pos, channel, ticks, tick_i}
 var gcd := 0.0
 var cds := {}                        # ability id -> seconds left
@@ -72,7 +74,7 @@ func refresh_stats(fill := false) -> void:
 		var a := Rules.attrs(cls, level)
 		for k in a: attrs[k] = a[k] + int(gear_stats.get(k, 0))
 		var old := max_hp
-		max_hp = (Rules.base_hp(cls, level) + attrs["sta"] * 10) * (1.0 + tmod("hp_pct")) + _aura_sum("max_hp")
+		max_hp = (Rules.base_hp(cls, level) + attrs["sta"] * Rules.hp_per_sta(level)) * (1.0 + tmod("hp_pct")) + _aura_sum("max_hp")
 		power_kind = Rules.CLASSES[cls]["power"]
 		if power_kind == "mana": max_power = Rules.base_mp(cls, level) + attrs["int"] * 15
 		else: max_power = 100.0
@@ -252,7 +254,7 @@ func leave_combat() -> void:
 func _tick_regen(delta: float) -> void:
 	if power_kind == "mana":
 		var rate: float = attrs["spi"] * 0.06 + max_power * 0.004
-		if last_cast_t < 5.0: rate *= 0.15 + tmod("combat_regen")
+		if last_cast_t < 5.0: rate *= 0.5 + tmod("combat_regen")
 		if not in_combat: rate *= 2.0
 		power = minf(max_power, power + (rate + _aura_sum("mana_regen")) * delta)
 	elif power_kind == "rage" and not in_combat:
@@ -331,6 +333,7 @@ func take_damage(src: Unit, amount: float, school := "physical", crit := false, 
 	hp -= dmg
 	enter_combat()
 	if src and is_instance_valid(src):
+		src.dmg_done += dmg
 		src.enter_combat()
 		add_threat(src, (dmg + absorbed) * threat_mult * (1.0 + src.tmod("threat")))
 		if target == null and faction != "player": target = src
@@ -350,6 +353,9 @@ func heal(src: Unit, amount: float, crit := false) -> int:
 	if src and is_instance_valid(src): amount *= 1.0 + src.tmod("heal") + src.tmod("heal_" + src.cur_ability) - _aura_sum("heal_taken_down")
 	var h := int(round(amount))
 	var real := mini(h, int(max_hp - hp))
+	if src and is_instance_valid(src):
+		src.heal_done += real
+		if in_combat and src != self: src.enter_combat()      # healing someone in a fight puts you in it
 	hp = minf(max_hp, hp + h)
 	struck.emit(self, h, crit, "holy", "heal")
 	# healing draws the attention of every monster fighting the healed one
@@ -361,7 +367,7 @@ func heal(src: Unit, amount: float, crit := false) -> int:
 
 func add_threat(src: Unit, amount: float) -> void:
 	if not (faction in ["hostile", "neutral"]) or src == null: return
-	threat[src] = float(threat.get(src, 0.0)) + amount
+	threat[src] = float(threat.get(src, 0.0)) + amount * (1.0 + src._aura_sum("threat"))
 
 func show_text(text: String, col: Color, _src: Unit = null) -> void:
 	get_tree().call_group("fct", "float_text", self, text, col, false)
@@ -463,7 +469,8 @@ func cost_of(id: String) -> float:
 	var c := float(Abilities.LIST[id].get("cost", 0))
 	if c <= 0 or _aura_sum("free_cast") > 0.0: return 0.0
 	if power_kind == "rage": return maxf(0.0, c + tmod("cost_" + id))
-	return base_mana() * c / 100.0 * maxf(0.2, 1.0 + tmod("cost_pct"))
+	# (0.6: casters should be able to cast for about a minute before they have to stop and drink)
+	return base_mana() * c / 100.0 * 0.6 * maxf(0.2, 1.0 + tmod("cost_pct"))
 
 func cast_time_of(id: String) -> float:
 	var ct := float(Abilities.LIST[id].get("cast", 0.0))
@@ -629,7 +636,7 @@ func _effect2(id: String, t: Unit, at: Vector3) -> void:
 			var data := {}
 			for key in ["ap", "armor", "sp", "max_hp", "mana_regen"]:
 				if a.has(key): data[key] = Abilities.value(id, key, level)
-			for key in ["dmg_pct", "dmg_taken", "haste", "free_cast"]:
+			for key in ["dmg_pct", "dmg_taken", "haste", "free_cast", "threat"]:
 				if a.has(key): data[key] = float(a[key])
 			if a.has("heal_pct"): t.heal(self, t.max_hp * float(a["heal_pct"]))
 			t.add_aura(String(a.get("aura", id)), self, float(a["dur"]), data)

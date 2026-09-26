@@ -45,7 +45,7 @@ static func _foes(m: Monster) -> Array:
 	return m.threat.keys().filter(func(u): return is_instance_valid(u) and not u.dead)
 
 static func _spawn(m: Monster, kind: String, at: Vector3, lv := -1) -> Monster:
-	var a := Monster.new(); a.setup(kind, m.level - 1 if lv < 0 else lv)
+	var a := Monster.new(); a.setup(kind, m.level - 1 if lv < 0 else lv); a.set_meta("add", true)
 	m.get_parent().add_child(a)
 	var p := Nav.nearest_open(at); p.y = WorldData.h(p.x, p.z)
 	a.global_position = p; a.home = p; a.respawn_t = 1e9
@@ -160,9 +160,6 @@ static func _twins(m: Monster, delta: float, half: bool) -> void:
 	if _timer(m, "swap_t", 30.0, delta) and not twin.dead:
 		var a := m.global_position; var b := twin.global_position
 		m.global_position = b; twin.global_position = a
-		for t in [m, twin]:
-			t.threat.clear(); t.target = null
-			for u in _foes(m) + _foes(twin): t.add_threat(u, 1.0)
 		_yell(m, "Change!")
 		m.get_tree().call_group("fx", "play", "blink", m, m, m.global_position)
 	# chains: two people bound together; apart, it hurts

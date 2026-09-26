@@ -100,7 +100,10 @@ func _fight() -> void:
 		t = _enemy_on_me()
 		if t == null:
 			if leader and is_instance_valid(leader) and leader.target and is_instance_valid(leader.target) and not leader.target.dead and p.is_enemy(leader.target): t = leader.target
-			else: return
+			elif _in_raid(): t = _raid_target()
+			if t == null:
+				if p.cls == "cleric": _cleric(null)          # nothing to hit, but maybe someone to heal
+				return
 		p.target = t
 	if _in_raid():
 		var rt := _raid_target()
@@ -124,6 +127,7 @@ func _use(id: String, t: Unit) -> bool:
 
 func _warrior(t: Unit) -> void:
 	if _in_raid() and p.raid_role in ["tank", "offtank"]:
+		if not p.has_aura("defensive_stance") and _can("defensive_stance", p): p.use("defensive_stance", p)
 		if _raid_taunt(t): return
 	# in a group, the warrior holds the monsters' attention: taunt whatever is hitting someone else
 	elif leader and is_instance_valid(leader) and "taunt" in p.known:
@@ -200,7 +204,16 @@ func _cleric(t: Unit) -> void:
 		if is_instance_valid(m2) and not m2.dead and m2.hp < m2.max_hp * 0.7 and p.global_position.distance_to(m2.global_position) < 14.0: hurt += 1
 	if hurt >= 3 and _can("prayer_of_healing", p): p.use("prayer_of_healing", p); return
 	if heal_me.hp < heal_me.max_hp * 0.25 and _can("salvation", heal_me): p.use("salvation", heal_me); return
-	if heal_me.hp < heal_me.max_hp * 0.5:
+	# a raid healer keeps the tanks up first, and tops everyone off, not just the dying
+	var line := 0.5
+	if _in_raid() or p.raid:
+		line = 0.85
+		for tk in _raid_mates("tank") + _raid_mates("offtank"):
+			if p.global_position.distance_to(tk.global_position) > 28.0: continue
+			if not tk.has_aura("renewal") and _can("renewal", tk): p.use("renewal", tk); return
+			if tk.hp < tk.max_hp * 0.7 and not tk.has_aura("weakened_soul") and _can("ward_of_light", tk): p.use("ward_of_light", tk); return
+			if tk.hp < tk.max_hp * 0.6 and tk.hp / tk.max_hp <= heal_me.hp / heal_me.max_hp + 0.15: heal_me = tk
+	if heal_me.hp < heal_me.max_hp * line:
 		if _can("ward_of_light", heal_me) and not heal_me.has_aura("weakened_soul"): p.use("ward_of_light", heal_me); return
 		if _can("radiance", heal_me) and not heal_me.has_aura("radiance"): p.use("radiance", heal_me); return
 		if _can("renewal", heal_me) and not heal_me.has_aura("renewal"): p.use("renewal", heal_me); return
@@ -208,6 +221,9 @@ func _cleric(t: Unit) -> void:
 		if _can("mend", heal_me): p.use("mend", heal_me); return
 	if not p.has_aura("inner_fire") and _can("inner_fire", p): p.use("inner_fire", p); return
 	if fight_t < 1.0 and _can("ward_of_light", p) and not p.has_aura("weakened_soul") and leader == null: p.use("ward_of_light", p); return
+	if t == null or not is_instance_valid(t) or t.dead: return
+	# a raid healer mostly heals: only a little damage, and never when mana is short
+	if (_in_raid() or p.raid) and (p.power < p.max_power * 0.6 or rng.randf() < 0.5): return
 	var d := p.distance_to(t)
 	if p.is_moving() and d < 26.0: p.stop_moving()
 	if _can("shadow_rot", t) and not _has_my_aura(t, "shadow_rot"): p.use("shadow_rot", t); return
@@ -252,9 +268,19 @@ func _rest() -> bool:
 
 func _follow() -> void:
 	var d := p.global_position.distance_to(leader.global_position)
+	# the group is fighting: fight (and heal) from where we are, unless we've fallen far behind
+	var fighting: bool = leader.in_combat or _group_in_combat()
+	if fighting and d < 30.0:
+		if leader.target and is_instance_valid(leader.target) and not leader.target.dead and p.is_enemy(leader.target): p.target = leader.target
+		_fight(); return
 	if d > 5.0: p.chase(leader, 3.0)
 	elif leader.target and is_instance_valid(leader.target) and not leader.target.dead and leader.in_combat and p.is_enemy(leader.target):
 		p.target = leader.target; _fight()
+
+func _group_in_combat() -> bool:
+	for m in leader.party_members():
+		if is_instance_valid(m) and not m.dead and m.in_combat: return true
+	return false
 
 # ------------------------------------------------------------------ questing
 

@@ -36,7 +36,12 @@ static func attrs(cls: String, level: int) -> Dictionary:
 	return out
 
 static func base_hp(cls: String, level: int) -> int:
-	var h: Array = CLASSES[cls]["hp"]; return int(h[0] + h[1] * level)
+	# a little extra past 30, where the monsters' damage keeps climbing
+	var h: Array = CLASSES[cls]["hp"]; return int(h[0] + h[1] * level + h[1] * maxi(0, level - 30))
+
+## health from each point of stamina: 10, and more from level 30 on (monsters out there hit much harder)
+static func hp_per_sta(level: int) -> float:
+	return 10.0 + 0.35 * maxi(0, level - 30)
 
 static func base_mp(cls: String, level: int) -> int:
 	var m: Array = CLASSES[cls]["mp"]; return int(m[0] + m[1] * level)

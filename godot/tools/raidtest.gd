@@ -15,6 +15,8 @@ var fight_t := 0.0
 var report := 0.0
 var fighting: Monster
 var wait_t := 0.0
+var trash: Monster
+var trash_t := 0.0
 
 func _ready() -> void:
 	await get_tree().process_frame
@@ -23,6 +25,7 @@ func _ready() -> void:
 	var chat = get_tree().get_first_node_in_group("chat")
 	if chat: chat.set_meta("print", true)
 	brain = Brain.new(p); brain.idle = true; p.add_child(brain)
+	get_tree().create_timer(2.0).timeout.connect(_watch_deaths)
 	if phase == "gather":
 		var r := RandomNumberGenerator.new(); r.seed = 3
 		p.equipped.clear(); p.gear_up(59, 3, r); p._gear_changed(); p.refresh_stats(true)
@@ -39,14 +42,14 @@ func _ready() -> void:
 		# and the rooms before it are clear of trash, for a quick test
 		if boss_i > 0:
 			for u in get_tree().get_nodes_in_group("units"):
-				if u is Monster and Monster.KINDS[u.kind].get("raid_trash", false) and u.global_position.z > -30.0:
+				if u is Monster and Monster.KINDS[u.kind].get("raid_trash", false):
 					u.dead = true; u.visible = false; u.collision_layer = 0; u.respawn_t = 1e9
 	print("raidtest: phase %s in %s" % [phase, WorldData.zone_id])
 
 func _physics_process(delta: float) -> void:
 	if p == null: return
 	t += delta; t_all += delta; report += delta
-	if t_all > 3600.0: _finish("timeout"); return
+	if t_all > 7200.0: _finish("timeout"); return
 	match phase:
 		"gather":
 			if p.party.size() >= 9 or t > 90.0:
@@ -81,6 +84,11 @@ func _sanctum(delta: float) -> void:
 			if b.kind == "warden_ashur":
 				for u in get_tree().get_nodes_in_group("units"):
 					if u is Monster and u.kind == "warden_seth": twin = "  seth %d%%" % int(100.0 * u.hp / u.max_hp)
+			var hs := []
+			for m in p.party:
+				if is_instance_valid(m) and m.raid_role in ["heal", "tank"]:
+					hs.append("%s:%s %s mp%d%% hp%d%% %s d%.0f" % [m.uname, m.raid_role, m.casting.get("id", "-"), int(100.0 * m.power / maxf(1.0, m.max_power)), int(100.0 * m.hp / m.max_hp), m.brain.task, m.global_position.distance_to(b.global_position)])
+			print("    ", " | ".join(hs))
 			print("  %s  t=%3d  boss %3d%%%s  raid alive %d/10  adds %d" % [b.uname, int(fight_t), int(100.0 * b.hp / b.max_hp), twin, _alive().size(), b.adds.filter(func(a): return is_instance_valid(a) and not a.dead).size()])
 		var done := b.dead
 		if b.kind == "warden_ashur":
@@ -88,19 +96,35 @@ func _sanctum(delta: float) -> void:
 				if u is Monster and u.kind == "warden_seth" and not u.dead: done = false
 		if done:
 			results.append("%s: killed in %ds (try %d, %d alive)" % [b.uname, int(fight_t), tries + 1, _alive().size()])
-			print("KILLED %s in %ds on try %d" % [b.uname, int(fight_t), tries + 1])
+			print("KILLED %s in %ds on try %d" % [b.uname, int(fight_t), tries + 1]); _meter(b.uname, fight_t)
 			get_tree().call_group("bots", "voice_event", "raid_kill")
 			fighting = null; tries = 0; boss_i += 1; brain.focus = null; brain.idle = true; wait_t = 0.0
 			return
 		if _alive().is_empty() or b.evading or (p.dead and _alive().size() <= 1):
 			results.append("%s: wipe at %d%% after %ds" % [b.uname, int(100.0 * b.hp / b.max_hp), int(fight_t)])
 			print("WIPE on %s at %d%% after %ds (evading %s, %.0f m from home, threat %d, leader dead %s)" % [b.uname, int(100.0 * b.hp / b.max_hp), int(fight_t), b.evading, b.global_position.distance_to(b.home), b.threat.size(), p.dead])
-			get_tree().call_group("bots", "voice_event", "raid_wipe")
+			get_tree().call_group("bots", "voice_event", "raid_wipe"); _meter(b.uname, fight_t)
 			fighting = null; tries += 1; brain.focus = null; brain.idle = true; wait_t = 0.0
-			if tries >= 3: results.append("%s: gave up" % b.uname); boss_i = 99
+			if tries >= 5: results.append("%s: gave up" % b.uname); boss_i = 99
 		return
-	# between pulls: gather, rest, then go
+	# between pulls: gather, rest, clear the trash on the way, then go
 	if p.dead: return
+	if trash and is_instance_valid(trash) and not trash.dead:
+		if not p.in_combat and not trash.in_combat:
+			if p.distance_to(trash) > 20.0: p.move_to(Nav.nearest_open(trash.global_position)); return
+			for m in p.party:
+				if is_instance_valid(m) and m.raid_role == "tank": trash.add_threat(m, 30.0)
+			trash.aggro(p); brain.idle = false; brain.focus = trash; trash_t = 0.0
+		trash_t += get_physics_process_delta_time()
+		return
+	if trash: _meter(trash.uname, trash_t)
+	trash = null; brain.focus = null
+	for u in get_tree().get_nodes_in_group("units"):
+		if u is Monster and not u.dead and Monster.KINDS[u.kind].get("raid_trash", false) and u.adds.is_empty() and not u.has_meta("add") \
+				and u.global_position.distance_to(p.global_position) < 34.0 and u.global_position.distance_to(b.global_position) > 18.0 \
+				and u.global_position.z > b.global_position.z - 5.0:
+			trash = u; print("  clearing %s" % u.uname); return
+	brain.idle = true
 	var ready := true
 	for m in p.party_members():
 		if not is_instance_valid(m): continue
@@ -133,3 +157,27 @@ func _finish(why: String) -> void:
 		if it: bags.append(Items.get_def(it).get("name", "?"))
 	print("  bags: ", ", ".join(bags))
 	get_tree().quit()
+
+var watched := {}
+func _watch_deaths() -> void:
+	for m in p.party_members():
+		if is_instance_valid(m) and not watched.has(m):
+			watched[m] = true
+			m.struck.connect(func(u, amount, _crit, school, kind): if u.hp <= 0 and kind != "heal": _last_hit(u, amount, school, kind))
+	get_tree().create_timer(5.0).timeout.connect(_watch_deaths)
+
+func _last_hit(u: Unit, amount: int, school: String, kind: String) -> void:
+	var who := []
+	for m in get_tree().get_nodes_in_group("units"):
+		if m is Monster and not m.dead and m.in_combat and (m.target == u or m.casting.get("target") == u): who.append(m.uname)
+	var role: String = u.raid_role if u is Bot else "leader"
+	print("    DEATH %s (%s %s, %d max hp): %d %s %s; on them: %s" % [u.uname, u.cls, role, int(u.max_hp), amount, school, kind, ", ".join(who)])
+
+func _meter(label: String, secs: float) -> void:
+	var rows := []
+	for m in p.party_members():
+		if not is_instance_valid(m): continue
+		rows.append("%s %s: %d dps %d hps" % [m.uname, m.raid_role if m is Bot else "you", int(m.dmg_done / maxf(1.0, secs)), int(m.heal_done / maxf(1.0, secs))])
+		m.dmg_done = 0; m.heal_done = 0
+	print("  METER %s (%ds): %s" % [label, int(secs), "; ".join(rows)])
+

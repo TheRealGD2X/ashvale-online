@@ -226,7 +226,7 @@ func _misc() -> void:
 	hs.border_color = Color(0.89, 0.76, 0.5, 0.5); hs.set_border_width_all(1)
 	help.add_theme_stylebox_override("panel", hs); help.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var t := Label.new(); t.add_theme_font_size_override("font_size", 15)
-	t.text = "Left-click ground: walk (hold to keep walking)    Left-click an enemy: target, again: attack\n1–5: abilities    Tab: nearest enemy    Esc: clear target    P: spellbook\nClick people with a ! over their heads for quests\nB: bags    C: character    L: quest log    N: talents    M: map    Enter: chat\nRight-drag: turn camera    Wheel: zoom    F1: this card    F3: FPS    F11: fullscreen"
+	t.text = "Left-click ground: walk (hold to keep walking)    Left-click an enemy: target, again: attack\n1–5: abilities    Tab: nearest enemy    Esc: clear target    P: spellbook\nClick people with a ! over their heads for quests\nB: bags    C: character    L: quest log    N: talents    M: map    Enter: chat\nZ: ride your stag (40+)    R: Mythic power    /lfm: call for a raid\nRight-drag: turn camera    Wheel: zoom    F1: this card    F3: FPS    F11: fullscreen"
 	help.add_child(t)
 	t.text = t.text.replace("    Left-click an enemy", "\nLeft-click an enemy").replace("    P: spellbook", "\nP: spellbook").replace("    F1:", "\nF1:")
 	help.set_anchors_preset(Control.PRESET_CENTER_LEFT); help.offset_left = 22; help.offset_top = -250
