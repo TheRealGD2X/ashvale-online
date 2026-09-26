@@ -113,6 +113,7 @@ func _ready() -> void:
 
 
 		if args.has("dbg"): add_child(load("res://tools/dbg.gd").new())
+		if args.has("bench"): add_child(load("res://tools/bench.gd").new())
 		if args.has("shot"): _shot()
 	else:
 		var cr = load("res://src/ui/creator.gd").new()

@@ -39,6 +39,26 @@ Read this first, then `godot/README`-style notes in `README.md`, `CHANGELOG.md` 
 3. **Weaker item icons to redo:** crab_shell, bat_wing, moth_wing, seal, the Noble pauldrons, bones.
 4. **Remaining balance:** warriors levelling 40+ die a lot in Saltmere.
 
+## Performance (measured 2026-09-26, Claude Code, owner's laptop: RTX 5060 Laptop, 3440x1440)
+The owner says performance is horrible; fix this before more content. Measure with the new benchmark:
+`godot --path godot -- --play --bench=6 --level=5 [--zone=z] [--off=grass,veg,shadow,lights,ssao,glow,gi,fog,meshes,particles] [--scale=0.6]`
+(`tools/bench.gd`: walks the hero in a circle, prints avg/p95 frame ms, GPU ms, draw calls, triangles, top node types.)
+
+Ashvale baseline: **~26 fps, GPU ~37 ms/frame, ~3,200 draw calls, ~7.6M triangles.** GPU ms with one thing switched off:
+- `veg` (trees/bushes/rocks MultiMeshes in `src/world/vegetation.gd`): **11 ms** (the biggest cost). Each kind is ONE MultiMesh
+  over the whole 256 m map, so no frustum culling, no distance culling (visibility_range acts on the whole instance) and every
+  tree renders into all 4 shadow splits. Fix: bucket `_build`'s transforms into ~32 m cells (one MultiMeshInstance per kind per
+  cell), give tall trees a visibility range, and cast shadows only from trunks/near cells.
+- `shadow` (all lights): 22 ms. `lights` (omni/spot lamps hidden): 21 ms, so village lamps are costly, probably shadowed omnis.
+  Check `village.gd`/`life.gd` lamps: turn off omni shadows or cap them, and use visibility ranges on lamp lights.
+- `grass`: 34 ms (only ~3 ms, it's fine). `ssao,glow,gi,fog`: 33 ms (~4 ms). `particles`: no gain.
+- Physics runs 20–35 ms per frame at low fps (1,500 CollisionShape3Ds; Jolt). Worth a look once the GPU is fixed.
+- Also seen in the run: a repeated `SCRIPT ERROR: Trying to assign value of type 'Array' to a variable of type 'Dictionary'`
+  and `Required object "rp_style" is null` (UI code), not yet traced.
+
+Setting up a new PC: the paid [Source] art packs are not in git. Put the Quaternius zips/folders in Downloads and run
+`tools/setup_godot.ps1` (or `Play Ashvale.bat`), or characters and skeletons will be missing.
+
 ## Running things
 - **Play:** `Play Ashvale.bat`, or `godot --path godot`.
 - **Headless tests** (from `godot/`): `godot --headless --path . --fixed-fps 30 -- --play --questtest=N --zone=<z> --level=<n> --class=<c> --done=<zone>`. Also `--raidtest` (zone scar, level 60), `--zonetour` and `--duel=kind:lvl`.
