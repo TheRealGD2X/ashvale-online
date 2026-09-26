@@ -203,8 +203,8 @@ const CAMPS := {"ashvale": [
 		{"kind": "sanctum_knight", "lv": [60, 61], "n": 3, "at": Vector2(34, 24), "r": 5.0},
 		{"kind": "warden_ashur", "lv": [62, 62], "n": 1, "at": Vector2(50, -10), "r": 0.5, "boss": true},
 		{"kind": "warden_seth", "lv": [62, 62], "n": 1, "at": Vector2(62, -10), "r": 0.5, "boss": true},
-		{"kind": "sanctum_knight", "lv": [61, 61], "n": 2, "at": Vector2(0, -44), "r": 5.0},
-		{"kind": "sanctum_voidcaller", "lv": [61, 61], "n": 2, "at": Vector2(0, -48), "r": 5.0},
+		{"kind": "sanctum_knight", "lv": [61, 61], "n": 2, "at": Vector2(0, -46), "r": 4.0},
+		{"kind": "sanctum_voidcaller", "lv": [61, 61], "n": 1, "at": Vector2(0, -62), "r": 3.0},
 		{"kind": "vaal", "lv": [63, 63], "n": 1, "at": Vector2(0, -98), "r": 0.5, "boss": true},
 	],
 }

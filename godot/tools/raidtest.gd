@@ -122,7 +122,7 @@ func _sanctum(delta: float) -> void:
 	for u in get_tree().get_nodes_in_group("units"):
 		if u is Monster and not u.dead and Monster.KINDS[u.kind].get("raid_trash", false) and u.adds.is_empty() and not u.has_meta("add") \
 				and u.global_position.distance_to(p.global_position) < 34.0 and u.global_position.distance_to(b.global_position) > 18.0 \
-				and u.global_position.z > b.global_position.z - 5.0:
+				and u.global_position.z > b.global_position.z - 5.0 and _far_from_bosses(u):
 			trash = u; print("  clearing %s" % u.uname); return
 	brain.idle = true
 	var ready := true
@@ -180,4 +180,9 @@ func _meter(label: String, secs: float) -> void:
 		rows.append("%s %s: %d dps %d hps" % [m.uname, m.raid_role if m is Bot else "you", int(m.dmg_done / maxf(1.0, secs)), int(m.heal_done / maxf(1.0, secs))])
 		m.dmg_done = 0; m.heal_done = 0
 	print("  METER %s (%ds): %s" % [label, int(secs), "; ".join(rows)])
+
+func _far_from_bosses(u: Monster) -> bool:
+	for m in get_tree().get_nodes_in_group("units"):
+		if m is Monster and not m.dead and Monster.KINDS[m.kind].get("raid", false) and m.global_position.distance_to(u.global_position) < 28.0: return false
+	return true
 
