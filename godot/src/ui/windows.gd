@@ -78,11 +78,7 @@ func _refresh_open() -> void:
 
 func _window(title: String, w: float) -> PanelContainer:
 	var p := PanelContainer.new(); add_child(p)
-	var sb := StyleBoxFlat.new(); sb.bg_color = Color(0.1, 0.075, 0.05, 0.96); sb.set_corner_radius_all(10)
-	sb.border_color = Color(0.78, 0.62, 0.34); sb.set_border_width_all(2)
-	sb.shadow_color = Color(0, 0, 0, 0.5); sb.shadow_size = 10
-	sb.content_margin_left = 16; sb.content_margin_right = 16; sb.content_margin_top = 10; sb.content_margin_bottom = 14
-	p.add_theme_stylebox_override("panel", sb)
+	p.add_theme_stylebox_override("panel", UiSkin.panel("window", Vector4(22, 16, 22, 20)))
 	p.custom_minimum_size = Vector2(w, 0)
 	p.set_meta("title", title)
 	p.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -98,7 +94,7 @@ func _body(p: PanelContainer, title := "") -> VBoxContainer:
 	x.add_theme_color_override("font_color", Color(0.9, 0.75, 0.5))
 	x.pressed.connect(func(): p.visible = false; hud._hide_tip(); if p == npc_win: npc = null)
 	top.add_child(x)
-	var line := ColorRect.new(); line.color = Color(0.78, 0.62, 0.34, 0.45); line.custom_minimum_size = Vector2(0, 1); v.add_child(line)
+	v.add_child(UiSkin.divider())
 	return v
 
 func _lbl(text: String, size := 17, col := INK, b := false) -> Label:
@@ -118,12 +114,7 @@ func _btn(text: String, f: Callable, w := 0.0) -> Button:
 	b.add_theme_font_size_override("font_size", 17)
 	if w > 0: b.custom_minimum_size = Vector2(w, 36)
 	else: b.custom_minimum_size = Vector2(0, 36)
-	var sb := StyleBoxFlat.new(); sb.bg_color = Color(0.45, 0.12, 0.08); sb.set_corner_radius_all(6); sb.border_color = Color(0.85, 0.65, 0.3); sb.set_border_width_all(1)
-	sb.content_margin_left = 14; sb.content_margin_right = 14
-	var sh := sb.duplicate(); sh.bg_color = Color(0.6, 0.18, 0.1)
-	var sd := sb.duplicate(); sd.bg_color = Color(0.25, 0.2, 0.18); sd.border_color = Color(0.4, 0.35, 0.3)
-	b.add_theme_stylebox_override("normal", sb); b.add_theme_stylebox_override("hover", sh); b.add_theme_stylebox_override("pressed", sh); b.add_theme_stylebox_override("disabled", sd)
-	b.add_theme_color_override("font_color", Color(1, 0.88, 0.55))
+	UiSkin.style_button(b)
 	b.pressed.connect(f)
 	return b
 

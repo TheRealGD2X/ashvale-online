@@ -1,4 +1,4 @@
-extends CanvasLayer
+class_name GameHud extends CanvasLayer
 ## The in-game interface, laid out like World of Warcraft's:
 ##  top left: your portrait, health and Rage/Mana, with your buffs underneath; next to it the
 ##  target's frame (name coloured by how dangerous it is, level, health, what it is casting);
@@ -88,10 +88,7 @@ func _watch(u: Unit) -> void:
 
 func _panel(parent: Control, pos: Vector2, size: Vector2, radius := 8) -> Panel:
 	var p := Panel.new(); p.position = pos; p.size = size; p.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var sb := StyleBoxFlat.new(); sb.bg_color = PANEL; sb.set_corner_radius_all(radius)
-	sb.border_color = Color(0.85, 0.7, 0.42, 0.55); sb.set_border_width_all(2)
-	sb.shadow_color = Color(0, 0, 0, 0.35); sb.shadow_size = 6
-	p.add_theme_stylebox_override("panel", sb)
+	p.add_theme_stylebox_override("panel", UiSkin.panel("hud"))
 	parent.add_child(p)
 	return p
 
@@ -109,13 +106,20 @@ func _bar(parent: Control, pos: Vector2, size: Vector2, col: Color) -> Dictionar
 	var bg := ColorRect.new(); bg.color = Color(0.02, 0.02, 0.02, 0.85); bg.position = pos; bg.size = size; bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	parent.add_child(bg)
 	var fill := ColorRect.new(); fill.color = col; fill.size = size; fill.mouse_filter = Control.MOUSE_FILTER_IGNORE; bg.add_child(fill)
-	var sheen := ColorRect.new(); sheen.color = Color(1, 1, 1, 0.14); sheen.size = Vector2(size.x, size.y * 0.42); sheen.mouse_filter = Control.MOUSE_FILTER_IGNORE; fill.add_child(sheen)
+	fill.material = _bar_mat()
+	var sheen := ColorRect.new(); sheen.color = Color(1, 1, 1, 0.0); sheen.size = Vector2(size.x, size.y * 0.42); sheen.mouse_filter = Control.MOUSE_FILTER_IGNORE; fill.add_child(sheen)
 	var txt := Label.new(); txt.size = size; txt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; txt.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	txt.add_theme_font_size_override("font_size", int(size.y * 0.72)); txt.add_theme_color_override("font_color", Color(1, 1, 1))
 	txt.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9)); txt.add_theme_constant_override("shadow_offset_y", 1)
 	txt.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bg.add_child(txt)
 	return {"bg": bg, "fill": fill, "text": txt, "w": size.x, "sheen": sheen}
+
+static var _barmat: ShaderMaterial
+static func _bar_mat() -> ShaderMaterial:
+	if _barmat == null:
+		_barmat = ShaderMaterial.new(); _barmat.shader = load("res://shaders/bar.gdshader")
+	return _barmat
 
 func _set_bar(b: Dictionary, frac: float, text := "") -> void:
 	frac = clampf(frac, 0.0, 1.0)
@@ -166,7 +170,7 @@ func _target_frame() -> void:
 			["Whisper", func(): if player.target is Bot: chat.last_whisper = player.target.uname; chat.channel = "whisper"; chat.open_input("")],
 			["Leave group", func(): get_tree().call_group("bots", "leave_party", player)]]:
 		var b := Button.new(); b.text = pair[0]; b.focus_mode = Control.FOCUS_NONE; b.add_theme_font_size_override("font_size", 14); b.pressed.connect(pair[1])
-		social.add_child(b)
+		UiSkin.style_button(b, 8.0); social.add_child(b)
 	tf["social"] = social; social.visible = false
 
 ## the bottom of the screen, Diablo-style: a health orb on the left, a mana (or rage) orb on the
@@ -200,8 +204,8 @@ func _action_bar() -> void:
 		b.mouse_entered.connect(func(): _show_tip(player.bar[idx] if player else "", b))
 		b.mouse_exited.connect(_hide_tip)
 		slots.append({"btn": b, "icon": ic, "cd": cdl, "flash": 0.0})
-	# the orbs either side
-	var od := 196.0
+	# the orbs either side (sized to the screen: big on 1080p, smaller on small windows)
+	var od := orb_size(get_viewport().get_visible_rect().size.y)
 	for side in [["hp", -1.0], ["mp", 1.0]]:
 		var key2: String = side[0]
 		var cx: float = side[1] * (BAR_W / 2.0 + od * 0.36)
@@ -211,8 +215,9 @@ func _action_bar() -> void:
 		liq.size = Vector2(inner, inner); liq.position = Vector2((od - inner) / 2.0, (od - inner) / 2.0); liq.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var sm := ShaderMaterial.new(); sm.shader = load("res://shaders/orb.gdshader"); liq.material = sm
 		box.add_child(liq)
-		var frame := TextureRect.new(); frame.texture = load("res://assets/ui/orb_frame_%s.png" % key2); frame.size = Vector2(od, od)
-		frame.mouse_filter = Control.MOUSE_FILTER_IGNORE; frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; box.add_child(frame)
+		var frame := TextureRect.new(); frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; frame.stretch_mode = TextureRect.STRETCH_SCALE
+		frame.texture = load("res://assets/ui/orb_frame_%s.png" % key2); frame.size = Vector2(od, od)
+		frame.mouse_filter = Control.MOUSE_FILTER_IGNORE; box.add_child(frame)
 		var txt := Label.new(); txt.size = Vector2(od, 24); txt.position = Vector2(0, od * 0.5 - 12); txt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		txt.add_theme_font_size_override("font_size", 17); txt.add_theme_font_override("font", bold)
 		txt.add_theme_color_override("font_outline_color", Color(0, 0, 0)); txt.add_theme_constant_override("outline_size", 6)
@@ -221,6 +226,14 @@ func _action_bar() -> void:
 		box.mouse_exited.connect(func(): txt.modulate.a = 0.0)
 		orbs[key2] = {"mat": sm, "text": txt, "shown": 1.0, "last": -1.0, "flash": 0.0}
 	_set_orb_colors()
+
+static func orb_size(screen_h: float) -> float:
+	return clampf(screen_h * 0.26, 150.0, 230.0)
+
+## where the left orb starts (for the chat box to keep clear of it)
+static func orb_left_edge(screen: Vector2) -> float:
+	var od := orb_size(screen.y)
+	return screen.x / 2.0 - (BAR_W / 2.0 + od * 0.36) - od / 2.0
 
 func _set_orb_colors() -> void:
 	(orbs["hp"]["mat"] as ShaderMaterial).set_shader_parameter("deep", Color(0.32, 0.02, 0.03)); orbs["hp"]["mat"].set_shader_parameter("bright", Color(1.0, 0.22, 0.14))
@@ -255,7 +268,11 @@ func _xp_bar() -> void:
 	var edge := ReferenceRect.new(); edge.border_color = Color(0.72, 0.56, 0.32, 0.9); edge.border_width = 1.5; edge.editor_only = false
 	edge.size = bg.size + Vector2(2, 2); edge.position = Vector2(-1, -1); edge.mouse_filter = Control.MOUSE_FILTER_IGNORE; bg.add_child(edge)
 	var fill := ColorRect.new(); fill.color = Color(0.55, 0.3, 0.85); fill.mouse_filter = Control.MOUSE_FILTER_IGNORE; bg.add_child(fill)
-	fill.anchor_bottom = 1.0
+	fill.anchor_bottom = 1.0; fill.material = _bar_mat()
+	# ten notches, like the old MMO experience bars
+	for k in range(1, 10):
+		var tick := ColorRect.new(); tick.color = Color(0, 0, 0, 0.55); tick.size = Vector2(1, 10); tick.position = Vector2(w * k / 10.0, 0)
+		tick.mouse_filter = Control.MOUSE_FILTER_IGNORE; bg.add_child(tick)
 	var txt := Label.new(); txt.set_anchors_preset(Control.PRESET_FULL_RECT); txt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; txt.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	txt.add_theme_font_size_override("font_size", 12); txt.mouse_filter = Control.MOUSE_FILTER_IGNORE; txt.position.y = -16
 	txt.add_theme_color_override("font_outline_color", Color(0, 0, 0)); txt.add_theme_constant_override("outline_size", 4)
@@ -273,16 +290,12 @@ func _misc() -> void:
 	clock = _label(right, "", 16, Vector2(-258, 54))
 	fps = _label(right, "", 14, Vector2(-258, 78)); fps.visible = false
 	tip = PanelContainer.new(); tip.visible = false; tip.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var sb := StyleBoxFlat.new(); sb.bg_color = Color(0.05, 0.05, 0.1, 0.94); sb.set_corner_radius_all(6); sb.border_color = Color(0.7, 0.7, 0.8, 0.6); sb.set_border_width_all(1)
-	sb.content_margin_left = 12; sb.content_margin_right = 12; sb.content_margin_top = 8; sb.content_margin_bottom = 8
-	tip.add_theme_stylebox_override("panel", sb)
+	tip.add_theme_stylebox_override("panel", UiSkin.panel("tooltip", Vector4(14, 10, 14, 10)))
 	tip_l = RichTextLabel.new(); tip_l.bbcode_enabled = true; tip_l.fit_content = true; tip_l.custom_minimum_size = Vector2(300, 0); tip_l.scroll_active = false
 	tip_l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tip.add_child(tip_l); root.add_child(tip)
 	help = PanelContainer.new(); root.add_child(help)
-	var hs := StyleBoxFlat.new(); hs.bg_color = Color(0.08, 0.07, 0.06, 0.66); hs.set_corner_radius_all(10); hs.content_margin_left = 16; hs.content_margin_right = 16; hs.content_margin_top = 10; hs.content_margin_bottom = 10
-	hs.border_color = Color(0.89, 0.76, 0.5, 0.5); hs.set_border_width_all(1)
-	help.add_theme_stylebox_override("panel", hs); help.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	help.add_theme_stylebox_override("panel", UiSkin.panel("hud", Vector4(18, 12, 18, 12))); help.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var t := Label.new(); t.add_theme_font_size_override("font_size", 15)
 	t.text = "Left-click ground: walk (hold to keep walking)    Left-click an enemy: target, again: attack\n1–5: abilities    Tab: nearest enemy    Esc: clear target    P: spellbook\nClick people with a ! over their heads for quests\nB: bags    C: character    L: quest log    N: talents    M: map    Enter: chat\nZ: ride your stag (40+)    R: Mythic power    /lfm: call for a raid\nRight-drag: turn camera    Wheel: zoom    F1: this card    F3: FPS    F11: fullscreen"
 	help.add_child(t)
@@ -311,8 +324,9 @@ func _refresh_buffs() -> void:
 		var id: String = a["id"]
 		var base := id.trim_suffix("_burn").trim_suffix("_slow")
 		var ic := AbilityIcon.new(); ic.custom_minimum_size = Vector2(30, 30); ic.size = Vector2(30, 30)
-		ic.set_ability(base if Abilities.LIST.has(base) else ("ward_of_light" if id == "weakened_soul" else ""))
-		if id == "weakened_soul": ic.tint = Color(0.3, 0.0, 0.0, 0.45)
+		var shown := id if ResourceLoader.exists("res://assets/icons/%s.png" % id) else base
+		ic.set_ability(shown if (Abilities.LIST.has(shown) or ResourceLoader.exists("res://assets/icons/%s.png" % shown)) else "")
+		if a["data"].get("debuff", false): ic.tint = Color(0.35, 0.0, 0.0, 0.25)
 		buffs.add_child(ic)
 
 func _refresh_bar() -> void:
@@ -469,16 +483,14 @@ func toggle_menu() -> void:
 	if menu and is_instance_valid(menu):
 		menu.queue_free(); menu = null; return
 	menu = PanelContainer.new(); root.add_child(menu)
-	var sb := StyleBoxFlat.new(); sb.bg_color = Color(0.08, 0.065, 0.05, 0.95); sb.set_corner_radius_all(12); sb.border_color = GOLD; sb.set_border_width_all(2)
-	sb.content_margin_left = 26; sb.content_margin_right = 26; sb.content_margin_top = 18; sb.content_margin_bottom = 18
-	menu.add_theme_stylebox_override("panel", sb)
+	menu.add_theme_stylebox_override("panel", UiSkin.panel("window", Vector4(30, 22, 30, 22)))
 	menu.set_anchors_preset(Control.PRESET_CENTER); menu.offset_left = -150; menu.offset_top = -140
 	var v := VBoxContainer.new(); v.add_theme_constant_override("separation", 10); menu.add_child(v)
 	var t := Label.new(); t.text = "Ashvale"; t.add_theme_font_size_override("font_size", 28); t.add_theme_color_override("font_color", GOLD); t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(t)
 	for pair in [["Return to the game", func(): toggle_menu()], ["Spellbook (P)", func(): toggle_menu(); toggle_book()],
 			["Fullscreen (F11)", func(): _fullscreen()], ["Music: on / off", func(): Soundscape.music_on = not Soundscape.music_on; notice("Music on" if Soundscape.music_on else "Music off")], ["Save and quit", func(): get_tree().current_scene._save(); get_tree().quit()]]:
 		var b := Button.new(); b.text = pair[0]; b.custom_minimum_size = Vector2(260, 42); b.add_theme_font_size_override("font_size", 18); b.focus_mode = Control.FOCUS_NONE
-		b.pressed.connect(pair[1]); v.add_child(b)
+		UiSkin.style_button(b); b.pressed.connect(pair[1]); v.add_child(b)
 
 func _fullscreen() -> void:
 	var w := get_window()
@@ -595,13 +607,11 @@ func _banner(title: String, sub: String) -> void:
 func player_died() -> void:
 	if death and is_instance_valid(death): return
 	death = PanelContainer.new(); root.add_child(death)
-	var sb := StyleBoxFlat.new(); sb.bg_color = Color(0.05, 0.03, 0.03, 0.9); sb.set_corner_radius_all(10); sb.border_color = Color(0.7, 0.2, 0.15); sb.set_border_width_all(2)
-	sb.content_margin_left = 30; sb.content_margin_right = 30; sb.content_margin_top = 18; sb.content_margin_bottom = 18
-	death.add_theme_stylebox_override("panel", sb)
+	death.add_theme_stylebox_override("panel", UiSkin.panel("window", Vector4(32, 22, 32, 22)))
 	death.set_anchors_preset(Control.PRESET_CENTER); death.offset_left = -180; death.offset_right = 180; death.offset_top = -90
 	var v := VBoxContainer.new(); v.add_theme_constant_override("separation", 12); death.add_child(v)
 	var l := Label.new(); l.text = "You have died."; l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; l.add_theme_font_size_override("font_size", 28); v.add_child(l)
-	var b := Button.new(); b.text = "Release to the graveyard"; b.add_theme_font_size_override("font_size", 20); v.add_child(b)
+	var b := Button.new(); b.text = "Release to the graveyard"; b.add_theme_font_size_override("font_size", 20); UiSkin.style_button(b); b.custom_minimum_size = Vector2(0, 44); v.add_child(b)
 	b.pressed.connect(func(): player.release(); death.queue_free(); death = null)
 
 # ------------------------------------------------------------------ action bar clicks, tooltips, spellbook
@@ -692,9 +702,7 @@ func close_roll() -> void:
 func toggle_book() -> void:
 	if book == null:
 		book = PanelContainer.new(); root.add_child(book)
-		var sb := StyleBoxFlat.new(); sb.bg_color = Color(0.1, 0.08, 0.06, 0.95); sb.set_corner_radius_all(12); sb.border_color = GOLD; sb.set_border_width_all(2)
-		sb.content_margin_left = 20; sb.content_margin_right = 20; sb.content_margin_top = 16; sb.content_margin_bottom = 16
-		book.add_theme_stylebox_override("panel", sb)
+		book.add_theme_stylebox_override("panel", UiSkin.panel("window", Vector4(24, 18, 24, 18)))
 		book.set_anchors_preset(Control.PRESET_CENTER_LEFT); book.offset_left = 30; book.offset_top = -300
 		book.visible = false
 	book.visible = not book.visible

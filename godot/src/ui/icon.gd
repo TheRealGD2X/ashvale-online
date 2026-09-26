@@ -28,7 +28,7 @@ static func tex(path: String) -> Texture2D:
 
 func _draw() -> void:
 	var r := Rect2(Vector2.ZERO, size)
-	if ability == "" or not Abilities.LIST.has(ability):
+	if ability == "" or (not Abilities.LIST.has(ability) and tex("res://assets/icons/%s.png" % ability) == null):
 		draw_rect(r, Color(0.08, 0.07, 0.06, 0.7))
 		return
 	# the painted icon (art/spell_icons.py) in its bronze frame (art/ui_art.py)

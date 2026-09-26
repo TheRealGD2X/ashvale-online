@@ -2,6 +2,30 @@
 
 Newest first. One line per commit. Tags: `[contract]` change to `src/shared/*`, `[cross]` touched the other worker's files, `[need]` a request for the other worker, `[design]` DESIGN.md changed.
 
+## 2026-09-26 (late) — Claude, milestone 8 (part 1): the new look
+**In plain English:** The screen now looks like Albion Online paired with Diablo. Health and mana are liquid orbs either side of a painted hotbar, windows are dark tooled leather in bronze frames, and every icon is a finished picture. That covers every spell, buff and debuff, and every item (over 260 of them). Spells now use real painted fire, smoke, frost, holy light and shadow instead of glowing dots.
+
+**What changed**
+- **HUD:**
+  - Diablo-style liquid orbs (animated, with a glass highlight) and a painted bottom hotbar.
+  - The orbs size themselves to the screen, and the chat box moves above them on small windows.
+- **Windows:**
+  - Albion-style painted panels: leather, a bevelled bronze rim, corner studs, an ornamental rule under titles and lacquered buttons.
+  - Tooltips, the menu, the death box and the spellbook share the same skin (`src/ui/ui_skin.gd`, painted by `art/ui_art.py panels`).
+- **Ability icons:**
+  - Painted for every player ability (`art/spell_icons.py`).
+  - New: monster spells and buffs or debuffs that aren't abilities, such as silenced, entangled, enraged, eating and drinking (`art/buff_icons.py`).
+- **Item icons:**
+  - Every item is a lit 3D render in Blender (`art/item_models.py`): the game's own weapon models and outfit pieces in their colour variants, plus about 150 modelled props.
+  - The props cover ores, ingots, hides, leather rolls, cloth bolts, herbs, potions, food, rings, pendants, cloaks, belts, keys, letters, scales, fangs and more.
+  - Each icon is painted onto a matching backdrop with a shadow and glow (`art/item_paint.py`) and framed by quality in the game.
+  - The icon for an item comes from `ItemIcon.key_of` (`tools/icon_keys.gd` lists them all).
+- **Spell effects:**
+  - Rebuilt on painted textures (`art/vfx_textures.py`): animated flipbooks of fire, explosions, smoke, frost mist and shadow wisps; flares; spark and ice-shard streaks that stretch along their flight; light rays; shock rings; textured weapon swipes.
+  - Ground decals: scorch marks with embers, frost, holy glyphs and cracked earth.
+  - Every ability has an effect now, including the newer warrior, wizard and cleric spells and the monster spells.
+  - Camp fires and braziers burn with real flame.
+
 ## 2026-09-26 (evening) — Claude, milestone 7: the raid
 **In plain English:** At level 60, the Sanctum Gate at the top of Vaal's Scar opens onto the Abyssal Sanctum, a raid for ten people. You bring nine others (simulated players answer your call), fight four bosses that each have their own tricks, and roll for purple loot, class set pieces and, very rarely, an orange Mythic.
 

@@ -20,6 +20,11 @@ func _ready() -> void:
 	add_to_group("chat")
 	set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
 	offset_left = 16; offset_top = -310; offset_right = 420; offset_bottom = -24
+	# keep clear of the health orb on narrow screens: sit above it
+	var scr := get_viewport().get_visible_rect().size
+	if offset_right + 10.0 > GameHud.orb_left_edge(scr):
+		var lift := GameHud.orb_size(scr.y) + 10.0
+		offset_bottom = -lift; offset_top = -lift - 250.0
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var bg := Panel.new(); bg.set_anchors_preset(Control.PRESET_FULL_RECT); bg.offset_bottom = -34; bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var sb := StyleBoxFlat.new(); sb.bg_color = Color(0, 0, 0, 0.22); sb.set_corner_radius_all(6)

@@ -1,0 +1,277 @@
+a_Knight_Acc_Pauldron_Round_2	Highland Watch Pauldrons
+a_Knight_Acc_Pauldron_Round_3	Marrowplate Pauldrons
+a_Knight_Acc_Pauldron_Spike_3	Oathbreaker's Pauldrons
+a_Knight_Arms_1	Recruit's Gauntlets
+a_Knight_Arms_2	Foreman's Gauntlets
+a_Knight_Arms_3	Gauntlets of the Colossus
+a_Knight_Body_Armor_1	Recruit's Mail Vest
+a_Knight_Body_Armor_2	Drakescale Vest
+a_Knight_Body_Armor_3	Gravewarden's Breastplate
+a_Knight_Feet_1	Recruit's Boots
+a_Knight_Feet_2	Cairn Warden Boots
+a_Knight_Feet_3	Undying Sabatons
+a_Knight_Head_Armet_2	Brinewarden Helm
+a_Knight_Head_Armet_3	Crown of Varn
+a_Knight_Legs_1	Recruit's Leggings
+a_Knight_Legs_2	Blackglass Legguards
+a_Knight_Legs_3	Cryptlord Greaves
+a_Noble_Acc_Pauldron_2	Reedweave Mantle
+a_Noble_Acc_Pauldron_3	Broodsilk Mantle
+a_Noble_Arms_1	Acolyte's Sleeves
+a_Noble_Body_1	Acolyte's Vestment
+a_Noble_Body_2	Pilgrim's Robe
+a_Noble_Body_3	Tarnished Vestments
+a_Noble_Feet_1	Acolyte's Shoes
+a_Noble_Legs_1	Acolyte's Breeches
+a_Ranger_Acc_Pauldron_3	Ashmaw Hide Mantle
+a_Ranger_Body_2	Tarnished Jerkin
+a_Ranger_Body_3	Grubhide Jerkin
+a_Ranger_Feet_2	Landing Wader Boots
+a_Ranger_Feet_3	Deathwalker Boots
+a_Ranger_Head_Hood_2	Rat-Catcher's Cap
+a_Ranger_Legs_2	Tarnished Breeches
+a_Ranger_Legs_3	Tarnished Breeches
+a_Wizard_Arms_1	Apprentice's Wraps
+a_Wizard_Arms_2	Herbalist's Gloves
+a_Wizard_Arms_3	Voidweave Handwraps
+a_Wizard_Body_1	Apprentice's Robe
+a_Wizard_Body_2	Tobiah's Oilskin
+a_Wizard_Body_3	Hogtooth Hide Vest
+a_Wizard_Feet_1	Apprentice's Sandals
+a_Wizard_Feet_2	Drakehunter's Treads
+a_Wizard_Feet_3	Voidstep Slippers
+a_Wizard_Legs_1	Apprentice's Trousers
+a_Wizard_Legs_2	Tarnished Leggings
+a_Wizard_Legs_3	Voidweave Leggings
+arrow	Guardian Arrow
+arrow_broken	Broken Arrow
+bat_wing	Leathery Bat Wing
+bell	Lamb's Bell
+blessing	Graves Blessed
+bloom	Highland Bloom
+bones	Bone Fragments
+brimstone	Brimstone Chip
+cask	Cask of Lamp Oil
+chowder	Gullhaven Chowder
+claw	Scratch's Claw
+coin	Old Coin
+compass	Wrecker's Trinket
+core	Sentinel Core
+crab_shell	Cracked Crab Shell
+dispatch	Roark's Dispatch
+driftwood	Dry Driftwood
+dust	Temple Moth Dust
+e_back	(empty back slot)
+e_chest	(empty chest slot)
+e_feet	(empty feet slot)
+e_finger	(empty finger slot)
+e_hands	(empty hands slot)
+e_head	(empty head slot)
+e_legs	(empty legs slot)
+e_main_hand	(empty main_hand slot)
+e_neck	(empty neck slot)
+e_off_hand	(empty off_hand slot)
+e_shoulders	(empty shoulders slot)
+e_trinket	(empty trinket slot)
+e_waist	(empty waist slot)
+e_wrist	(empty wrist slot)
+ear	Goblin Ear
+egg	Chicken Egg
+fang	Viper Fang
+fang_charred	Charred Fang
+fang_frost	Frozen Fang
+feather	Hen Feather
+fish	Salted Fish
+fur	Matted Fur
+g_belt	Tanned Belt
+g_bracers	Hunter's Bracers
+g_circlet_fire	Embersworn Circlet
+g_circlet_frost	Circlet of Winter
+g_circlet_gold	Runescribe's Circlet
+g_circlet_void	Voidweave Circlet
+g_cloak_fire	Ashworks Cloak
+g_cloak_fur	Whitepelt Cloak
+g_cloak_gold	Tarnished Cloak
+g_cloak_hide	Rockjaw Hide Cloak
+g_cloak_nature	Heather-Dyed Cloak
+g_cloak_void	Cloak of the Unmade
+g_cord_fire	Ashfall Cord
+g_cord_frost	Icebound Girdle
+g_cord_gold	Lantern Row Cord
+g_cord_nature	Woodland Sash
+g_cord_sea	Ferryman's Cord
+g_cowl_gold	Bellringer's Cowl
+g_cowl_sea	Siltveil Cowl
+g_crown_bell	Gutbag's Bell-Crown
+g_crown_bone	Bone King's Circlet
+g_girdle_mail	Marshal's Girdle
+g_girdle_plate	Chainlinked Girdle
+g_gloves	Camp Cook's Gloves
+g_wraps_fire	Cinderweave Wraps
+g_wraps_gold	Inkstained Wraps
+g_wraps_nature	Warden's Cuffs
+g_wraps_sea	Saltstained Wraps
+g_wraps_void	Lich-Hunter's Wraps
+gland	Viper Venom Gland
+goo	Maggot Goo
+goo_void	Void Residue
+hearth	Hearthstone
+hide	Boar Hide
+horn_chip	Chipped Khar Horn
+ink	Sage's Ink
+j_band_fire	Cinderheart Ring
+j_band_gold	Old Raider's Band
+j_band_nature	Ploughshare Ring
+j_band_sea	Lakebound Band
+j_band_void	Band of the Hollow Crown
+j_beads	Vale's Prayer Beads
+j_bell	The Merrow's Bell
+j_charm	Warding Charm
+j_pearl	Pearl of the Deep
+j_pendant_fire	Ashen Pendant
+j_pendant_frost	Winterheart Pendant
+j_pendant_gold	Acolyte's Collar
+j_pendant_nature	Warden's Pendant
+j_pendant_void	The Silent Word
+j_signet_fire	Emberheart Signet
+j_signet_gold	Signet of House Varn
+j_signet_nature	Mirewarden's Signet
+j_signet_sea	Saltstone Signet
+j_signet_void	Last Watch Signet
+key_iron	Skarr's Key
+key_void	Sanctum Key
+ledger	Khar Ledger
+letter	Rowan's Letter
+locket	Drowned Locket
+m_bar_1	Copper Bar
+m_bar_2	Black Iron Bar
+m_bar_3	Bog Iron Bar
+m_bar_4	Ashsteel Bar
+m_bar_5	Highland Steel Bar
+m_bar_6	Starmetal Bar
+m_bar_7	Brinesteel Bar
+m_bar_8	Voidsteel Bar
+m_cloth_1	Bolt of Linen
+m_cloth_2	Bolt of Wool
+m_cloth_3	Bolt of Reedweave
+m_cloth_4	Bolt of Ashsilk
+m_cloth_5	Bolt of Frostweave
+m_cloth_6	Bolt of Runecloth
+m_cloth_7	Bolt of Emberweave
+m_cloth_8	Bolt of Voidweave
+m_herb_1	Hearthleaf
+m_herb_2	Cliffmoss
+m_herb_3	Bogbell
+m_herb_4	Emberroot
+m_herb_5	Frostthistle
+m_herb_6	Starbloom
+m_herb_7	Firebloom
+m_herb_8	Voidlotus
+m_hide_1	Rough Hide
+m_hide_2	Rugged Hide
+m_hide_3	Mire Hide
+m_hide_4	Cinder Hide
+m_hide_5	Highland Hide
+m_hide_6	Wyrm Hide
+m_hide_7	Drakehide Hide
+m_hide_8	Rimehide Hide
+m_leather_1	Rough Leather
+m_leather_2	Rugged Leather
+m_leather_3	Mire Leather
+m_leather_4	Cinder Leather
+m_leather_5	Highland Leather
+m_leather_6	Wyrm Leather
+m_leather_7	Drakehide Leather
+m_leather_8	Rimehide Leather
+m_linen_1	Linen Scraps
+m_linen_2	Wool Scraps
+m_linen_3	Reedweave Scraps
+m_linen_4	Ashsilk Scraps
+m_linen_5	Frostweave Scraps
+m_linen_6	Runecloth Scraps
+m_linen_7	Emberweave Scraps
+m_linen_8	Voidweave Scraps
+m_ore_1	Copper Ore
+m_ore_2	Black Iron Ore
+m_ore_3	Bog Iron Ore
+m_ore_4	Ashsteel Ore
+m_ore_5	Highland Steel Ore
+m_ore_6	Starmetal Ore
+m_ore_7	Brinesteel Ore
+m_ore_8	Voidsteel Ore
+map	The Shaman's Map
+meat	Maggot Meat
+moth_wing	Dusty Moth Wing
+notes	Old Ned's Notes
+oats	Highland Oats
+obsidian	Obsidian Chip
+pelt_white	Thick White Pelt
+potion_l	Major Healing Potion
+potion_m	Healing Potion
+potion_s	Minor Healing Potion
+purse	Miner's Wage Purse
+ram_horn	Ram's Horn
+rime_crystal	Rime Crystal
+robe_scrap	Scorched Robe Scrap
+rune_shard	Rune Shard
+scale_fire	Scorched Drake Scale
+scale_sea	Serpent Scale
+sea_glass	Sea Glass
+seal	Mora's Seal
+silk	Coarse Spider Silk
+slag	Lump of Slag
+soul_shard	Soul Shard
+stew	Warm Meal
+stew_hearty	Hearty Stew
+stone	Rough Stone
+straw	Bundle of Straw
+t_bowstring	Ketch's Bowstring
+t_charm	Marsh-Witch's Charm
+t_ember_heart	Cooling Ember of Azhul
+t_eye	Eye of Vaal
+t_frost_shard	Shard of Eternal Winter
+t_golem	Golemheart
+t_lantern	Catacomb Lantern
+t_obsidian	Obsidian Focus
+t_tome	Last Page of the Archive
+t_voidglass	Seer's Voidglass
+t_whistle	Bosun's Whistle
+tail	Rat Tail
+tok_chest	Breastplate of the Unbroken Oath
+tok_hands	Gauntlets of the Unbroken Oath
+tok_head	Helm of the Unbroken Oath
+tok_legs	Legguards of the Unbroken Oath
+tok_shoulders	Mantle of the Unbroken Oath
+token_grave	Grave Token
+totem	Totems Smashed
+trinket_shiny	Shiny Puglin Trinket
+tusk	Boar King's Tusk
+vial_void	Vial of Void Ichor
+voidstone	Voidstone Fragment
+w_abyssblade	Drowned King's Blade
+w_abyssfang	Soulreaver
+w_abyssstaff	Seth's Gaze
+w_axe	Digger's Pick
+w_bough	Heartwood of Rootmaw
+w_club	Acolyte's Mace
+w_crystalstaff	Staff of the Sunken
+w_curved	Tidebreaker Cutlass
+w_dagger	Dirk
+w_dragonblade	Ashur's Edge
+w_emberstaff	Old Tusk's Grudge
+w_eternity	Eternity, Staff of Hours
+w_fang	Venomfang Dirk
+w_greataxe	Brandmaster's Axe
+w_hook	Warden's Hookblade
+w_long	Sharpened Sword
+w_moon	Dawnbringer
+w_serrated	Glassedge Blade
+w_skullstaff	Lichbone Staff
+w_staff	Apprentice's Staff
+w_sword	Recruit's Sword
+w_wand	Ashwood Wand
+w_wood	Walking Staff
+w_worldbreaker	Maul of the Colossus
+war_horn	The Warlord's Horn
+water	Spring Water
+wool	Tuft of Ram's Wool

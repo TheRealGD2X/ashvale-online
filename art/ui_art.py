@@ -185,7 +185,123 @@ def hud():
     orb_frame('orb_frame_mp', gem='#2050e0')
     hotbar()
 
+# ------------------------------------------------------------------ Albion-style panels (9-slice textures)
+def rrect_px(c, x0, y0, x1, y1, r):
+    """signed distance in pixels to a rounded rectangle (negative inside)"""
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2; hx, hy = (x1 - x0) / 2 - r, (y1 - y0) / 2 - r
+    qx = np.abs(c.px - cx) - hx; qy = np.abs(c.py - cy) - hy
+    return np.sqrt(np.maximum(qx, 0) ** 2 + np.maximum(qy, 0) ** 2) + np.minimum(np.maximum(qx, qy), 0) - r
+
+def leather(c, dark, light, seed=1, grain=0.35):
+    """dark tooled leather: soft blotches, fine grain, a little lighter in the middle"""
+    n = max(c.w, c.h)
+    b = noise(n, 4, seed, 5)[:c.h, :c.w]; g = noise(n, 70, seed + 3, 3)[:c.h, :c.w]; s = noise(n, 18, seed + 5, 4, aniso=(1.0, 0.3))[:c.h, :c.w]
+    t = np.clip(b * 0.7 + s * 0.3, 0, 1)
+    col = np.asarray(hexc(dark), np.float32) * (1 - t[..., None]) + np.asarray(hexc(light), np.float32) * t[..., None]
+    return col * (1.0 + (g[..., None] - 0.5) * grain)
+
+def panel9(name, W, H, radius, border, metal, dark, light, bg_alpha=0.96, shadow=12, hair=True, studs=True, header=0, scale=2, seed=1):
+    """a window/panel skin: leather body, bevelled metal rim, gold hairline inside, corner studs,
+    a soft drop shadow in the outer margin (the game draws it with expand margins)"""
+    c = Wide(W * scale, H * scale)
+    S = shadow * scale; R = radius * scale; B = border * scale
+    d = rrect_px(c, S, S, c.w - S, c.h - S, R)
+    body = smooth(0.8, -0.8, d)
+    col = leather(c, dark, light, seed)
+    # the header band: a darker strip under the title
+    if header:
+        hb = smooth(0, 3 * scale, c.py - S - B - header * scale)
+        col = col * (0.62 + 0.38 * hb[..., None])
+    # inner vignette: darker toward the rim
+    col *= (0.7 + 0.3 * smooth(-0.0, -28.0 * scale, d))[..., None]
+    rgb = col
+    # the rim: a bevelled metal band, lit from the top left
+    t = np.clip(-d / B, 0, 1)
+    band = smooth(0.8, -0.8, d) * smooth(-B - 0.8, -B + 0.8, d)
+    gy, gx = np.gradient(d)
+    ln = np.sqrt(gx * gx + gy * gy) + 1e-6
+    lightdir = np.clip(-(gx / ln) * 0.6 - (gy / ln) * 0.8, -1, 1) * (1 - 2 * (t > 0.5))
+    mcol, ridge = metal_shade(c, t, lightdir, metal, seed + 7)
+    spec = np.clip(ridge * np.clip(lightdir, 0, 1), 0, 1) ** 3 * band
+    rgb = rgb * (1 - band[..., None]) + (mcol + spec[..., None] * np.array(hexc('#fff0d0', 1.0))) * band[..., None]
+    # a dark lip inside the rim and a thin gold hairline a little further in
+    lip = smooth(-B - 0.5, -B - 4 * scale, d) * smooth(-B - 12 * scale, -B - 4 * scale, d)
+    rgb *= (1 - 0.5 * lip * (1 - band))[..., None]
+    if hair:
+        hl = np.exp(-((d + B + 6 * scale) / (0.8 * scale)) ** 2)
+        rgb += hl[..., None] * np.array(hexc(metal, 0.7)) * 0.8
+    alpha = np.maximum(body * bg_alpha, band)
+    # corner studs: a small domed rivet set into each corner of the rim
+    if studs:
+        k = S + R - (R - B * 0.5) * 0.7071
+        for (x, y) in [(k, k), (c.w - k, k), (k, c.h - k), (c.w - k, c.h - k)]:
+            r = np.sqrt((c.px - x) ** 2 + (c.py - y) ** 2); rs = B * 0.9
+            stud = smooth(rs, rs - 1.5 * scale, r)
+            hl = np.clip(1 - np.sqrt((c.px - x + rs * 0.35) ** 2 + (c.py - y + rs * 0.35) ** 2) / (rs * 0.9), 0, 1)
+            scol = np.asarray(hexc(metal, 1.1)) * (0.45 + hl[..., None] * 1.3)
+            rgb = rgb * (1 - stud[..., None]) + scol * stud[..., None]
+            alpha = np.maximum(alpha, stud)
+    # drop shadow outside
+    if S > 0:
+        sh = np.exp(-np.maximum(d, 0) / (S * 0.45)) * (d > 0)
+        alpha = np.maximum(alpha, sh * 0.45 * (1 - body))
+    rgb = rgb * body[..., None] + 0 * (1 - body[..., None]) + rgb * band[..., None] * (1 - body[..., None])
+    c.rgb = rgb
+    save_wide(c, alpha, os.path.join(UI, name + '.png'), W, H)
+    print('ui', name)
+
+def button9(name, W=160, H=48, face='#5a2a18', metal='#9a7a4a', glow=0.0, press=False, scale=2):
+    c = Wide(W * scale, H * scale)
+    R = 8 * scale; B = 3 * scale
+    d = rrect_px(c, 1, 1, c.w - 1, c.h - 1, R)
+    body = smooth(0.8, -0.8, d)
+    fc = leather(c, face, _mix(face, '#000000', 0.25), 3, grain=0.12)
+    # lacquer: light from above, darker at the bottom (inverted when pressed)
+    v = c.py / c.h
+    g = (1.0 - 0.45 * v) if not press else (0.7 + 0.25 * v)
+    fc = fc * g[..., None]
+    gl = np.exp(-((v - 0.16) / 0.1) ** 2) * (0 if press else 0.12)
+    fc += gl[..., None] * np.array(hexc('#ffe8c0', 0.6))
+    if glow: fc += (smooth(-2.0, -18.0 * scale, d) * glow)[..., None] * np.array(hexc('#ff9a40', 0.5))
+    t = np.clip(-d / B, 0, 1); band = body * smooth(-B - 0.8, -B + 0.8, d)
+    gy, gx = np.gradient(d); ln = np.sqrt(gx * gx + gy * gy) + 1e-6
+    lightdir = np.clip(-(gx / ln) * 0.3 - (gy / ln) * 0.95, -1, 1) * (1 - 2 * (t > 0.5))
+    mcol, ridge = metal_shade(c, t, lightdir, metal, 9)
+    rgb = fc * (1 - band[..., None]) + mcol * band[..., None]
+    c.rgb = rgb * body[..., None]
+    save_wide(c, body, os.path.join(UI, name + '.png'), W, H)
+    print('ui', name)
+
+def _mix(a, b, k):
+    ca = np.asarray(hexc(a)); cb = np.asarray(hexc(b)); m = ca * (1 - k) + cb * k
+    s = lambda v: v * 12.92 if v <= 0.0031308 else 1.055 * v ** (1 / 2.4) - 0.055
+    return '#%02x%02x%02x' % tuple(int(np.clip(s(v), 0, 1) * 255) for v in m)
+
+def divider(name='divider', W=512, H=24, metal='#b08a50', scale=2):
+    c = Wide(W * scale, H * scale)
+    cy = c.h / 2; cx = c.w / 2
+    dx = np.abs(c.px - cx) / cx
+    line = np.exp(-((c.py - cy) / (1.2 * scale)) ** 2) * smooth(1.0, 0.7, dx)
+    dia = smooth(1.0, 0.0, (np.abs(c.px - cx) + np.abs(c.py - cy)) - 9 * scale)
+    ring = np.exp(-(((np.abs(c.px - cx) + np.abs(c.py - cy)) - 14 * scale) / (1.0 * scale)) ** 2)
+    hl = np.clip(1 - ((c.px - cx + 3 * scale) ** 2 + (c.py - cy + 3 * scale) ** 2) ** 0.5 / (8 * scale), 0, 1)
+    rgb = np.asarray(hexc(metal), np.float32) * (line + ring * 0.9)[..., None]
+    rgb = rgb * (1 - dia[..., None]) + np.asarray(hexc('#c02020'), np.float32) * (0.5 + hl[..., None] * 1.4) * dia[..., None]
+    c.rgb = rgb
+    save_wide(c, np.clip(line + ring + dia, 0, 1), os.path.join(UI, name + '.png'), W, H)
+    print('ui', name)
+
+def panels():
+    panel9('panel_window', 256, 256, 12, 5, '#9a7a4a', '#16120e', '#2c241c', 0.97, shadow=14, header=0)
+    panel9('panel_hud', 128, 128, 10, 3, '#8a6a3a', '#141210', '#221c16', 0.8, shadow=8, hair=False, studs=False, seed=4)
+    panel9('panel_tooltip', 128, 128, 6, 2, '#b8a070', '#0c0c12', '#16161e', 0.95, shadow=8, hair=False, studs=False, seed=6)
+    panel9('panel_inset', 128, 128, 6, 2, '#5a4a34', '#0e0c0a', '#18140f', 0.85, shadow=0, hair=False, studs=False, seed=8)
+    button9('btn_normal', face='#6a1c10'); button9('btn_hover', face='#7e2614', glow=0.12); button9('btn_pressed', face='#4a140c', press=True)
+    button9('btn_disabled', face='#2a2622', metal='#5a5448')
+    divider()
+
 if __name__ == '__main__':
-    what = sys.argv[1:] or ['frames', 'hud']
+    what = sys.argv[1:] or ['frames', 'hud', 'panels']
+    if 'panels' in what: panels()
     if 'frames' in what: frames()
     if 'hud' in what: hud()
