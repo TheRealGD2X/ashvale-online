@@ -16,6 +16,13 @@ var hero: Node3D
 var hud: CanvasLayer
 const STAGE := Vector3(3, 0, 16)      # where heroes are created and first step into the world
 var save_t := 0.0
+var zone := "ashvale"
+var loading: CanvasLayer
+var exit_warned := {}
+static var travel := {}              # set before reloading into another zone: {"ch", "zone", "pos", "party"}
+
+const BUILDERS := {"village": "res://src/world/village.gd", "landmarks": "res://src/world/landmarks.gd", "water": "res://src/world/water.gd",
+	"vegetation": "res://src/world/vegetation.gd", "life": "res://src/world/life.gd", "camp": "res://src/world/camp.gd", "mine": "res://src/world/mine.gd"}
 
 func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
@@ -23,35 +30,59 @@ func _ready() -> void:
 		args[kv[0]] = kv[1] if kv.size() > 1 else "1"
 	if args.has("shot"):   # a watchdog: a broken build must not hang the test machine
 		get_tree().create_timer(float(args.get("timeout", "420")), true, false, true).timeout.connect(func(): print("TIMEOUT"); get_tree().quit(1))
-	if not args.has("shot") and await _import_if_needed(): return
+	if not args.has("shot") and travel.is_empty() and await _import_if_needed(): return
+	zone = travel.get("zone", args.get("zone", "ashvale"))
+	WorldData.use_zone(zone)
+	var Z: Dictionary = WorldData.Z
+	if not travel.is_empty(): await _show_loading(Z)
 	if args.has("hour"): DayNight.set_hour(float(args["hour"]))
 	var t0 := Time.get_ticks_msec()
 	WorldData.lite = args.has("lite")
 	if WorldData.lite: RenderingServer.directional_shadow_atlas_set_size(4096, true)
 	WorldData.bake()
-	print("world baked in %d ms" % (Time.get_ticks_msec() - t0))
-	day_night = DayNight.new(); day_night.hq = not args.has("lite"); add_child(day_night)
+	print("world baked in %d ms (%s)" % [Time.get_ticks_msec() - t0, zone])
+	day_night = DayNight.new(); day_night.hq = not args.has("lite"); day_night.cave = Z.get("sky", "day") == "cave"; add_child(day_night)
 	if args.has("gi"): day_night.env.sdfgi_enabled = true; day_night.env.ssil_enabled = true
 	if args.has("shot"): DayNight.paused = true
 	add_child(Terrain.new())
-	for s in ["res://src/world/village.gd", "res://src/world/landmarks.gd", "res://src/world/water.gd", "res://src/world/vegetation.gd", "res://src/world/life.gd"]:
-		if ResourceLoader.exists(s):
-			var n: Node = load(s).new(); add_child(n)
+	for b in Z.get("builders", []):
+		var path: String = BUILDERS.get(b, "")
+		if path != "" and ResourceLoader.exists(path):
+			var n: Node = load(path).new(); add_child(n)
+	_signposts(Z)
 	# solid things need a physics frame before the walking grid can see them
 	await get_tree().physics_frame
 	await get_tree().physics_frame
 	Nav.build(get_tree())
 	add_child(load("res://src/world/spawns.gd").new())
 	add_child(Fx.new())
-	add_child(Weather.new())
+	if Z.get("sky", "day") != "cave": add_child(Weather.new())
 	if not args.has("shot"): add_child(Soundscape.new())
 	camera = OrbitCamera.new(); add_child(camera); camera.current = true
 	add_child(load("res://src/camera/see_through.gd").new())
 	print("world built in %d ms" % (Time.get_ticks_msec() - t0))
+	if not travel.is_empty():
+		var tr := travel; travel = {}
+		_start_game(tr["ch"], tr)
+		if loading: loading.queue_free()
+		if args.has("questtest"): add_child(load("res://tools/questtest.gd").new())
+		if args.has("shot"): _shot()
+		return
+
 	if (args.has("shot") or args.has("play")) and not args.has("creator"):
 		var cls: String = args.get("class", "warrior")
 		var rng := RandomNumberGenerator.new(); rng.seed = int(args.get("seed", "5"))
-		var ch := {"name": "Tester", "cls": cls, "level": int(args.get("level", "1")), "look": Avatar.random_look(rng, cls, args.get("sex", "m"))}
+		var ch := {"name": "Tester", "cls": cls, "level": int(args.get("level", "1")), "look": Avatar.random_look(rng, cls, args.get("sex", "m")), "zone": zone}
+		# tests can start further along: --done=ashvale marks the province's quests done
+		if args.get("done", "") == "ashvale":
+			var dq := []
+			for id in Quests.LIST:
+				if int(Quests.LIST[id]["level"]) <= 10 and not (Npcs.LIST.get(Quests.LIST[id]["giver"], {}).get("zone", "ashvale") != "ashvale"): dq.append(id)
+			ch["done_quests"] = dq
+			ch["known"] = []
+			for t in Npcs.TRAINING[cls]:
+				if int(t[1]) <= int(ch["level"]): ch["known"].append(t[0])
+
 		_start_game(ch)
 		if args.has("autoplay"): add_child(load("res://tools/autoplay.gd").new())
 		if args.has("questtest"): add_child(load("res://tools/questtest.gd").new())
@@ -68,28 +99,103 @@ func _ready() -> void:
 	if args.has("leakcheck"): add_child(load("res://tools/leakcheck.gd").new()); DayNight.paused = false
 	_check_kits()
 
-func _start_game(ch: Dictionary) -> void:
+func _start_game(ch: Dictionary, tr := {}) -> void:
+	# a saved character who logged out somewhere else goes straight there
+	var their_zone: String = ch.get("zone", "ashvale")
+	if tr.is_empty() and their_zone != zone and Zones.DEFS.has(their_zone) and not args.has("play"):
+		var pos := Vector2(float(ch["pos"][0]), float(ch["pos"][1])) if ch.has("pos") else Zones.v2(Zones.get_def(their_zone), "start")
+		travel_to(their_zone, pos, ch); return
+	Save._fix(ch)
 	var p := Player.new(); p.setup_from(ch)
+
 	add_child(p)
-	var start: Vector3 = STAGE
+	var Z: Dictionary = WorldData.Z
+	var start := Vector3(STAGE) if zone == "ashvale" else Vector3(Z["start"].x, 0, Z["start"].y)
 	if args.has("hero"):
 		var hz: PackedStringArray = args["hero"].split(","); start = Vector3(float(hz[0]), 0, float(hz[1]))
-	elif ch.has("pos"): start = Vector3(float(ch["pos"][0]), 0, float(ch["pos"][1]))
+	elif tr.has("pos"): start = Vector3(tr["pos"].x, 0, tr["pos"].y)
+	elif ch.has("pos") and their_zone == zone: start = Vector3(float(ch["pos"][0]), 0, float(ch["pos"][1]))
 	start = Nav.nearest_open(start); start.y = WorldData.h(start.x, start.z)
 	p.global_position = start; p.home = start
 	hero = p
 	camera.target = p; camera.focus = start + Vector3(0, 1.35, 0); p.set_camera(camera)
 	hud = load("res://src/ui/game_hud.gd").new(); add_child(hud)
 	hud.bind(p, camera)
-	if not args.has("questtest"): add_child(load("res://src/world/society.gd").new())
+	if not args.has("questtest") or args.has("bots") or not tr.get("party", []).is_empty():
+		var soc: Node = load("res://src/world/society.gd").new(); add_child(soc)
+
+		# the group comes along from the last zone
+		for pm in tr.get("party", []): soc.bring(pm, p)
+	if not tr.is_empty(): hud.notice("Entering %s" % Z["name"])
+
+## walking off the end of a road: into the next zone
+func _check_exits() -> void:
+	if not (hero is Player) or hero.dead: return
+	for ex in WorldData.Z.get("exits", []):
+		var d := Vector2(hero.global_position.x, hero.global_position.z).distance_to(ex["at"])
+		if d > float(ex["r"]): exit_warned.erase(ex["name"]); continue
+		if ex["to"] == "":
+			if not exit_warned.has(ex["name"]): exit_warned[ex["name"]] = true; hud.error(ex["sign"])
+			continue
+		var need := int(Zones.get_def(ex["to"]).get("group", 1))
+		if need > 1 and hero.party_members().size() < need:
+			if not exit_warned.has(ex["name"]): exit_warned[ex["name"]] = true; hud.error("You need a group of %d or more to go in (invite someone)" % need)
+			continue
+		travel_to(ex["to"], ex["arrive"])
+		return
+
+func travel_to(to: String, pos: Vector2, ch := {}) -> void:
+	if ch.is_empty():
+		ch = hero.to_save(); ch["look"] = Save.encode_look(ch["look"]); ch["zone"] = to; ch["pos"] = [pos.x, pos.y]
+		if not args.has("play") and not args.has("shot"): Save.upsert(ch)
+	var party := []
+	if hero is Player:
+		for m in hero.party:
+			if is_instance_valid(m): party.append(m.to_bot_save())
+	travel = {"ch": ch, "zone": to, "pos": pos, "party": party}
+	set_process(false)
+	await _show_loading(Zones.get_def(to))
+	get_tree().reload_current_scene()
+
+## a plain loading screen with the name of where you're going
+func _show_loading(Z: Dictionary) -> void:
+	loading = CanvasLayer.new(); loading.layer = 50; add_child(loading)
+	var bg := ColorRect.new(); bg.color = Color(0.05, 0.04, 0.03); bg.set_anchors_preset(Control.PRESET_FULL_RECT); loading.add_child(bg)
+	var l := Label.new(); l.text = Z["name"]; l.set_anchors_preset(Control.PRESET_CENTER); l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.offset_left = -400; l.offset_right = 400; l.offset_top = -40
+	l.add_theme_font_size_override("font_size", 54); l.add_theme_color_override("font_color", Color(0.98, 0.84, 0.5))
+	var f := SystemFont.new(); f.font_names = PackedStringArray(["Georgia", "serif"]); f.font_weight = 700; l.add_theme_font_override("font", f)
+	loading.add_child(l)
+	var band: Array = Z.get("band", [1, 1])
+	var s := Label.new(); s.text = "Levels %d–%d" % [band[0], band[1]]; s.set_anchors_preset(Control.PRESET_CENTER); s.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	s.offset_left = -400; s.offset_right = 400; s.offset_top = 30; s.add_theme_font_size_override("font_size", 22); s.add_theme_color_override("font_color", Color(0.85, 0.8, 0.7))
+	loading.add_child(s)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+## a signpost where each road leaves the zone
+func _signposts(Z: Dictionary) -> void:
+	for ex in Z.get("exits", []):
+		if ex.get("no_post", false): continue
+		var at: Vector2 = ex["at"]
+
+		var root := Node3D.new(); add_child(root)
+		var dir := (Vector2.ZERO - at).normalized() * 6.0
+		var p := at + dir + dir.orthogonal().normalized() * 3.0
+		root.position = Vector3(p.x, WorldData.h(p.x, p.y), p.y)
+		var wood := StandardMaterial3D.new(); wood.albedo_color = Color(0.42, 0.28, 0.16)
+		var post := MeshInstance3D.new(); var bm := BoxMesh.new(); bm.size = Vector3(0.16, 2.4, 0.16); bm.material = wood; post.mesh = bm; post.position.y = 1.2; root.add_child(post)
+		var l := Label3D.new(); l.text = "%s\n%s" % [ex["name"], ex["sign"]]; l.font_size = 44; l.pixel_size = 0.006; l.outline_size = 8
+		l.modulate = Color(1.0, 0.93, 0.75); l.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y; l.position.y = 2.7; root.add_child(l)
 
 func _process(delta: float) -> void:
+	if Engine.get_process_frames() % 10 == 0: _check_exits()
 	save_t += delta
 	if save_t > 60.0: save_t = 0.0; _save()
 
 func _save() -> void:
 	if hero is Player and not args.has("shot") and not args.has("play"):
-		var d: Dictionary = hero.to_save(); d["look"] = Save.encode_look(d["look"]); Save.upsert(d)
+		var d: Dictionary = hero.to_save(); d["look"] = Save.encode_look(d["look"]); d["zone"] = zone; Save.upsert(d)
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST: _save()
@@ -215,6 +321,7 @@ func _shot() -> void:
 		hero.model.rotation.y = deg_to_rad(float(args.get("face", "0")))
 		hero.model.has_anim(pz[0]); hero.model.anim.play(pz[0], 0.0); hero.model.anim.seek(float(pz[1]) if pz.size() > 1 else 0.0, true); hero.model.anim.speed_scale = 0.0
 	if args.has("demo"): await _demo(args["demo"])
+	if args.has("ui"): await _ui_demo(args["ui"]); get_tree().quit(); return
 	var frames := int(args.get("frames", "40"))
 	for i in frames: await get_tree().process_frame
 	var t := Time.get_ticks_msec()
@@ -223,3 +330,52 @@ func _shot() -> void:
 	var img := get_viewport().get_texture().get_image()
 	img.save_png(args["shot"]); print("saved ", args["shot"])
 	get_tree().quit()
+
+## screenshots of the windows, one after another:  --ui=npc:rowan,quest:pests_in_fields,bags,char,talents,log,map,vendor:bess,trainer
+func _ui_demo(spec: String) -> void:
+	var p: Player = hero
+	var per := int(args.get("uiframes", "6"))
+	for i in per * 2: await get_tree().process_frame
+	# something to look at: a few quests, some loot, a couple of talents
+	for id in ["word_with_elder"]: p.done_quests.append(id)
+	for id in ["pests_in_fields", "hen_feathers", "blacksmiths_wager"]: p.accept_quest(id)
+	p.quests["pests_in_fields"]["have"][0] = 5
+	var rng := RandomNumberGenerator.new(); rng.seed = 3
+	for k in 3: p.add_item(Items.roll(p.level, rng))
+	p.add_item({"id": "hen_feather", "n": 3}); p.add_item({"id": "rat_tail", "n": 4}); p.add_item({"id": "cracked_tusk", "n": 1}); p.add_item({"id": "minor_healing_potion", "n": 2})
+	p.gold = 2345
+	if p.level >= 10:
+		var t: Array = Talents.TREES[p.cls][0]["talents"]
+		for k in 3: p.learn_talent(t[0]["id"]); p.learn_talent(t[1]["id"])
+	var k := 0
+	for step in spec.split(","):
+		var parts := step.split(":")
+		var w: GameWindows = hud.win
+		for c in [w.npc_win, w.bag_win, w.char_win, w.log_win, w.tal_win]:
+			if c: c.visible = false
+		if hud.minimap.big_open: hud.minimap.toggle_big(hud.root)
+		match parts[0]:
+			"npc", "vendor", "trainer", "quest":
+				var who := parts[1] if parts.size() > 1 and parts[0] != "quest" else ("trainer_" + p.cls if parts[0] == "trainer" else "rowan")
+				if parts[0] == "quest": who = Quests.LIST[parts[1]]["giver"]
+				var n: Npc = null
+				for x in get_tree().get_nodes_in_group("npcs"):
+					if x.npc_id == who: n = x
+				if n == null: continue
+				p.global_position = n.global_position + Vector3(2.2, 0, 1.5); p.global_position.y = WorldData.h(p.global_position.x, p.global_position.z)
+				camera.focus = p.global_position + Vector3(0, 1.35, 0)
+				w.open_npc(n)
+				if parts[0] == "vendor": w.npc_page = "vendor"; w._vendor(); w.open_bags(true)
+				elif parts[0] == "trainer": w.npc_page = "trainer"; w._trainer()
+				elif parts[0] == "quest": w._show_quest(parts[1])
+			"bags": w.open_bags(true)
+			"char": w.toggle_char()
+			"talents": w.toggle_talents()
+			"log": w.toggle_log()
+			"map": hud.minimap.toggle_big(hud.root)
+		for i in per: await get_tree().process_frame
+		var img := get_viewport().get_texture().get_image()
+
+		var out: String = args["shot"].get_basename() + "_%d.png" % k
+		img.save_png(out); print("saved ", out)
+		k += 1

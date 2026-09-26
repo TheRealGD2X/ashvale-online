@@ -25,20 +25,40 @@ func _ready() -> void:
 			var r := MeshInstance3D.new(); var t := TorusMesh.new(); t.inner_radius = 0.05; t.outer_radius = 0.07
 			var rm := StandardMaterial3D.new(); rm.albedo_color = Color(0.55, 0.2, 0.15); t.material = rm; r.mesh = t
 			body.add_child(r); r.position = Vector3(0.1, 0.05, 0); r.rotation_degrees.x = 90
+		"ore":
+			var rock := MeshInstance3D.new(); var sm := SphereMesh.new(); sm.radius = 0.55; sm.height = 0.7; sm.radial_segments = 7; sm.rings = 4
+			var rm := StandardMaterial3D.new(); rm.albedo_color = Color(0.4, 0.38, 0.36); rm.roughness = 0.9; sm.material = rm; rock.mesh = sm
+			body.add_child(rock); rock.position.y = 0.2; rock.scale = Vector3(1.3, 0.8, 1.0)
+			for k in 5:
+				var o := MeshInstance3D.new(); var om := SphereMesh.new(); om.radius = 0.12; om.height = 0.18; om.radial_segments = 5; om.rings = 2
+				var omt := StandardMaterial3D.new(); omt.albedo_color = Color(0.12, 0.12, 0.15); omt.metallic = 0.9; omt.roughness = 0.25; om.material = omt; o.mesh = om
+				rock.add_child(o); var a := TAU * k / 5.0; o.position = Vector3(cos(a) * 0.4, 0.15, sin(a) * 0.35)
+			# the foreman's chalk mark
+			var ch := MeshInstance3D.new(); var cm := BoxMesh.new(); cm.size = Vector3(0.35, 0.05, 0.05)
+			var cmt := StandardMaterial3D.new(); cmt.albedo_color = Color(0.95, 0.95, 0.9); cm.material = cmt; ch.mesh = cm
+			rock.add_child(ch); ch.position = Vector3(0, 0.33, 0.25); ch.rotation.z = 0.6
+		"grave":
+			var wreath := MeshInstance3D.new(); var tm := TorusMesh.new(); tm.inner_radius = 0.18; tm.outer_radius = 0.3
+			var wm := StandardMaterial3D.new(); wm.albedo_color = Color(0.35, 0.5, 0.25); tm.material = wm; wreath.mesh = tm
+			body.add_child(wreath); wreath.position.y = 0.05
 		_:
 			for i in 3:
+
 				var m2 := MeshInstance3D.new(); var cy := CylinderMesh.new(); cy.top_radius = 0.05; cy.bottom_radius = 0.05; cy.height = 0.012
 				var mt2 := StandardMaterial3D.new(); mt2.albedo_color = Color(0.72, 0.58, 0.3); mt2.metallic = 0.9; mt2.roughness = 0.4; cy.material = mt2
 				m2.mesh = cy; body.add_child(m2)
 				m2.position = Vector3(randf_range(-0.12, 0.12), 0.01 + i * 0.013, randf_range(-0.12, 0.12)); m2.rotation_degrees = Vector3(randf_range(-8, 8), 0, randf_range(-8, 8))
 	visible = false
 
+var available := true
+
 func _process(delta: float) -> void:
 	if gone_t > 0.0:
 		gone_t -= delta
-		if gone_t > 0.0: return
+		available = gone_t <= 0.0
+	# only people on the quest see it glint (bots don't need to see it to find it)
 	var p: Player = get_tree().get_first_node_in_group("player")
-	var want := p != null and p.quests.has(needed_by) and not p.quest_complete(needed_by)
+	var want := available and p != null and p.quests.has(needed_by) and not p.quest_complete(needed_by)
 	if want != visible:
 		visible = want
 		if want and glint == null:
@@ -47,13 +67,17 @@ func _process(delta: float) -> void:
 	if visible: body.rotation.y += delta * 0.4
 
 func take(p: Player) -> void:
-	if not visible or busy: return
+	if not available or busy: return
+	if not p.quests.has(needed_by) or p.quest_complete(needed_by):
+		if not p.is_bot: p._hud("error", "You don't need that right now")
+		return
+
 	busy = true
-	p.act("Interact" if p.model and p.model.has_anim("Interact") else "PickUp", 1.2)
+	p.act("PickUp_Table" if p.model and p.model.has_anim("PickUp_Table") else "Interact", 1.0)
 	await get_tree().create_timer(0.7).timeout
 	busy = false
 	if not is_instance_valid(p) or p.dead: return
 	if p.add_item({"id": item, "n": 1}):
 		get_tree().call_group("fx", "sound", "pickup", global_position, -6.0)
-		visible = false; gone_t = respawn
+		visible = false; available = false; gone_t = respawn
 		if glint: glint.queue_free(); glint = null

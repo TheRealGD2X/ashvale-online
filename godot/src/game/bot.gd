@@ -21,6 +21,11 @@ func setup_bot(nm: String, c: String, lv: int, rng: RandomNumberGenerator) -> vo
 	# a bot that starts above level 1 has done the early quests already
 	var order := ["word_with_elder", "pests_in_fields", "hen_feathers", "blacksmiths_wager", "grizzled_rat", "road_to_mill", "fence_can_wait"]
 	for i in mini(order.size(), (lv - 1) * 2): done_quests.append(order[i])
+	# further along: everything a level or two below them is behind them
+	for id in Quests.LIST:
+		if int(Quests.LIST[id]["level"]) < lv - 1 and not (id in done_quests) and not Quests.LIST[id].get("group", false): done_quests.append(id)
+	if lv >= 10 and not ("miners_mark" in done_quests): done_quests.append("miners_mark")
+
 	for t in Npcs.TRAINING[c]:
 		if int(t[1]) <= lv and not (t[0] in known): known.append(t[0])
 	gold = lv * lv * 40
@@ -93,6 +98,24 @@ func leave_party(by: Player) -> void:
 	party_with = null; brain.leader = null
 	get_tree().call_group("hud", "notice", "%s leaves your group." % uname)
 
+## what a group member carries to the next zone
+func to_bot_save() -> Dictionary:
+	var d := to_save()
+	d["look"] = Save.encode_look(look); d["style"] = style
+	return d
+
+func restore(d: Dictionary) -> void:
+	style = d.get("style", style)
+	var l: Dictionary = d.get("look", {}).duplicate(true)
+	if l.get("hair_color") is Array: var a: Array = l["hair_color"]; l["hair_color"] = Color(a[0], a[1], a[2])
+	look = l
+	equipped = d.get("equipped", equipped).duplicate(true)
+	bags = d.get("bags", bags).duplicate(true); bags.resize(BAG_SIZE)
+	known = d.get("known", known).duplicate()
+	gold = int(d.get("gold", gold)); xp = int(d.get("xp", 0))
+	quests = d.get("quests", {}).duplicate(true); done_quests = d.get("done_quests", done_quests).duplicate()
+
 func party_members() -> Array:
+
 	if party_with and is_instance_valid(party_with): return party_with.party_members()
 	return [self]

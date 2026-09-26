@@ -223,7 +223,69 @@ def haybale():
     for y in (-0.3, 0.3): cyl(0.77, 0.77, 0.06, (0, y, 0.75), THATCH2, verts=14, rot=(90, 0, 0))
     export('haybale')
 
-BUILD = {'windmill': windmill, 'granary': granary, 'shrine': shrine, 'well': well, 'haybale': haybale}
+def pickaxe():
+    """a miner's pick, held like a weapon: grip at the origin, handle up +Z, head across X"""
+    reset()
+    cyl(0.035, 0.03, 0.95, (0, 0, 0.3), '#7a5230', verts=8)
+    head = box((0.62, 0.07, 0.08), (0.05, 0, 0.78), '#6e7078', bevel=0.02)
+    cone_l = cyl(0.045, 0.005, 0.22, (-0.36, 0, 0.74), '#8a8c94', verts=6, rot=(0, -100, 0))
+    cone_r = cyl(0.045, 0.02, 0.16, (0.43, 0, 0.77), '#8a8c94', verts=6, rot=(0, 95, 0))
+    box((0.09, 0.09, 0.12), (0, 0, 0.78), '#4a3a2a', bevel=0.01)
+    path = os.path.join(ROOT, 'godot', 'assets', 'weapons', 'pickaxe.glb')
+    bpy.ops.export_scene.gltf(filepath=path, export_format='GLB', export_apply=True, export_animations=False)
+    print('exported', path)
+
+def cart():
+    """an ore cart on rails"""
+    reset()
+    for x in (-0.55, 0.55):
+        for y in (-0.7, 0.7): cyl(0.22, 0.22, 0.08, (x + (0.06 if x > 0 else -0.06), y, 0.22), '#3c3c42', verts=12, rot=(0, 90, 0))
+    box((1.1, 1.7, 0.7), (0, 0, 0.72), '#6a4a2e', bevel=0.04)
+    for z in (0.42, 1.02): box((1.16, 1.76, 0.08), (0, 0, z), '#4a4a50')
+    box((0.9, 1.5, 0.2), (0, 0, 1.02), '#2e2a2a')                        # ore heaped inside
+    for i in range(6): ball(0.16, (random.uniform(-0.35, 0.35), random.uniform(-0.6, 0.6), 1.12), '#3a3638', sub=1)
+    export('cart')
+
+def tent():
+    """a canvas tent, open at the front"""
+    reset()
+    me = bpy.data.meshes.new('tent'); o = bpy.data.objects.new('tent', me); bpy.context.scene.collection.objects.link(o)
+    bm = bmesh.new(); W, D, H = 1.6, 2.2, 2.0
+    v = [bm.verts.new(p) for p in [(-W, -D, 0), (W, -D, 0), (W, D, 0), (-W, D, 0), (0, -D - 0.1, H), (0, D + 0.1, H)]]
+    for f in ((0, 3, 5, 4), (1, 4, 5, 2), (3, 2, 5)): bm.faces.new([v[i] for i in f])
+    bm.to_mesh(me); bm.free()
+    s = o.modifiers.new('s', 'SOLIDIFY'); s.thickness = 0.05
+    _fin(o, '#d8cba8')
+    cyl(0.05, 0.05, H + 0.3, (0, -D - 0.1, (H + 0.3) / 2), '#6a4a2e', verts=6)
+    cyl(0.05, 0.05, H + 0.3, (0, D + 0.1, (H + 0.3) / 2), '#6a4a2e', verts=6)
+    box((1.4, 1.8, 0.25), (0.6, 0.6, 0.14), '#7a6a58')                     # bedroll
+    export('tent')
+
+def gantry():
+    """the timber gantry over the mine mouth: two frames, a beam and a lantern"""
+    reset()
+    for x in (-2.4, 2.4):
+        box((0.35, 0.35, 4.6), (x, 0, 2.3), '#5a3a22')
+        box((0.3, 0.3, 3.2), (x, 1.1, 1.6), '#5a3a22', rot=(20, 0, 0))
+    box((5.6, 0.4, 0.45), (0, 0, 4.5), '#6a4a2e')
+    box((5.2, 0.3, 0.3), (0, 0, 3.9), '#5a3a22')
+    box((1.8, 0.1, 0.6), (0, -0.25, 4.95), '#8a6a40')                       # a sign board
+    cyl(0.12, 0.12, 0.3, (1.6, -0.3, 3.5), '#e8b060', verts=8)
+    # rails running in
+    for x in (-0.55, 0.55): box((0.08, 8.0, 0.08), (x, 2.0, 0.05), '#4a4a50')
+    for i in range(10): box((1.5, 0.18, 0.08), (0, -1.5 + i * 0.8, 0.02), '#5a3a22')
+    export('gantry')
+
+def gravestone():
+    reset()
+    box((0.7, 0.18, 0.9), (0, 0, 0.45), '#8a8680', bevel=0.05)
+    cyl(0.35, 0.35, 0.18, (0, 0, 0.9), '#8a8680', verts=12, rot=(90, 0, 0))
+    box((0.9, 1.6, 0.12), (0, 0.9, 0.04), '#5a5048')                        # the mound
+    export('gravestone')
+
+BUILD = {'windmill': windmill, 'granary': granary, 'shrine': shrine, 'well': well, 'haybale': haybale,
+         'pickaxe': pickaxe, 'cart': cart, 'tent': tent, 'gantry': gantry, 'gravestone': gravestone}
+
 if __name__ == '__main__':
     argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]
     for n in (argv or list(BUILD)): BUILD[n]()

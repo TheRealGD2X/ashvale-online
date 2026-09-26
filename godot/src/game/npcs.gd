@@ -6,7 +6,8 @@ const LIST := {
 	# ---- Ashvale town
 	"rowan": {"name": "Elder Rowan", "title": "Elder of Ashvale", "at": [2.0, -10.0], "face": 180, "sex": "m", "look": "noble", "beard": "Hair_Beard", "hair_color": 5,
 		"greet": "The mountain's been restless, and so have the young. Which are you?", "anim": "Idle_FoldArms"},
-	"bess": {"name": "Bess", "title": "Innkeeper", "at": [-19.5, 9.5], "face": 110, "sex": "f", "look": "peasant", "hair": "Hair_Buns", "hair_color": 4,
+	"bess": {"name": "Bess", "title": "Innkeeper", "at": [-16.5, 6.5]
+, "face": 110, "sex": "f", "look": "peasant", "hair": "Hair_Buns", "hair_color": 4,
 		"greet": "Sit down, love, you look half-starved.", "vendor": ["warm_meal", "spring_water", "minor_healing_potion"], "inn": true, "anim": "Idle_Talking"},
 	"grom": {"name": "Blacksmith Grom", "title": "Blacksmith", "at": [17.0, -15.0], "face": 200, "sex": "m", "look": "peasant", "hair": "Hair_Buzzed", "beard": "Hair_MuttonChops", "skin": 3,
 		"greet": "Mind the anvil. It bites.", "vendor": ["recruit_sword", "apprentice_staff", "acolyte_mace", "recruit_chest", "recruit_legs", "apprentice_robe", "acolyte_vestment"], "repair": true, "anim": "Idle_FoldArms"},
@@ -25,7 +26,17 @@ const LIST := {
 		"greet": "Don't tell Hale I was sitting down.", "anim": "Sitting_Idle", "vendor": ["warm_meal", "spring_water"]},
 	"wren": {"name": "Wren", "title": "Hunter", "at": [77.0, 11.0], "face": 260, "sex": "f", "look": "ranger", "hair": "Hair_Ponytail_2", "hair_color": 4,
 		"greet": "Quiet. You'll scare the birds. Or worse, you won't.", "anim": "Idle"},
-	"ada": {"name": "Guard Captain Ada", "title": "Ashvale Militia", "at": [61.0, 12.0], "face": 160, "sex": "f", "look": "warrior", "hair": "Hair_Bob", "hair_color": 0,
+	# ---- the Miners' Camp (Hollow Cliffs)
+	"gault": {"zone": "hollow", "name": "Foreman Gault", "title": "Miners' Guild", "at": [11.0, 21.0], "face": 200, "sex": "m", "look": "warrior", "hair": "Hair_Balding", "beard": "Hair_Beard", "hair_color": 5, "skin": 2,
+		"greet": "If you're here for work, the pay's bad and the bats are worse. If you're here for trouble, get in line.", "anim": "Idle_FoldArms", "weapon": "pickaxe", "gone_after": "foremans_key"},
+	"bram": {"zone": "hollow", "name": "Bram", "title": "Camp Cook", "at": [-1.5, 32.5], "face": 120, "sex": "m", "look": "peasant", "hair": "Hair_Buzzed", "beard": "Hair_MuttonChops", "hair_color": 3,
+		"greet": "Stew's on. Stew's always on. Don't ask what's in it.", "vendor": ["warm_meal", "spring_water", "minor_healing_potion"], "inn": true, "anim": "Idle_Talking"},
+	"vale": {"zone": "hollow", "name": "Sister Vale", "title": "Order of the Ember", "at": [16.0, 33.0], "face": 250, "sex": "f", "look": "cleric", "hair": "Hair_Long", "hair_color": 6,
+		"greet": "The mountain remembers everyone who dies in it. I try to help it forget.", "anim": "Idle"},
+	"hux": {"zone": "hollow", "name": "Quartermaster Hux", "title": "Guild Quartermaster", "at": [3.0, 19.0], "face": 170, "sex": "m", "look": "noble", "hair": "Hair_SlickBack", "hair_color": 1,
+		"greet": "Everything in this camp belongs to the guild. Including, technically, the air. Breathe carefully.", "vendor": ["recruit_sword", "apprentice_staff", "acolyte_mace", "minor_healing_potion"], "repair": true, "anim": "Idle_FoldArms"},
+	"ada": {"name": "Guard Captain Ada",
+ "title": "Ashvale Militia", "at": [61.0, 12.0], "face": 160, "sex": "f", "look": "warrior", "hair": "Hair_Bob", "hair_color": 0,
 		"greet": "Militia business. Unless you're here to help, in which case it's your business too.", "anim": "Idle_Shield"},
 }
 

@@ -89,6 +89,10 @@ const LIST := {
 		"icon": ["♆", Color(1.0, 0.7, 0.3)], "desc": "A holy fire within you: +{armor} armour and +{ap} attack power for 10 minutes."},
 
 	# ------------------------------------------------------------------ monsters
+	# ------------------------------------------------------------------ everyone
+	"hearthstone": {"name": "Hearthstone", "cls": "all", "level": 1, "school": "arcane", "cost": 0, "cast": 10.0, "cd": 3600.0, "self": true,
+		"kind": "hearth", "anim": "cast", "fx": "blink", "icon": ["⌂", Color(0.4, 0.8, 1.0)],
+		"desc": "Returns you to your home inn after 10 seconds. Moving or being hit stops it."},
 	"ember_bolt": {"name": "Ember Bolt", "cls": "monster", "level": 1, "school": "fire", "cost": 0, "cast": 2.2,
 		"kind": "spell", "range": 26.0, "dmg": [5, 2.3], "speed": 16.0, "anim": "cast", "fx": "fireball", "icon": ["🔥", Color(1, 0.5, 0.1)], "desc": ""},
 	"ravage": {"name": "Ravage", "cls": "monster", "level": 1, "school": "physical", "cost": 0, "cd": 12.0,
@@ -97,7 +101,10 @@ const LIST := {
 		"kind": "telegraph", "range": 20.0, "radius": 5.0, "dmg": [30, 6.0], "anim": "Sword_Attack", "fx": "tidal_slam", "icon": ["❄", Color(0.4, 0.7, 1.0)], "desc": ""},
 	"hellfire_ring": {"name": "Hellfire", "cls": "monster", "level": 1, "school": "fire", "cost": 0, "cd": 16.0, "cast": 2.5,
 		"kind": "telegraph", "self_center": true, "radius": 8.0, "dmg": [35, 7.0], "anim": "Sword_Heavy_Combo", "fx": "hellfire", "icon": ["🔥", Color(1, 0.3, 0.05)], "desc": ""},
+	"grub_eruption": {"name": "Eruption", "cls": "monster", "level": 1, "school": "nature", "cost": 0, "cast": 2.6, "gcd": false,
+		"kind": "telegraph", "radius": 4.5, "dmg": [30, 8.0], "range": 99.0, "anim": "", "fx": "", "icon": ["☄", Color(0.6, 0.5, 0.3)], "desc": ""},
 }
+
 
 ## the five each class starts with on the bar, in key order 1–5
 const DEFAULT_BAR := {

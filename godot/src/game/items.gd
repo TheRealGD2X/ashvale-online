@@ -64,6 +64,7 @@ const LIST := {
 	"tusk_blue": {"name": "Old Tusk's Grudge", "q": 3, "slot": "main_hand", "wtype": "staff", "ilvl": 16, "weapon": [16, 28, 2.9], "stats": {"int": 5, "sta": 4, "spi": 3}, "sp": 6, "model": "emberstaff", "sell": 320, "bind": "bop"},
 
 	# ---------------------------------------------------------------- consumables and bits
+	"hearthstone": {"name": "Hearthstone", "q": 1, "use": "hearth", "bind": "bop", "desc": "Bess gave you this. \"So you always find your way back.\""},
 	"warm_meal": {"name": "Warm Meal", "q": 1, "use": "food", "heal": 120, "stack": 20, "sell": 1, "desc": "Bess's stew. Restores health while sitting."},
 	"spring_water": {"name": "Spring Water", "q": 1, "use": "drink", "mana": 150, "stack": 20, "sell": 1, "desc": "Clear and cold, from the well by the square."},
 	"minor_healing_potion": {"name": "Minor Healing Potion", "q": 1, "use": "potion", "heal": 80, "stack": 5, "sell": 5},
@@ -73,6 +74,36 @@ const LIST := {
 	"old_coin": {"name": "Old Coin", "q": 1, "quest": true, "stack": 20},
 	"rowans_letter": {"name": "Rowan's Letter", "q": 1, "quest": true, "desc": "Sealed with red wax. It mentions a fence."},
 	"lamb_bell": {"name": "Lamb's Bell", "q": 1, "quest": true},
+	"old_tusks_tusk": {"name": "Old Tusk's Tusk", "q": 1, "quest": true, "desc": "Farmer Hale will want to see this."},
+	# ---- Hollow Cliffs
+	"black_iron_ore": {"name": "Black Iron Ore", "q": 1, "quest": true, "stack": 20, "desc": "Heavy, cold, and stamped nowhere."},
+	"grave_blessing": {"name": "Graves Blessed", "q": 1, "quest": true, "stack": 10},
+	"skarrs_key": {"name": "Skarr's Key", "q": 1, "quest": true, "desc": "Iron, old, and far too big for any door in the camp."},
+	"maggot_meat": {"name": "Maggot Meat", "q": 1, "quest": true, "stack": 20, "desc": "Bram swears it's good in a stew."},
+	"vales_letter": {"name": "Sister Vale's Letter", "q": 1, "quest": true, "desc": "Addressed to Warden Elsbeth, Mirewood Landing."},
+	"bat_wing": {"name": "Leathery Bat Wing", "q": 0, "stack": 10, "sell": 22},
+	"maggot_goo": {"name": "Maggot Goo", "q": 0, "stack": 10, "sell": 18},
+	"spider_silk": {"name": "Coarse Spider Silk", "q": 0, "stack": 10, "sell": 30},
+	"rough_stone": {"name": "Rough Stone", "q": 0, "stack": 10, "sell": 15},
+	"miners_wages": {"name": "Miner's Wage Purse", "q": 0, "stack": 5, "sell": 60},
+	# Hollow Cliffs quest rewards
+	"camp_cook_gloves": {"name": "Camp Cook's Gloves", "q": 2, "slot": "hands", "armor_type": "leather", "ilvl": 13, "armor": 32, "stats": {"sta": 3, "spi": 2}, "sell": 210, "bind": "quest"},
+	"foremans_gauntlets": {"name": "Foreman's Gauntlets", "q": 2, "slot": "hands", "armor_type": "mail", "ilvl": 14, "armor": 70, "stats": {"str": 4, "sta": 2}, "look": ["Knight_Arms", "Knight", 2], "sell": 260, "bind": "quest"},
+	"lantern_row_cord": {"name": "Lantern Row Cord", "q": 2, "slot": "waist", "armor_type": "cloth", "ilvl": 14, "armor": 14, "stats": {"int": 4, "spi": 2}, "sell": 240, "bind": "quest"},
+	"diggers_pick": {"name": "Digger's Pick", "q": 2, "slot": "main_hand", "wtype": "axe", "ilvl": 14, "weapon": [18, 34, 2.7], "stats": {"str": 3, "sta": 2}, "model": "axe", "sell": 380, "bind": "quest"},
+	"vale_prayer_beads": {"name": "Vale's Prayer Beads", "q": 2, "slot": "neck", "ilvl": 14, "stats": {"int": 3, "spi": 4}, "sell": 300, "bind": "quest"},
+	"cairn_warden_boots": {"name": "Cairn Warden Boots", "q": 2, "slot": "feet", "armor_type": "mail", "ilvl": 14, "armor": 60, "stats": {"sta": 4, "agi": 2}, "look": ["Knight_Feet", "Knight", 2], "sell": 250, "bind": "quest"},
+	"rockjaw_hide_cloak": {"name": "Rockjaw Hide Cloak", "q": 2, "slot": "back", "ilvl": 16, "armor": 24, "stats": {"sta": 5, "str": 2}, "sell": 420, "bind": "quest"},
+	"enforcers_ring": {"name": "Enforcer's Ring", "q": 2, "slot": "finger1", "ilvl": 16, "stats": {"str": 4, "sta": 3}, "sell": 420, "bind": "quest"},
+	# the Hollow Mine: blues from the bosses
+	"grubhide_jerkin": {"name": "Grubhide Jerkin", "q": 3, "slot": "chest", "armor_type": "leather", "ilvl": 17, "armor": 90, "stats": {"agi": 5, "sta": 7, "str": 4}, "look": ["Ranger_Body", "Ranger", 3], "sell": 700, "bind": "bop"},
+	"foremans_maul": {"name": "Gault's Last Word", "q": 3, "slot": "main_hand", "wtype": "mace", "ilvl": 18, "weapon": [26, 44, 2.8], "stats": {"str": 6, "sta": 5}, "model": "club", "sell": 900, "bind": "bop"},
+	"gaults_ledger_staff": {"name": "Ledger-Bound Staff", "q": 3, "slot": "main_hand", "wtype": "staff", "ilvl": 18, "weapon": [30, 48, 3.0], "stats": {"int": 8, "spi": 5, "sta": 4}, "sp": 10, "model": "skullstaff", "sell": 900, "bind": "bop"},
+	"bone_kings_circlet": {"name": "Bone King's Circlet", "q": 3, "slot": "head", "armor_type": "cloth", "ilvl": 19, "armor": 30, "stats": {"int": 7, "spi": 6, "sta": 5}, "sp": 8, "sell": 1100, "bind": "bop"},
+	"marrowplate_pauldrons": {"name": "Marrowplate Pauldrons", "q": 3, "slot": "shoulders", "armor_type": "mail", "ilvl": 19, "armor": 150, "stats": {"str": 7, "sta": 7}, "look": ["Knight_Acc_Pauldron_Round", "Knight", 3], "sell": 1100, "bind": "bop"},
+	"hollow_crown_band": {"name": "Band of the Hollow Crown", "q": 3, "slot": "finger1", "ilvl": 19, "stats": {"sta": 6, "str": 3, "int": 3}, "sell": 1100, "bind": "bop"},
+
+
 	"sages_ink": {"name": "Sage's Ink", "q": 0, "stack": 5, "sell": 500},
 	# junk: Classic's pocket-fillers
 	"cracked_tusk": {"name": "Cracked Boar Tusk", "q": 0, "stack": 10, "sell": 12},

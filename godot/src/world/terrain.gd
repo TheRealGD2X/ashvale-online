@@ -9,7 +9,9 @@ static var mask_tex: Texture2D
 var material: ShaderMaterial
 
 static func make_noise_textures() -> void:
+	mask_tex = ImageTexture.create_from_image(WorldData.mask)
 	if noise_big: return
+
 	var n := FastNoiseLite.new(); n.noise_type = FastNoiseLite.TYPE_VALUE_CUBIC; n.frequency = 1.0 / 48.0; n.fractal_octaves = 3; n.seed = 11
 	var img := n.get_seamless_image(512, 512); img.convert(Image.FORMAT_L8); img.generate_mipmaps()
 	noise_big = ImageTexture.create_from_image(img)
@@ -31,6 +33,11 @@ func _ready() -> void:
 	material.set_shader_parameter("rock_albedo", load("res://assets/nature/Rocks_Diffuse.png"))
 	material.set_shader_parameter("half_size", WorldData.HALF)
 	material.set_shader_parameter("water_h", WorldData.WATER_H)
+	material.set_shader_parameter("cave_dark", 1.0 if WorldData.CAVE else 0.0)
+	# each zone has its own ground colours
+	var pal: Dictionary = WorldData.Z.get("palette", {})
+	for k in pal: material.set_shader_parameter(k, pal[k])
+
 	var per := (WorldData.RES - 1) / CHUNKS
 	for cj in CHUNKS:
 		for ci in CHUNKS:

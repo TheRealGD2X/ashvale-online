@@ -65,6 +65,12 @@ func _think(delta: float) -> void:
 func _update_mark() -> void:
 	var p: Player = get_tree().get_first_node_in_group("player") if is_inside_tree() else null
 	if p == null: mark.text = ""; return
+	# some people leave the story (Gault goes down the mine)
+	var gone: bool = info.has("gone_after") and info["gone_after"] in p.done_quests
+	if gone == visible:
+		visible = not gone; collision_layer = 0 if gone else 2
+	if gone: return
+
 	var yellow := Color(1.0, 0.86, 0.1); var grey := Color(0.7, 0.7, 0.7)
 	var q := p.quests_at(npc_id)
 	if not q["complete"].is_empty(): mark.text = "?"; mark.modulate = yellow; return

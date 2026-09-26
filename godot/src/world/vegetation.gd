@@ -36,6 +36,12 @@ func _free_ground(x: float, z: float, road_gap := 2.5) -> bool:
 	return true
 
 func _forest(x: float, z: float) -> float:
+	if WorldData.zone_id != "ashvale":
+		# other zones: scattered stands, thicker at the rim, never on cliffs
+		var n0 := noise.get_noise_2d(x, z) * 0.5 + 0.5
+		var rim := smoothstep(92.0, 115.0, maxf(absf(x), absf(z)))
+		var steep := 1.0 - WorldData.n(x, z).y
+		return clampf(maxf(smoothstep(0.62, 0.8, n0) * float(WorldData.Z.get("forest", 0.5)), rim * 0.6) * (1.0 - WorldData.town_w(Vector2(x, z))) * (1.0 - smoothstep(0.25, 0.4, steep)), 0.0, 1.0)
 	var n := noise.get_noise_2d(x, z) * 0.5 + 0.5
 	var north := smoothstep(-34.0, -58.0, z)
 	var edge := smoothstep(92.0, 112.0, maxf(absf(x), absf(z)))
@@ -57,10 +63,12 @@ func _trunk(x: float, z: float, r: float, h: float) -> void:
 
 func _scatter() -> void:
 	var H := WorldData.HALF
+	var ash := WorldData.zone_id == "ashvale"
 	# the landmark trees the quests name: the split oak (a great dead tree, riven down the middle)
 	# and the hollow oak where Old Scratch dens
-	_add("DeadTree_3", 94, 24, 2.3, 0.4, 0.15); _trunk(94, 24, 1.0, 6.0)
-	_add("TwistedTree_4", 108, -40, 1.7, 2.0, 0.15); _trunk(108, -40, 1.3, 6.0)
+	if ash:
+		_add("DeadTree_3", 94, 24, 2.3, 0.4, 0.15); _trunk(94, 24, 1.0, 6.0)
+		_add("TwistedTree_4", 108, -40, 1.7, 2.0, 0.15); _trunk(108, -40, 1.3, 6.0)
 	# trees on a jittered 4.5 m grid
 	var step := 4.5
 	var z := -H
@@ -71,7 +79,7 @@ func _scatter() -> void:
 			var f := _forest(px, pz)
 			var meadow_tree := 0.035 * (1.0 - WorldData.town_w(Vector2(px, pz)))
 			if rng.randf() < maxf(f * 0.85, meadow_tree) and _free_ground(px, pz, 3.5):
-				var pine := pz < -50.0 or maxf(absf(px), absf(pz)) > 100.0
+				var pine: bool = pz < -50.0 or maxf(absf(px), absf(pz)) > 100.0 or WorldData.Z.get("pines", false)
 				var kind: String
 				if pine and rng.randf() < 0.72: kind = "Pine_%d" % (1 + rng.randi() % 5)
 				elif rng.randf() < 0.03: kind = ["DeadTree_1", "DeadTree_3"][rng.randi() % 2]
@@ -82,11 +90,12 @@ func _scatter() -> void:
 			x += step
 		z += step
 	# the great red ash at the heart of the square: the tree Ashvale is named for
-	_add("TwistedTree_3", -0.6, 0.35, 0.5, 0.3, 0.05)
-	# the tree the woodcutter is working on
-	_add("CommonTree_2", 9.45, -31.1, 1.0, 0.0, 0.1); _trunk(9.45, -31.1, 0.35, 4.0)
+	if ash:
+		_add("TwistedTree_3", -0.6, 0.35, 0.5, 0.3, 0.05)
+		# the tree the woodcutter is working on
+		_add("CommonTree_2", 9.45, -31.1, 1.0, 0.0, 0.1); _trunk(9.45, -31.1, 0.35, 4.0)
 	# a few great twisted trees as landmarks
-	for p in [Vector2(-58, 36), Vector2(-26, 58), Vector2(38, -42), Vector2(70, 34), Vector2(-74, -24), Vector2(24, 60)]:
+	for p in ([Vector2(-58, 36), Vector2(-26, 58), Vector2(38, -42), Vector2(70, 34), Vector2(-74, -24), Vector2(24, 60)] if ash else []):
 		if _free_ground(p.x, p.y, 4.0):
 			var kind: String = ["TwistedTree_1", "TwistedTree_3", "TwistedTree_4"][rng.randi() % 3]
 			_add(kind, p.x, p.y, rng.randf_range(1.0, 1.25), -1.0, 0.1); _trunk(p.x, p.y, 0.9, 5.0)
@@ -117,14 +126,15 @@ func _scatter() -> void:
 				elif r < 0.05: _add(["Grass_Wispy_Tall", "Grass_Common_Tall", "Grass_Wispy_Short"][rng.randi() % 3], px, pz, rng.randf_range(0.3, 0.5))
 				elif r < 0.054: _add(["Plant_7", "Plant_1"][rng.randi() % 2], px, pz, rng.randf_range(0.4, 0.7))
 			# rocks: hills and forest edges
-			if rng.randf() < 0.004 + 0.02 * smoothstep(85.0, 115.0, maxf(absf(px), absf(pz))):
+			var rocky := 0.0 if ash else 0.02 + 0.06 * (1.0 - WorldData.n(px, pz).y)
+			if rng.randf() < 0.004 + rocky + 0.02 * smoothstep(85.0, 115.0, maxf(absf(px), absf(pz))):
 				var s := rng.randf_range(0.5, 1.4)
 				_add("Rock_Medium_%d" % (1 + rng.randi() % 3), px, pz, s, -1.0, 0.25)
 				WorldData.clear_disc(Vector2(px, pz), 1.4 * s)
 				_trunk(px, pz, 1.3 * s, 1.5 * s)
 		z += step
 	# reeds and flowers around the pond
-	var placed := 0
+	var placed := 0 if WorldData.POND_R > 0.0 else 999
 	while placed < 170:
 		var a := rng.randf() * TAU; var d := WorldData.POND_R * rng.randf_range(0.7, 1.6)
 		var p := WorldData.POND + Vector2(cos(a), sin(a)) * d

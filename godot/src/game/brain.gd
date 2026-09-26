@@ -42,7 +42,10 @@ func _physics_process(delta: float) -> void:
 		if p.in_combat: _fight()
 		else: _attack(focus, "duel")
 		return
-	if p.in_combat or _attacked(): _fight(); return
+	if p.in_combat or _attacked():
+		if _dodge(): return
+		_fight(); return
+
 	fight_t = 0.0
 	if p.has_meta("sitting"): return
 	if _rest(): return
@@ -56,13 +59,14 @@ func say(t: String) -> void:
 
 func _attacked() -> bool:
 	for u in p.get_tree().get_nodes_in_group("units"):
-		if u is Monster and not u.dead and u.target == p and u.in_combat: return true
+		if u is Monster and not u.dead and not u.evading and u.target == p and u.in_combat: return true
+
 	return false
 
 func _enemy_on_me() -> Unit:
 	var best: Unit = null; var bd := 1e9
 	for u in p.get_tree().get_nodes_in_group("units"):
-		if u is Monster and not u.dead and (u.target == p or (leader and u.target == leader)) and u.in_combat:
+		if u is Monster and not u.dead and not u.evading and (u.target == p or (leader and u.target == leader)) and u.in_combat:
 			var d := p.distance_to(u)
 			if d < bd: bd = d; best = u
 	return best
@@ -70,7 +74,8 @@ func _enemy_on_me() -> Unit:
 func _fight() -> void:
 	fight_t += 0.25
 	var t := p.target
-	if t == null or not is_instance_valid(t) or t.dead or not p.is_enemy(t):
+	if t == null or not is_instance_valid(t) or t.dead or not p.is_enemy(t) or (t is Monster and t.evading):
+
 		t = _enemy_on_me()
 		if t == null:
 			if leader and is_instance_valid(leader) and leader.target and is_instance_valid(leader.target) and not leader.target.dead and p.is_enemy(leader.target): t = leader.target
@@ -159,6 +164,19 @@ func _rest() -> bool:
 	var low_hp := p.hp < p.max_hp * 0.55
 	var low_mp := p.power_kind == "mana" and p.power < p.max_power * 0.35
 	if not low_hp and not low_mp: return false
+	# not in the middle of a monster camp: step back toward safety first
+	for u in p.get_tree().get_nodes_in_group("units"):
+		if u is Monster and not u.dead and not u.passive and u.global_position.distance_to(p.global_position) < u.aggro_r + 6.0:
+			# head back toward the nearest people (a hub is always safe)
+			var safe := p.home
+			var bd := 1e9
+			for n in p.get_tree().get_nodes_in_group("npcs"):
+				var dn: float = n.global_position.distance_to(p.global_position)
+				if dn < bd: bd = dn; safe = n.global_position
+			task = "backing off to rest"
+			if not p.is_moving(): p.move_to(Nav.nearest_open(safe + Vector3(4, 0, 4)))
+			return true
+
 	p.stop_moving()
 	for i in p.bags.size():
 		var it = p.bags[i]
@@ -196,8 +214,9 @@ func _unstick(dt: float) -> void:
 
 func _npc(id: String) -> Npc:
 	for n in p.get_tree().get_nodes_in_group("npcs"):
-		if n.npc_id == id: return n
+		if n.npc_id == id and n.visible: return n
 	return null
+
 
 func _talk_to(id: String, why: String) -> bool:
 	var n := _npc(id)
@@ -216,11 +235,15 @@ func _quest_step() -> void:
 				p.stop_moving(); p.loot_all(u); _wear_best()
 			else: _go(u.global_position, "looting")
 			return
+	# break a friend out of a Bone Prison, get out of what's about to blow up
+	if _dodge(): return
 	# 1. hand in what's done
 	for id in p.quests.keys():
 		if p.quest_complete(id):
 			var ender := Player.ender_of(id)
-			if _npc(ender) == null: continue
+			if _npc(ender) == null:
+				if _travel_toward(_zone_of_npc(ender), "handing in " + Quests.LIST[id]["title"]): return
+				continue
 			if _talk_to(ender, "handing in " + Quests.LIST[id]["title"]):
 				var q: Dictionary = Quests.LIST[id]
 				var pick := 0
@@ -261,18 +284,93 @@ func _quest_step() -> void:
 			if d < best_d: best_d = d; best = {"id": id, "o": o, "at": at}
 	if not best.is_empty():
 		_do(best["id"], best["o"], best["at"]); return
+	# 5b. what's left is somewhere else: a group quest needs friends, other things need a road
+	for id in p.quests:
+		if skip.has(id): continue
+		var q2: Dictionary = Quests.LIST[id]
+		if q2.get("group", false) and p.party_members().size() < 2:
+			if _find_group(id): return
+			continue
+		for i in q2["obj"].size():
+			var o2: Dictionary = q2["obj"][i]
+			if int(p.quests[id]["have"][i]) >= int(o2.get("n", 1)): continue
+			var z := _zone_of_npc(o2["npc"]) if o2["kind"] == "talk" else (_zone_of_mon(o2.get("mon", "")) if o2["kind"] == "kill" else "")
+			if z != "" and _travel_toward(z, "on the road for " + q2["title"]): return
+
 	# 6. nothing to do: fight something our level nearby
 	var m := _nearest_monster("", p.level - 3, p.level + 1)
 	if m: _attack(m, "hunting")
 	else: task = "idle"
 
-## quests whose people aren't in the world yet (the next zone)
+## quests whose people aren't in the world yet (a later update), or who have left the story
 func _unreachable(id: String) -> bool:
 	var q: Dictionary = Quests.LIST[id]
-	if _npc(Player.ender_of(id)) == null: return true
+	if _zone_of_npc(Player.ender_of(id)) == "": return true
 	for o in q["obj"]:
-		if o["kind"] == "talk" and _npc(o["npc"]) == null: return true
+		if o["kind"] == "talk" and _zone_of_npc(o["npc"]) == "": return true
 	return false
+
+func _zone_of_npc(id: String) -> String:
+	if not Npcs.LIST.has(id): return ""
+	return Npcs.LIST[id].get("zone", "ashvale")
+
+func _zone_of_mon(kind: String) -> String:
+	var S = load("res://src/world/spawns.gd")
+	for z in S.CAMPS:
+		for c in S.CAMPS[z]:
+			if Monster.KINDS[c["kind"]].get("as", c["kind"]) == kind: return z
+	return ""
+
+## walk to the road that leads toward a zone (one step: straight there, or out of a dungeon first)
+func _travel_toward(z: String, why: String) -> bool:
+	if z == "" or z == WorldData.zone_id: return false
+	var exits: Array = WorldData.Z.get("exits", [])
+	var best: Dictionary = {}
+	for ex in exits:
+		if ex["to"] == z: best = ex; break
+	if best.is_empty():
+		for ex in exits:
+			if ex["to"] != "" and (best.is_empty() or ex["to"] == "hollow"): best = ex
+	if best.is_empty(): return false
+	_go(Vector3(best["at"].x, 0, best["at"].y), why)
+	return true
+
+## ask someone nearby to come along (bots accept if they're close in level)
+func _find_group(id: String) -> bool:
+	if p.is_bot: return false
+	for b in p.get_tree().get_nodes_in_group("bots"):
+		if b.party_with == null and absi(b.level - p.level) <= 4 and not b.dead:
+			if p.global_position.distance_to(b.global_position) < 18.0:
+				p.get_tree().call_group("bots", "invited", p, b.uname)
+				say("invited %s for %s" % [b.uname, id])
+				return true
+			_go(b.global_position, "looking for a group for " + Quests.LIST[id]["title"])
+			return true
+	return false
+
+## dungeon sense: free a caged friend, step out of a marked circle
+func _dodge() -> bool:
+	for u in p.get_tree().get_nodes_in_group("units"):
+		if not (u is Monster) or u.dead: continue
+		if Monster.KINDS[u.kind].get("cage", false):
+			p.target = u
+			if p.cls == "warrior" or p.power < p.max_power * 0.1:
+				p.start_attack(u)
+				if p.distance_to(u) > p.swing_range(): p.chase(u, p.swing_range() * 0.8)
+			else:
+				_use("fireball" if p.cls == "wizard" else "smite", u)
+			task = "breaking the bone prison"
+			return true
+		if not u.casting.is_empty() and Abilities.LIST.get(u.casting["id"], {}).get("kind", "") == "telegraph":
+			var a: Dictionary = Abilities.LIST[u.casting["id"]]
+			var c: Vector3 = u.global_position if a.get("self_center", false) else u.casting["pos"]
+			var d := Vector2(p.global_position.x - c.x, p.global_position.z - c.z)
+			if d.length() < float(a["radius"]) + 1.0:
+				var out := c + Vector3(d.normalized().x, 0, d.normalized().y) * (float(a["radius"]) + 3.0) if d.length() > 0.1 else c + Vector3(float(a["radius"]) + 3.0, 0, 0)
+				p.move_to(Nav.nearest_open(out)); task = "getting out of the way"
+				return true
+	return false
+
 
 ## where an objective is done
 func _where(o: Dictionary) -> Vector3:
@@ -332,11 +430,16 @@ func _nearest_monster(kind: String, lo := -99, hi := 99) -> Monster:
 		# don't steal a monster someone else is already fighting
 		if u.in_combat and u.target != p and u.target != leader: continue
 		var d := p.global_position.distance_to(u.global_position)
+		# prefer ones standing alone: every friend within pulling distance counts as 10 m further
+		if not u.passive:
+			for o in u.camp:
+				if is_instance_valid(o) and o != u and not o.dead and o.global_position.distance_to(u.global_position) < 7.0: d += 10.0
 		if d < bd: bd = d; best = u
 	return best
 
-func _camp_of(kind: String) -> Vector3:
-	for c in load("res://src/world/spawns.gd").CAMPS:
+func _camp_of
+(kind: String) -> Vector3:
+	for c in load("res://src/world/spawns.gd").camps():
 		var k: String = Monster.KINDS[c["kind"]].get("as", c["kind"])
 		if k == kind: return Vector3(c["at"].x, 0, c["at"].y)
 	return Vector3.INF
@@ -344,7 +447,7 @@ func _camp_of(kind: String) -> Vector3:
 func _pickup(item: String) -> Pickup:
 	var best: Pickup = null; var bd := 1e9
 	for pk in p.get_tree().get_nodes_in_group("pickups"):
-		if pk.item != item or not pk.visible: continue
+		if pk.item != item or not pk.available: continue
 		var d := p.global_position.distance_to(pk.global_position)
 		if d < bd: bd = d; best = pk
 	return best

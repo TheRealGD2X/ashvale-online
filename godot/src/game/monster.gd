@@ -12,20 +12,39 @@ const KINDS := {
 	"hen": {"creature": "hen", "type": "beast", "scale": 1.0, "speed": 2.0, "names": ["Hen"], "critter": true, "loot": ["chicken_egg"]},
 	"wild_boar": {"creature": "boar", "type": "beast", "scale": 1.35, "speed": 2.2, "names": ["Wild Boar", "Rooting Boar"], "passive": true, "loot": ["cracked_tusk", "boar_hide"]},
 	"hogtooth": {"creature": "boar", "type": "beast", "scale": 2.1, "speed": 2.4, "names": ["Hogtooth, the Boar King"], "loot": ["cracked_tusk"], "named": true},
-	"old_tusk": {"creature": "boar", "type": "beast", "scale": 2.3, "speed": 2.4, "names": ["Old Tusk"], "loot": ["cracked_tusk"], "named": true, "rare": true, "drop": ["tusk_blue"]},
+	"old_tusk": {"creature": "boar", "type": "beast", "scale": 2.3, "speed": 2.4, "names": ["Old Tusk"], "loot": ["cracked_tusk"], "named": true, "rare": true, "drop": ["old_tusks_tusk"]},
+
 	"wildcat": {"creature": "wildcat", "type": "beast", "scale": 1.4, "speed": 1.6, "names": ["Wildcat"], "loot": ["matted_fur"]},
 	"old_scratch": {"creature": "wildcat", "type": "beast", "scale": 1.9, "speed": 1.5, "names": ["Old Scratch"], "loot": ["matted_fur"], "named": true},
 	"wolf": {"creature": "wolf", "type": "beast", "scale": 1.3, "speed": 2.0, "names": ["Timber Wolf"], "loot": ["matted_fur"]},
 	"scarecrow": {"scarecrow": true, "type": "elemental", "scale": 1.0, "speed": 2.6, "names": ["Walking Scarecrow"], "walk": "Zombie_Walk_Fwd", "idle": "Zombie_Idle",
 		"attack": ["Zombie_Scratch", "Punch_Cross"], "loot": ["straw_bundle"]},
+	# ---- Hollow Cliffs (10–16)
+	"cave_bat": {"creature": "bat", "type": "beast", "scale": 1.4, "speed": 1.5, "names": ["Cave Bat", "Screeching Bat"], "loot": ["bat_wing"]},
+	"cave_maggot": {"creature": "maggot", "type": "beast", "scale": 1.6, "speed": 2.0, "names": ["Cave Maggot"], "loot": ["maggot_goo"], "aggro": 6.0},
+	"rail_spider": {"creature": "spider", "type": "beast", "scale": 1.3, "speed": 1.7, "names": ["Rail Spider", "Lantern Row Lurker"], "loot": ["spider_silk"]},
+	"mountain_bear": {"creature": "bear", "type": "beast", "scale": 1.2, "speed": 2.4, "names": ["Mountain Bear"], "loot": ["matted_fur"]},
+	"rockjaw": {"creature": "bear", "type": "beast", "scale": 1.7, "speed": 2.4, "names": ["Rockjaw"], "named": true, "loot": ["matted_fur"], "spells": ["ravage"]},
+	"hollow_digger": {"avatar": "peasant", "tool": "pickaxe", "type": "humanoid", "scale": 1.0, "speed": 2.4, "names": ["Hollow Digger", "Hollow Delver", "Tunnel Rat"],
+		"attack": ["Sword_Regular_A", "Sword_Regular_B"], "loot": ["rough_stone", "miners_wages"]},
+	"skarr": {"avatar": "warrior", "tool": "pickaxe", "type": "humanoid", "scale": 1.15, "speed": 2.6, "names": ["Deep Foreman Skarr"], "named": true,
+		"attack": ["Sword_Regular_A", "Sword_Heavy_Combo"], "drop": ["skarrs_key"], "spells": ["ravage"]},
+	"brak": {"model": "Tidebreaker", "type": "humanoid", "scale": 0.9, "attack": ["Sword_Attack", "Sword_Regular_C"], "speed": 3.0, "names": ["Brak, Skarr's Enforcer"], "spells": ["tidal_slam"]},
+	# ---- the Hollow Mine (dungeon)
+	"grub_mother": {"creature": "maggot", "type": "beast", "scale": 3.6, "speed": 2.2, "names": ["The Grub Mother"], "boss": "grub", "loot": ["maggot_goo"], "drop_one": ["grubhide_jerkin", "lantern_row_cord"]},
+	"gault": {"avatar": "warrior", "tool": "pickaxe", "type": "humanoid", "scale": 1.12, "speed": 2.4, "names": ["Foreman Gault"], "boss": "gault", "drop_one": ["foremans_maul", "gaults_ledger_staff"],
+		"attack": ["Sword_Regular_A", "Sword_Regular_B", "Sword_Heavy_Combo"]},
+	"bone_king": {"model": "Skeleton_B", "type": "undead", "scale": 1.7, "attack": ["Sword_Heavy_Combo", "Sword_Regular_C"], "speed": 3.0, "names": ["The Bone King"], "boss": "bone_king", "drop_one": ["bone_kings_circlet", "marrowplate_pauldrons", "hollow_crown_band"],
+		"walk": "Zombie_Walk_Fwd", "idle": "Zombie_Idle", "spells": ["hellfire_ring"]},
+	"bone_cage": {"cage": true, "type": "undead", "scale": 1.0, "speed": 99.0, "names": ["Bone Prison"]},
 	"puglin": {"model": "Puglin", "type": "humanoid", "scale": 1.0, "attack": ["Punch_Jab", "Punch_Cross"], "speed": 2.0,
 		"names": ["Puglin Scavenger", "Puglin Snout", "Puglin Tusker"], "walk": "Walk", "loot": ["puglin_trinket"]},
 	"imp": {"model": "Imp", "type": "demon", "scale": 1.0, "attack": ["Sword_Regular_A", "Melee_Hook"], "speed": 1.8,
 		"names": ["Ember Imp", "Cinder Imp"], "walk": "Walk", "caster": true, "spells": ["ember_bolt"], "loot": ["brimstone_chip"]},
 	"skeleton_a": {"model": "Skeleton_A", "type": "undead", "scale": 1.0, "attack": ["Sword_Regular_A", "Sword_Regular_B"], "speed": 2.4,
-		"names": ["Restless Bones"], "walk": "Zombie_Walk_Fwd", "idle": "Zombie_Idle", "loot": ["bone_fragment"], "as": "restless_bones"},
+		"names": ["Restless Bones"], "walk": "Zombie_Walk_Fwd", "idle": "Zombie_Idle", "loot": ["bone_fragment"], "as": "restless_bones", "aggro": 7.0},
 	"skeleton_b": {"model": "Skeleton_B", "type": "undead", "scale": 1.0, "attack": ["Sword_Regular_B", "Sword_Regular_C"], "speed": 2.4,
-		"names": ["Restless Bones"], "walk": "Zombie_Walk_Fwd", "idle": "Zombie_Idle", "loot": ["bone_fragment"], "as": "restless_bones"},
+		"names": ["Restless Bones"], "walk": "Zombie_Walk_Fwd", "idle": "Zombie_Idle", "loot": ["bone_fragment"], "as": "restless_bones", "aggro": 7.0},
 	"lycan": {"model": "Lycan", "type": "beast", "scale": 1.05, "attack": ["Zombie_Scratch", "Melee_Hook"], "speed": 2.0,
 		"names": ["Moonfang Stalker"], "walk": "Jog_Fwd", "spells": ["ravage"]},
 	"hellwarden": {"model": "Hellwarden", "type": "demon", "scale": 1.0, "attack": ["Sword_Heavy_Combo", "Sword_Attack"], "speed": 3.0,
@@ -50,6 +69,10 @@ var corpse_t := 0.0
 var rng := RandomNumberGenerator.new()
 var loot_gold := 0
 var killer: Unit
+var boss := false
+var boss_t := 0.0
+var boss_phase := 0
+var adds: Array = []
 
 func setup(k: String, lv: int, is_elite := false) -> void:
 	kind = k; level = lv; elite = is_elite; cls = "monster"; faction = "hostile"
@@ -58,7 +81,7 @@ func setup(k: String, lv: int, is_elite := false) -> void:
 	uname = names[rng.randi() % names.size()]
 	creature_type = d["type"]
 	power_kind = "none"
-	passive = d.get("passive", false) or d.get("critter", false)
+	passive = d.get("passive", false) or d.get("critter", false) or d.get("cage", false)
 	critter = d.get("critter", false)
 	if passive: faction = "neutral"
 	aggro_r = float(d.get("aggro", 9.0))
@@ -69,14 +92,26 @@ func _ready() -> void:
 	var d: Dictionary = KINDS[kind]
 	if d.has("creature"):
 		model = CreatureBody.new(); model.model = d["creature"]
+	elif d.has("avatar"):
+		var ava := Avatar.new()
+		var r2 := RandomNumberGenerator.new(); r2.randomize()
+		ava.look = Avatar.random_look(r2, d["avatar"], "m")
+		if kind == "gault": ava.look["beard"] = "Hair_Beard"; ava.look["hair"] = "Hair_Balding"; ava.look["hair_color"] = Avatar.HAIR_COLORS[5]
+		model = ava
+	elif d.get("cage", false):
+		model = _cage_body()
 	elif d.get("scarecrow", false):
+
 		var av := Avatar.new()
 		av.look = {"sex": "m", "skin": 2, "hair": "", "brows": "", "beard": "", "gear": Avatar.CLASS_GEAR["peasant"].duplicate(), "tint": {"Peasant": rng.randi_range(1, 3)}}
 		model = av
 	else:
 		model = Humanoid.new(); model.model = "res://assets/licensed/monsters/%s.glb" % d["model"]
-	model.scale = Vector3.ONE * float(d["scale"]) * (1.15 if elite else 1.0)
+	model.scale = Vector3.ONE * float(d["scale"]) * (1.15 if elite and not boss else 1.0)
 	add_child(model)
+	if d.has("tool") and model is Avatar: model.wield.call_deferred("res://assets/weapons/%s.glb" % d["tool"], 0.62, "hand_r", -30.0)
+	if kind == "bone_king": _crown()
+
 	if d.get("scarecrow", false):
 		# a sack with a stitched face where the head should be
 		var ba := BoneAttachment3D.new(); ba.bone_name = "Head"; model.skeleton.add_child(ba)
@@ -97,6 +132,8 @@ func _ready() -> void:
 func _stats() -> void:
 	var named: bool = KINDS[kind].get("named", false)
 	max_hp = Rules.mon_hp(level) * (2.5 if elite else (1.8 if named else 1.0))
+	if boss: max_hp = Rules.mon_hp(level) * 9.0
+	if KINDS[kind].get("cage", false): max_hp = 40 * level
 	if critter: max_hp = 6 + level * 2
 	hp = max_hp
 	armor = Rules.mon_armor(level)
@@ -123,7 +160,7 @@ func _animate(v: float) -> void:
 
 func _tick_swing(delta: float) -> void:
 	swing_t = maxf(0.0, swing_t - delta)
-	if not attacking or target == null or not is_instance_valid(target) or target.dead or stunned > 0.0: return
+	if evading or not attacking or target == null or not is_instance_valid(target) or target.dead or stunned > 0.0: return
 	if distance_to(target) > swing_range() or swing_t > 0.0: return
 	swing_t = weapon["speed"] * (1.0 + _aura_sum("slow_attack"))
 	var r := randf()
@@ -141,14 +178,117 @@ func _tick_swing(delta: float) -> void:
 
 # ------------------------------------------------------------------ thinking
 
+# ------------------------------------------------------------------ dungeon bosses: one mechanic each (DESIGN §7.2)
+
+func _boss_tick(delta: float) -> void:
+	boss_t += delta
+	match KINDS[kind].get("boss", ""):
+		"grub":
+			# Burrow: dives under the floor and erupts beneath someone (the ring on the ground warns you)
+			if boss_phase == 1:
+				if casting.is_empty():
+					boss_phase = 0; visible = true; collision_layer = 2
+					global_position = Vector3(get_meta("dive").x, WorldData.h(get_meta("dive").x, get_meta("dive").z), get_meta("dive").z)
+					get_tree().call_group("fx", "burst", global_position + Vector3(0, 0.3, 0), Color(0.45, 0.38, 0.3), 50, 7.0, 0.7, 1.1, -6.0, Fx.smoke, 70.0, Vector3.UP, false, 1.5)
+					get_tree().call_group("fx", "shake", 0.5, global_position)
+				return
+			if boss_t > 16.0 and not threat.is_empty():
+				boss_t = 0.0
+				var v := _random_foe()
+				if v:
+					boss_phase = 1; set_meta("dive", v.global_position)
+					visible = false; collision_layer = 0; stop_moving(); attacking = false
+
+					casting.clear()
+					use("grub_eruption", v, v.global_position)
+					_yell("The ground heaves...")
+		"gault":
+			# every 30 s he calls two diggers; any still standing 10 s later work him into a fury
+			if boss_t > 30.0:
+				boss_t = 0.0
+				_yell(["Diggers! To me!", "Put your backs into it, lads!", "Nobody leaves till the Hollow's open!"][rng.randi() % 3])
+				for i in 2:
+					var m := Monster.new(); m.setup("hollow_digger", level - 2)
+					get_parent().add_child(m)
+					var p := Nav.nearest_open(global_position + Vector3(rng.randf_range(-6, 6), 0, rng.randf_range(-6, 6)))
+					p.y = WorldData.h(p.x, p.z); m.global_position = p; m.home = p; m.respawn_t = 1e9
+					m.died.connect(func(_u): m.get_tree().create_timer(15.0).timeout.connect(m.queue_free))
+					adds.append(m)
+					if target: m.get_tree().create_timer(0.3).timeout.connect(func(): if is_instance_valid(m) and is_instance_valid(target): m.aggro(target))
+				get_tree().create_timer(10.0).timeout.connect(_gault_fury)
+		"bone_king":
+			# Bone Prison: a cage of bone closes on someone; break it in 6 seconds or it crushes them
+			if boss_t > 20.0 and threat.size() >= 1:
+				boss_t = 0.0
+				var v2 := _random_foe(true)
+				if v2: _bone_prison(v2)
+
+func _random_foe(not_tank := false) -> Unit:
+	var foes := threat.keys().filter(func(u): return is_instance_valid(u) and not u.dead)
+	if not_tank and foes.size() > 1: foes.erase(target)
+	return foes[rng.randi() % foes.size()] if not foes.is_empty() else null
+
+func _gault_fury() -> void:
+	if dead or not is_instance_valid(self): return
+	var alive := adds.filter(func(a): return is_instance_valid(a) and not a.dead).size()
+	if alive > 0:
+		add_aura("foremans_fury", self, 30.0, {"dmg_pct": 0.2 * alive})
+		_yell("That's the spirit!")
+
+func _bone_prison(v: Unit) -> void:
+	_yell("Stay a while. Stay forever.")
+	var cage := Monster.new(); cage.setup("bone_cage", level)
+	get_parent().add_child(cage)
+	cage.global_position = v.global_position; cage.home = v.global_position; cage.respawn_t = 1e9
+	v.add_aura("bone_prison", self, 6.0, {"root": true, "cage": true, "debuff": true})
+	v.stop_moving()
+	cage.died.connect(func(_u):
+		if is_instance_valid(v): v.remove_aura("bone_prison")
+		cage.get_tree().create_timer(2.0).timeout.connect(cage.queue_free))
+	get_tree().create_timer(6.0).timeout.connect(func():
+		if is_instance_valid(cage) and not cage.dead:
+			if is_instance_valid(v) and not v.dead:
+				v.take_damage(self, v.max_hp * 0.4, "shadow", false, "spell")
+				get_tree().call_group("fx", "burst", v.global_position + Vector3(0, 1, 0), Color(0.9, 0.9, 0.8), 40, 6.0, 0.2, 0.7, -8.0)
+			cage.die(null))
+
+func _yell(t: String) -> void:
+	get_tree().call_group("chat", "post", "yell", uname, t)
+	show_text(t, Color(1.0, 0.3, 0.2))
+
+## a cage of ribs and bone for the Bone Prison
+func _cage_body() -> Humanoid:
+	var h := PropBody.new(); h.kind = "cage"
+	return h
+
+
+func _crown() -> void:
+	if model == null or model.skeleton == null: return
+	var ba := BoneAttachment3D.new(); ba.bone_name = "Head"; model.skeleton.add_child(ba)
+	var c := MeshInstance3D.new(); var cm := CylinderMesh.new(); cm.top_radius = 0.17; cm.bottom_radius = 0.14; cm.height = 0.12; cm.radial_segments = 8
+	var mt := StandardMaterial3D.new(); mt.albedo_color = Color(0.85, 0.65, 0.25); mt.metallic = 0.9; mt.roughness = 0.3
+	mt.emission_enabled = true; mt.emission = Color(0.6, 0.35, 0.1); mt.emission_energy_multiplier = 0.4
+	cm.material = mt; c.mesh = cm; ba.add_child(c); c.position = Vector3(0, 0.22, 0)
+	for k in 5:
+		var sp := MeshInstance3D.new(); var sm := CylinderMesh.new(); sm.top_radius = 0.0; sm.bottom_radius = 0.035; sm.height = 0.12; sm.material = mt; sp.mesh = sm
+		c.add_child(sp); var a := TAU * k / 5.0; sp.position = Vector3(cos(a) * 0.15, 0.1, sin(a) * 0.15)
+
 func _think(delta: float) -> void:
+	if KINDS[kind].get("cage", false): attacking = false; return
+	if boss and in_combat and not dead: _boss_tick(delta)
+	if boss_phase == 1: return
+
+
 	if has_meta("taunted"):
 		var tt: float = get_meta("taunted") - delta
 		if tt <= 0.0: remove_meta("taunted")
 		else: set_meta("taunted", tt)
 	if evading:
+		evade_t += delta
 		if path.is_empty() and global_position.distance_to(home) > 1.5:
 			path = PackedVector3Array([home])     # no route found: walk straight home
+		# stuck on the way home: just be home (as WoW does)
+		if evade_t > 8.0: global_position = home; evade_t = 0.0
 		if global_position.distance_to(home) < 1.5:
 			evading = false; hp = max_hp; auras.clear(); threat.clear(); target = null; attacking = false; in_combat = false
 			changed.emit()
@@ -203,7 +343,7 @@ func aggro(u: Unit) -> void:
 	add_threat(u, 1.0); target = u; enter_combat(); attacking = true
 	if passive: return
 	for m in camp:
-		if is_instance_valid(m) and m != self and not m.dead and not m.in_combat and m.global_position.distance_to(global_position) < 6.0:
+		if is_instance_valid(m) and m != self and not m.dead and not m.in_combat and not m.evading and m.global_position.distance_to(global_position) < 6.0:
 			m.add_threat(u, 0.5); m.target = u; m.enter_combat(); m.attacking = true
 
 func enter_combat() -> void:
@@ -211,7 +351,7 @@ func enter_combat() -> void:
 	super.enter_combat()
 	if not was and target and is_instance_valid(target) and not passive:
 		for m in camp:
-			if is_instance_valid(m) and m != self and not m.dead and not m.in_combat and m.global_position.distance_to(global_position) < 6.0:
+			if is_instance_valid(m) and m != self and not m.dead and not m.in_combat and not m.evading and m.global_position.distance_to(global_position) < 6.0:
 				m.add_threat(target, 0.5); m.target = target; m.in_combat = true; m.combat_t = 0.0; m.attacking = true
 
 func _pick_target() -> void:
@@ -227,8 +367,11 @@ func _pick_target() -> void:
 	var near := distance_to(best) <= swing_range() + 0.5
 	if best != target and bt > cur * (1.1 if near else 1.3): target = best
 
+var evade_t := 0.0
+
 func _evade() -> void:
-	evading = true; attacking = false; target = null
+	evading = true; attacking = false; target = null; evade_t = 0.0
+
 	threat.clear(); casting.clear()
 	path = Nav.path(global_position, home)
 	show_text("Evade", Color(1, 1, 1))
@@ -246,6 +389,9 @@ func _on_death(k: Unit) -> void:
 	for u in threat:
 		if is_instance_valid(u) and threat[u] > bt: bt = threat[u]; best = u
 	looter = best if best and is_instance_valid(best) and best.has_method("gain_xp") else null
+	# in your group, you loot (the bots are polite)
+	if looter is Bot and looter.party_with and is_instance_valid(looter.party_with): looter = looter.party_with
+
 	loot = []; loot_money = 0
 	if looter:
 		var party: Array = looter.party_members() if looter.has_method("party_members") else [looter]
@@ -272,6 +418,10 @@ func _roll_loot() -> void:
 			loot.append({"id": d["loot"][rng.randi() % d["loot"].size()], "n": 1})
 		if d.has("drop"):
 			for it in d["drop"]: loot.append({"id": it, "n": 1})
+		if d.has("drop_one"):
+			var pick: Array = d["drop_one"]
+			loot.append({"id": pick[rng.randi() % pick.size()], "n": 1})
+		if boss: loot_money = level * 60 + rng.randi_range(0, level * 30)
 		var green := 0.05 + (0.9 if d.get("named", false) or elite else 0.0)
 		if rng.randf() < green: loot.append(Items.roll(level, rng, 3 if elite and rng.randf() < 0.3 else 2))
 		if rng.randf() < 0.04: loot.append({"id": "minor_healing_potion", "n": 1})

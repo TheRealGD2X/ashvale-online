@@ -42,6 +42,9 @@ func _ready() -> void:
 	# the rats' field behind the well: a scatter of sacks and crates
 	for p in [Vector2(-24, 21), Vector2(-30, 27), Vector2(-20, 28)]:
 		_prop("FarmCrate_Empty", p, randf() * TAU)
+	# Tomas's bench by the Mill, and a trough and crates about the yard
+	_prop("Bench", Vector2(70.5, 14.9), deg_to_rad(230.0) + PI)
+	_prop("Barrel", Vector2(66.0, 16.5), 0.3); _prop("FarmCrate_Carrot", Vector2(64.8, 15.8), 1.1); _prop("Bucket_Wooden_1", Vector2(69.0, 17.2), 0.0)
 	# a signpost at the Mill fork
 	_signpost(Vector2(60, 8), ["Ashvale", "The Mill", "Old Shrine"])
 	for p in [SPLIT_OAK, HOLLOW_OAK]: WorldData.clear_disc(p, 5.0, 1.0)

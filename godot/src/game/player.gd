@@ -31,7 +31,8 @@ var talents := {}                    # talent id -> rank
 var titles: Array = []
 var title := ""
 var rep := {}                        # faction -> standing
-var hearth := "Ashvale"
+var hearth := "ashvale"             # the zone whose inn is home
+
 var durability := 1.0                # 1 = like new; dying costs 10%, Grom mends it for money
 var interact: Node3D                 # an NPC, corpse or thing on the ground we are walking to
 
@@ -59,6 +60,7 @@ func setup_from(ch: Dictionary) -> void:
 		for id in Items.START[cls]:
 			var d: Dictionary = Items.LIST[id]
 			equipped[d["slot"]] = {"id": id, "n": 1}
+		add_item({"id": "hearthstone", "n": 1})
 		add_item({"id": "warm_meal", "n": 4}); add_item({"id": "spring_water", "n": 4})
 	quests = ch.get("quests", {}).duplicate(true)
 	done_quests = ch.get("done_quests", []).duplicate()
@@ -66,12 +68,22 @@ func setup_from(ch: Dictionary) -> void:
 	titles = ch.get("titles", []).duplicate(); title = ch.get("title", "")
 	rep = ch.get("rep", {}).duplicate()
 	durability = float(ch.get("durability", 1.0))
+	hearth = String(ch.get("hearth", "ashvale")).to_lower()
+
+	# rested: every 8 hours away earns 5% of a level (four times faster at the inn), up to a level and a half
+	rested = int(ch.get("rested", 0))
+	if ch.has("logout"):
+		var hours := (Time.get_unix_time_from_system() - float(ch["logout"])) / 3600.0
+		var rate := 0.05 * (1.0 if ch.get("at_inn", false) else 0.25)
+		rested = mini(int(rested + hours / 8.0 * rate * Rules.xp_need(level)), int(Rules.xp_need(level) * 1.5))
+
 	save_name = uname
 
 func to_save() -> Dictionary:
 	return {"name": uname, "cls": cls, "level": level, "look": look, "xp": xp, "gold": gold, "bar": bar,
 		"pos": [global_position.x, global_position.z], "known": known, "bags": bags, "equipped": equipped,
-		"quests": quests, "done_quests": done_quests, "talents": talents, "titles": titles, "title": title, "rep": rep, "durability": durability}
+		"quests": quests, "done_quests": done_quests, "talents": talents, "titles": titles, "title": title, "rep": rep, "durability": durability,
+		"rested": rested, "hearth": hearth, "logout": Time.get_unix_time_from_system(), "at_inn": global_position.distance_to(Vector3(-19, 0, 9)) < 14.0}
 
 # ------------------------------------------------------------------ bags
 
@@ -128,6 +140,11 @@ func use_bag(i: int) -> void:
 			add_aura("eating" if d.has("heal") else "drinking", self, 18.0, {"hot": float(d.get("heal", 0)) / 6.0, "mana_regen": float(d.get("mana", 0)) / 18.0}, 3.0)
 			act("Sitting_Enter", 1.0); set_meta("sitting", true)
 			_consume(i)
+		"hearth":
+			if cds.has("hearthstone"): _hud("error", "Your hearthstone isn't ready (%d min)" % int(ceil(cds["hearthstone"] / 60.0))); return
+			stop_moving()
+			var why := use("hearthstone", self)
+			if why != "": _hud("error", why)
 		"potion":
 			if cds.has("potion"): _hud("error", "Not ready yet"); return
 			heal(self, float(d.get("heal", 0))); cds["potion"] = 60.0
@@ -202,6 +219,11 @@ func _dress() -> void:
 	_arm()
 
 func set_camera(c: OrbitCamera) -> void: cam = c
+
+func _animate(v: float) -> void:
+	if has_meta("sitting") and v < 0.3 and model and model.anim and busy_anim <= 0.0:
+		model.play("Sitting_Idle"); return
+	super._animate(v)
 
 var is_bot := false                 # a simulated player (Bot) uses all of this without the screen
 
@@ -321,7 +343,7 @@ func _pick(sp: Vector2):
 		var d := Vector2(u.global_position.x - hit.position.x, u.global_position.z - hit.position.z).length()
 		if d < bd: bd = d; best = u
 	for pk in get_tree().get_nodes_in_group("pickups"):
-		if not pk.visible: continue
+		if not pk.visible or not pk.available: continue
 		var d2 := Vector2(pk.global_position.x - hit.position.x, pk.global_position.z - hit.position.z).length()
 		if d2 < 1.3 and d2 < bd + 0.3: bd = d2; best = pk
 	if best: return best
@@ -558,6 +580,7 @@ func quest_state(id: String) -> String:
 	var q: Dictionary = Quests.LIST[id]
 	for a in q.get("after", []):
 		if not (a in done_quests): return "locked"
+	if q.has("needs_item") and count_item(q["needs_item"]) <= 0: return "locked"
 	if level < int(q.get("min", 1)): return "low"
 	return "available"
 
@@ -678,7 +701,11 @@ func quest_drops(m: Monster) -> Array:
 		for i in q["obj"].size():
 			var o: Dictionary = q["obj"][i]
 			if o["kind"] == "collect" and key in o.get("from", []) and count_item(o["item"]) < int(o["n"]):
-				if randf() < float(o.get("chance", 0.5)): out.append({"id": o["item"], "n": 1})
+				var chance := float(o.get("chance", 0.5))
+				# "drops for sure once the kills are done" (the kill objective at index sure_after)
+				if o.has("sure_after") and int(quests[id]["have"][int(o["sure_after"])]) >= int(q["obj"][int(o["sure_after"])]["n"]): chance = 1.0
+				if randf() < chance: out.append({"id": o["item"], "n": 1})
+
 	return out
 
 ## we spoke to someone: "speak to" objectives
@@ -705,6 +732,9 @@ func _check_explore() -> void:
 				if Vector2(global_position.x, global_position.z).distance_to(at) < float(o.get("r", 10.0)):
 					quests[id]["have"][i] = 1
 					_hud("quest_progress", "%s explored" % o.get("name", "Place"))
+					# some places answer back: the dead climb out of the ground
+					if o.has("spawn"): get_tree().call_group("spawns", "rise", o["spawn"][0], int(o["spawn"][1]), int(o["spawn"][2]), global_position, self)
+
 					_check_done(id); quests_changed.emit()
 
 ## the quests an NPC has for us, in WoW's order: hand-ins first, then new ones, then ones underway
@@ -720,8 +750,23 @@ func quests_at(npc: String) -> Dictionary:
 
 # ------------------------------------------------------------------ growing
 
+var rested := 0                    # bonus experience from resting (logged out) at an inn: doubles kill XP until used
+
+## back to the inn (the hearthstone)
+func go_home() -> void:
+	var hz := hearth if Zones.DEFS.has(hearth) else "ashvale"
+	var inn: Vector2 = Zones.get_def(hz)["inn"]
+	if hz != WorldData.zone_id:
+		if is_bot: return
+		get_tree().current_scene.travel_to(hz, inn); return
+	var at := Nav.nearest_open(Vector3(inn.x, 0, inn.y)); at.y = WorldData.h(at.x, at.z)
+	global_position = at; stop_moving(); target = null; attacking = false
+	get_tree().call_group("fx", "play", "blink", self, self, global_position)
+
 func gain_xp(n: int, from: Unit = null) -> void:
 	if n <= 0 or level >= Rules.MAX_LEVEL: return
+	if from and rested > 0:
+		var bonus := mini(n, rested); rested -= bonus; n += bonus
 	xp += n
 	if not is_bot: get_tree().call_group("fct", "float_text", self, "+%d XP" % n, Color(0.75, 0.55, 1.0), true)
 	while level < Rules.MAX_LEVEL and xp >= Rules.xp_need(level):
@@ -746,7 +791,8 @@ func _on_death(_k: Unit) -> void:
 
 ## release: back at the graveyard (town edge) with half health; your gear takes a knock later
 func release() -> void:
-	var g := Nav.nearest_open(Vector3(-18, 0, -14))
+	var gy: Vector2 = WorldData.Z.get("graveyard", Vector2(-18, -14))
+	var g := Nav.nearest_open(Vector3(gy.x, 0, gy.y))
 	g.y = WorldData.h(g.x, g.z)
 	global_position = g
 	revive(0.5)

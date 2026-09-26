@@ -167,7 +167,10 @@ func _money_row(c: int, size := 17) -> HBoxContainer:
 	for pair in [[g, Color(1.0, 0.82, 0.2), "g"], [s, Color(0.8, 0.82, 0.86), "s"], [cc, Color(0.85, 0.5, 0.25), "c"]]:
 		if pair[0] == 0 and pair[2] != "c" and (pair[2] == "g" or g == 0): continue
 		h.add_child(_lbl(str(pair[0]), size, INK))
-		var dot := ColorRect.new(); dot.color = pair[1]; dot.custom_minimum_size = Vector2(size * 0.6, size * 0.6)
+		var dot := Panel.new(); dot.custom_minimum_size = Vector2(size * 0.62, size * 0.62); dot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var coin := StyleBoxFlat.new(); coin.bg_color = pair[1]; coin.set_corner_radius_all(int(size)); coin.border_color = Color(pair[1]).darkened(0.45); coin.set_border_width_all(1)
+		dot.add_theme_stylebox_override("panel", coin)
+
 		var cc2 := CenterContainer.new(); cc2.add_child(dot); h.add_child(cc2)
 	return h
 
@@ -212,7 +215,8 @@ func _gossip() -> void:
 	if info.get("trainer", "") == player.cls: v.add_child(_option("✦", "I'd like to train.", INK, func(): npc_page = "trainer"; _trainer()))
 	elif info.has("trainer"): v.add_child(_para("\"You're no %s. Go and find your own kind.\"" % Rules.CLASSES[info["trainer"]]["name"], 16, Color(0.75, 0.7, 0.6)))
 	if info.get("inn", false): v.add_child(_option("⌂", "Make this inn your home.", INK, func():
-		player.hearth = "Ashvale"; hud.notice("Ashvale Inn is now your home."); npc_win.visible = false))
+		player.hearth = WorldData.zone_id; hud.notice("%s is now your home." % ("Ashvale Inn" if WorldData.zone_id == "ashvale" else "The Miners' Camp")); npc_win.visible = false))
+
 	if info.get("repair", false) and player.repair_cost() > 0:
 		v.add_child(_option("⚒", "Repair my gear (%s)" % Items.money(player.repair_cost()), INK, func(): player.repair(); _gossip()))
 	v.add_child(_btn("Goodbye", func(): npc_win.visible = false; npc = null, 140))

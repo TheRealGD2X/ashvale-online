@@ -5,10 +5,10 @@ extends Node
 
 var p: Player
 var brain: Brain
-var t := 0.0
+static var t := 0.0                  # survives the reload into another zone
 var report_t := 0.0
 var limit := 1800.0
-var deaths := 0
+static var deaths := 0
 
 func _ready() -> void:
 	limit = float(get_parent().args.get("questtest", "1800"))
@@ -20,9 +20,14 @@ func _ready() -> void:
 		deaths += 1
 		var who := []
 		for u in get_tree().get_nodes_in_group("units"):
-			if u is Monster and u.target == p and not u.dead: who.append("%s L%d (%d/%d hp)" % [u.uname, u.level, int(u.hp), int(u.max_hp)])
+			if u is Monster and u.target == p and not u.dead: who.append("%s L%d (%d/%d hp) at %s home %s evading %s atk %s dist %.1f" % [u.uname, u.level, int(u.hp), int(u.max_hp), str(u.global_position.snapped(Vector3.ONE * 0.1)), str(u.home.snapped(Vector3.ONE)), u.evading, u.attacking, p.distance_to(u)])
+		print("  me: target=%s attacking=%s path=%d stunned=%.1f rooted=%.1f casting=%s" % [p.target.uname if p.target else "-", p.attacking, p.path.size(), p.stunned, p.rooted, str(p.casting.get("id", "-"))])
+
 		print("DIED at ", p.global_position, " doing ", brain.task, " to ", who))
 	print("questtest: %s level %d for %d s" % [p.cls, p.level, int(limit)])
+	for n in get_tree().get_nodes_in_group("npcs"):
+		if not Nav.walkable(n.global_position): print("NPC IN A WALL: ", n.npc_id, " at ", n.global_position)
+
 
 func _physics_process(delta: float) -> void:
 	if p == null: return
@@ -40,3 +45,6 @@ func _physics_process(delta: float) -> void:
 		print("wearing: ", eq)
 		print("known: ", p.known, "  talents: ", p.talents)
 		get_tree().quit()
+
+## the real player's party should come along; also let bots help with group quests
+

@@ -6,9 +6,16 @@ class_name Minimap extends Control
 
 const WORLD := 256.0
 const RES := 512
-const PLACES := [["Ashvale", Vector2(0, -2)], ["The Mill", Vector2(70, 2)], ["Old Shrine", Vector2(72, -94)], ["Eastern Woods", Vector2(106, -20)],
+const PLACES := {"ashvale": [["Ashvale", Vector2(0, -2)], ["The Mill", Vector2(70, 2)], ["Old Shrine", Vector2(72, -94)], ["Eastern Woods", Vector2(106, -20)],
 	["Beetfield", Vector2(74, 48)], ["West Fields", Vector2(-64, 26)], ["Rowan's Fields", Vector2(-28, 34)], ["Millstream Pond", Vector2(-42, 64)],
-	["North Road", Vector2(-6, -70)], ["Split Oak", Vector2(94, 30)], ["Hollow Oak", Vector2(108, -46)]]
+	["North Road", Vector2(-6, -70)], ["Split Oak", Vector2(94, 30)], ["Hollow Oak", Vector2(108, -46)]],
+	"hollow": [["Miners' Camp", Vector2(8, 38)], ["The Scree", Vector2(-56, 24)], ["Upper Tunnels", Vector2(-36, -30)], ["Lantern Row", Vector2(30, -44)],
+		["The Hollow Mine", Vector2(24, -96)], ["Skarr's Cut", Vector2(66, -2)], ["Rockjaw's Den", Vector2(76, 60)], ["The Cairn Field", Vector2(-84, -96)],
+		["Hollow Road", Vector2(-8, 96)], ["Cliff Road", Vector2(104, 28)]],
+	"mine": [["Entrance", Vector2(0, 118)], ["Diggers' Hall", Vector2(-32, 54)], ["The Grub Pit", Vector2(-54, -28)], ["The Deep Rails", Vector2(46, -24)],
+		["Foreman's Gallery", Vector2(-2, -32)], ["The Hollow Throne", Vector2(0, -106)]]}
+
+static var map_zone := ""
 
 static var map_tex: Texture2D
 var player: Player
@@ -25,13 +32,16 @@ func _init() -> void:
 
 func setup(p: Player, c: Camera3D) -> void:
 	player = p; cam = c
-	if map_tex == null: map_tex = _paint()
+	if map_tex == null or map_zone != WorldData.zone_id: map_tex = _paint(); map_zone = WorldData.zone_id
 	set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	offset_left = -radius * 2 - 26; offset_top = 96; offset_right = -26; offset_bottom = 96 + radius * 2
-	tex_rect = TextureRect.new(); tex_rect.texture = map_tex; tex_rect.size = Vector2(radius * 2, radius * 2); tex_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tex_rect = TextureRect.new(); tex_rect.texture = map_tex; tex_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tex_rect.stretch_mode = TextureRect.STRETCH_SCALE; tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	mat = ShaderMaterial.new(); mat.shader = _shader(); tex_rect.material = mat
 	add_child(tex_rect)
+	tex_rect.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	tex_rect.position = Vector2.ZERO; tex_rect.custom_minimum_size = Vector2(radius * 2, radius * 2); tex_rect.size = Vector2(radius * 2, radius * 2)
+
 	var dots := Control.new(); dots.size = tex_rect.size; dots.mouse_filter = Control.MOUSE_FILTER_IGNORE; add_child(dots)
 	dots.draw.connect(func(): _draw_dots(dots))
 	set_meta("dots", dots)
@@ -115,10 +125,10 @@ func _quest_spots() -> Array:
 				"explore": out.append({"at": Vector2(o["at"][0], o["at"][1]), "r": float(o.get("r", 10.0))})
 				"kill", "collect":
 					var kinds: Array = [o["mon"]] if o["kind"] == "kill" else o["from"]
-					for c in load("res://src/world/spawns.gd").CAMPS:
+					for c in load("res://src/world/spawns.gd").camps():
 						if Monster.KINDS[c["kind"]].get("as", c["kind"]) in kinds: out.append({"at": c["at"], "r": maxf(6.0, float(c["r"]) + 3.0)})
 				"gather":
-					for pk in load("res://src/world/spawns.gd").PICKUPS:
+					for pk in load("res://src/world/spawns.gd").pickups():
 						if pk["item"] == o["item"]: out.append({"at": pk["at"], "r": 6.0}); break
 	return out
 
@@ -147,13 +157,13 @@ func _draw_big(s: float) -> void:
 	big.draw_rect(Rect2(-12, -46, s + 24, s + 58), Color(0.1, 0.075, 0.05, 0.96))
 	big.draw_rect(Rect2(-12, -46, s + 24, s + 58), Color(0.78, 0.62, 0.34), false, 2.0)
 	var font := ThemeDB.fallback_font
-	big.draw_string(font, Vector2(0, -16), "Ashvale Province", HORIZONTAL_ALIGNMENT_LEFT, -1, 26, Color(0.98, 0.84, 0.5))
+	big.draw_string(font, Vector2(0, -16), WorldData.Z.get("name", ""), HORIZONTAL_ALIGNMENT_LEFT, -1, 26, Color(0.98, 0.84, 0.5))
 	big.draw_texture_rect(map_tex, Rect2(0, 0, s, s), false)
 	for spot in _quest_spots():
 		var p := _big_pos(spot["at"], s)
 		big.draw_circle(p, maxf(6.0, spot["r"] / WORLD * s), Color(1, 0.82, 0.2, 0.25))
 		big.draw_arc(p, maxf(6.0, spot["r"] / WORLD * s), 0, TAU, 24, Color(1, 0.85, 0.3, 0.9), 2.0)
-	for pl in PLACES:
+	for pl in PLACES.get(WorldData.zone_id, []):
 		var p2 := _big_pos(pl[1], s)
 		var w := font.get_string_size(pl[0], HORIZONTAL_ALIGNMENT_LEFT, -1, 17).x
 		big.draw_string_outline(font, p2 - Vector2(w / 2, 0), pl[0], HORIZONTAL_ALIGNMENT_LEFT, -1, 17, 5, Color(0.1, 0.07, 0.03, 0.9))
@@ -179,19 +189,22 @@ static func _paint() -> Texture2D:
 	var step := WORLD / RES
 	var houses: Array = []
 	var v := load("res://src/world/village.gd")
-	for h in v.HOUSES: houses.append(h)
+	if WorldData.zone_id == "ashvale":
+		for h in v.HOUSES: houses.append(h)
 	for j in RES:
 		for i in RES:
 			var x := -WORLD / 2 + (i + 0.5) * step; var z := -WORLD / 2 + (j + 0.5) * step
 			var hgt := WorldData.h(x, z)
 			var n := WorldData.n(x, z)
-			var shade := clampf(0.75 + (n.x * -0.8 + n.z * -0.6) * 1.6, 0.45, 1.2)
+			var shade := clampf(0.9 + (n.x * -0.8 + n.z * -0.6) * 0.9, 0.65, 1.12)
+
 			var c := Color(0.36, 0.52, 0.25).lerp(Color(0.52, 0.5, 0.36), smoothstep(8.0, 20.0, hgt)).lerp(Color(0.6, 0.58, 0.55), smoothstep(18.0, 28.0, hgt))
 			var m := WorldData.m(x, z) if WorldData.mask else Color(0, 0, 0, 0)
 			if m.r > 0.4: c = Color(0.72, 0.6, 0.42) if m.g < 0.5 else Color(0.6, 0.58, 0.55)
 			var cl := WorldData.clear.get_pixel(clampi(int((x + 128.0) * 4.0), 0, 1023), clampi(int((z + 128.0) * 4.0), 0, 1023)).r
 			if cl > 0.5 and m.r < 0.4: c = c.lerp(Color(0.55, 0.43, 0.3), 0.55)
 			if WorldData.in_water(x, z): c = Color(0.25, 0.45, 0.6)
+			if WorldData.CAVE: c = Color(0.42, 0.36, 0.3).lerp(Color(0.05, 0.04, 0.04), WorldData.rock_w(Vector2(x, z)))
 			c = c * shade; c.a = 1.0
 			img.set_pixel(i, j, c)
 	# houses as little roofs

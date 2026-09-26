@@ -157,6 +157,14 @@ func _target_frame() -> void:
 	tf["cast"] = _bar(p, Vector2(12, 104), Vector2(220, 16), Color(0.95, 0.7, 0.15))
 	tf["cast"]["bg"].visible = false
 	tf["elite"] = _label(p, "", 14, Vector2(200, 8), GOLD)
+	# another player: invite them or whisper them
+	var social := HBoxContainer.new(); social.position = Vector2(12, 100); social.add_theme_constant_override("separation", 6); p.add_child(social)
+	for pair in [["Invite", func(): if player.target is Bot: get_tree().call_group("bots", "invited", player, player.target.uname)],
+			["Whisper", func(): if player.target is Bot: chat.last_whisper = player.target.uname; chat.channel = "whisper"; chat.open_input("")],
+			["Leave group", func(): get_tree().call_group("bots", "leave_party", player)]]:
+		var b := Button.new(); b.text = pair[0]; b.focus_mode = Control.FOCUS_NONE; b.add_theme_font_size_override("font_size", 14); b.pressed.connect(pair[1])
+		social.add_child(b)
+	tf["social"] = social; social.visible = false
 
 func _action_bar() -> void:
 	var holder := Control.new(); holder.set_anchors_preset(Control.PRESET_CENTER_BOTTOM); holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -202,7 +210,7 @@ func _misc() -> void:
 	err.set_anchors_preset(Control.PRESET_CENTER_TOP); err.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	err.offset_left = -300; err.offset_right = 300; err.offset_top = 130
 	var right := Control.new(); right.set_anchors_preset(Control.PRESET_TOP_RIGHT); right.mouse_filter = Control.MOUSE_FILTER_IGNORE; root.add_child(right)
-	place = _label(right, "Ashvale", 26, Vector2(-260, 18), GOLD, true)
+	place = _label(right, WorldData.Z.get("name", "Ashvale"), 22, Vector2(-300, 18), GOLD, true)
 	clock = _label(right, "", 16, Vector2(-258, 54))
 	fps = _label(right, "", 14, Vector2(-258, 78)); fps.visible = false
 	tip = PanelContainer.new(); tip.visible = false; tip.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -220,7 +228,8 @@ func _misc() -> void:
 	t.text = "Left-click ground: walk (hold to keep walking)    Left-click an enemy: target, again: attack\n1–5: abilities    Tab: nearest enemy    Esc: clear target    P: spellbook\nClick people with a ! over their heads for quests\nB: bags    C: character    L: quest log    N: talents    M: map    Enter: chat\nRight-drag: turn camera    Wheel: zoom    F1: this card    F3: FPS    F11: fullscreen"
 	help.add_child(t)
 	t.text = t.text.replace("    Left-click an enemy", "\nLeft-click an enemy").replace("    P: spellbook", "\nP: spellbook").replace("    F1:", "\nF1:")
-	help.set_anchors_preset(Control.PRESET_CENTER_LEFT); help.offset_left = 22; help.offset_top = 40
+	help.set_anchors_preset(Control.PRESET_CENTER_LEFT); help.offset_left = 22; help.offset_top = -250
+
 
 # ------------------------------------------------------------------ updating
 
@@ -257,6 +266,10 @@ func _refresh_xp() -> void:
 	var frac := float(player.xp) / maxf(1.0, need)
 	xpbar["fill"].anchor_right = frac if need > 0 else 1.0
 	xpbar["text"].text = "Level %d   ·   %d / %d experience" % [player.level, player.xp, need] if need > 0 else "Level %d (the cap)" % player.level
+	# rested: the bar turns blue while kills give double experience (as in WoW)
+	xpbar["fill"].color = Color(0.25, 0.48, 0.95) if player.rested > 0 else Color(0.55, 0.3, 0.85)
+	if player.rested > 0: xpbar["text"].text += "   ·   rested (+%d)" % player.rested
+
 
 func _process(delta: float) -> void:
 	if player == null: return
@@ -277,6 +290,13 @@ func _process(delta: float) -> void:
 		tf["por"]["letter"].text = t.uname.substr(0, 1)
 		tf["por"]["letter"].add_theme_color_override("font_color", Color(1, 0.4, 0.3) if player.is_enemy(t) else Color(0.5, 1, 0.5))
 		tf["elite"].text = "Elite" if t.elite else ""
+		tf["social"].visible = t is Bot
+		if t is Bot:
+			var in_group: bool = t.party_with == player
+			tf["social"].get_child(0).visible = not in_group
+			tf["social"].get_child(2).visible = in_group
+			tf["name"].text = "%s  (%s)" % [t.uname, Rules.CLASSES[t.cls]["name"]]
+
 		_set_bar(tf["hp"], t.hp / maxf(1.0, t.max_hp), ("%d%%" % int(round(100.0 * t.hp / maxf(1.0, t.max_hp)))) if t.faction == "hostile" else "%d / %d" % [int(t.hp), int(t.max_hp)])
 		tf["hp"]["fill"].color = Color(0.2, 0.72, 0.22) if not t.dead else Color(0.3, 0.3, 0.3)
 		tf["pw"]["bg"].visible = t.power_kind != "none"
@@ -322,12 +342,36 @@ func _process(delta: float) -> void:
 	fps.text = "%d fps" % Engine.get_frames_per_second()
 	if help_t > 0.0:
 		help_t -= delta; help.modulate.a = clampf(help_t / 2.0, 0.0, 1.0)
+	_update_party()
 	_update_nameplates()
 	_update_floats(delta)
 	_update_ring(t, delta)
 	if Engine.get_process_frames() % 20 == 0: _refresh_buffs()
 
+var party_frames: Array = []
+
+## your group, under your own frame (WoW's party frames)
+func _update_party() -> void:
+	var members: Array = player.party.filter(func(m): return is_instance_valid(m))
+	while party_frames.size() < members.size():
+		var i := party_frames.size()
+		var p := _panel(root, Vector2(26, 190 + i * 62), Vector2(230, 54), 10)
+		var d := {"panel": p, "name": _label(p, "", 15, Vector2(10, 3), INK, true), "hp": _bar(p, Vector2(10, 24), Vector2(210, 13), Color(0.2, 0.72, 0.22)), "pw": _bar(p, Vector2(10, 39), Vector2(210, 8), Color(0.18, 0.38, 0.9))}
+		d["hp"]["text"].add_theme_font_size_override("font_size", 10)
+		party_frames.append(d)
+	for i in party_frames.size():
+		var f: Dictionary = party_frames[i]
+		f["panel"].visible = i < members.size()
+		if i >= members.size(): continue
+		var m: Unit = members[i]
+		f["name"].text = "%s   %d %s" % [m.uname, m.level, Rules.CLASSES[m.cls]["name"]]
+		f["name"].add_theme_color_override("font_color", Rules.CLASSES[m.cls]["color"] if not m.dead else Color(0.6, 0.6, 0.6))
+		_set_bar(f["hp"], m.hp / maxf(1.0, m.max_hp), "%d / %d" % [int(m.hp), int(m.max_hp)])
+		_set_bar(f["pw"], m.power / maxf(1.0, m.max_power), "")
+		f["pw"]["fill"].color = Color(0.85, 0.15, 0.12) if m.power_kind == "rage" else Color(0.18, 0.38, 0.9)
+
 func _money(c: int) -> String:
+
 	var g := c / 10000; var s := (c / 100) % 100; var cc := c % 100
 	var out := ""
 	if g > 0: out += "%dg " % g

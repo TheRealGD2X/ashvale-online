@@ -21,7 +21,7 @@ func _ready() -> void:
 	offset_left = 20; offset_top = -330; offset_right = 520; offset_bottom = -40
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var bg := Panel.new(); bg.set_anchors_preset(Control.PRESET_FULL_RECT); bg.offset_bottom = -34; bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var sb := StyleBoxFlat.new(); sb.bg_color = Color(0, 0, 0, 0.28); sb.set_corner_radius_all(6)
+	var sb := StyleBoxFlat.new(); sb.bg_color = Color(0, 0, 0, 0.22); sb.set_corner_radius_all(6)
 	bg.add_theme_stylebox_override("panel", sb); add_child(bg); bg.name = "Bg"
 	log_box = RichTextLabel.new(); log_box.bbcode_enabled = true; log_box.scroll_following = true
 	log_box.set_anchors_preset(Control.PRESET_FULL_RECT); log_box.offset_left = 8; log_box.offset_top = 6; log_box.offset_right = -6; log_box.offset_bottom = -38
@@ -132,4 +132,5 @@ func _process(delta: float) -> void:
 	fade_t -= delta
 	var a := 1.0 if fade_t > 0.0 or input.visible else clampf(1.0 + fade_t / 3.0, 0.35, 1.0)
 	log_box.modulate.a = a
-	get_node("Bg").modulate.a = a
+	get_node("Bg").modulate.a = 1.0 if input.visible or fade_t > 0.0 else clampf(1.0 + fade_t / 3.0, 0.0, 1.0)
+

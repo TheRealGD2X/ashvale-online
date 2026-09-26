@@ -29,7 +29,9 @@ func _player(path: String) -> AudioStreamPlayer:
 func _process(delta: float) -> void:
 	var hero := get_tree().get_first_node_in_group("hero") as Node3D
 	var pos := hero.global_position if hero else Vector3.ZERO
-	var want := "night" if DayNight.night > 0.6 else ("town" if WorldData.town_w(Vector2(pos.x, pos.z)) > 0.4 else "wilds")
+	var mus: Dictionary = WorldData.Z.get("music", {"town": "town", "wild": "wilds"})
+	var want: String = "night" if DayNight.night > 0.6 else (mus["town"] if WorldData.town_w(Vector2(pos.x, pos.z)) > 0.4 else mus["wild"])
+
 	if not music_on: want = ""
 	current = want
 	for n in players:
@@ -43,6 +45,8 @@ func _process(delta: float) -> void:
 	for n in amb:
 		var a: AudioStreamPlayer = amb[n]
 		if a == null: continue
+		if WorldData.CAVE: a.volume_db = -80.0; continue
+
 		var w := (1.0 - DayNight.night) if n == "amb_day" else DayNight.night
 		a.volume_db = linear_to_db(maxf(w * rain_quiet, 0.0005)) - 12.0
 		if not a.playing: a.play()

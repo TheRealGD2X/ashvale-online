@@ -11,7 +11,8 @@ var hover := false
 const BY_ID := {"warm_meal": "stew", "spring_water": "flask", "minor_healing_potion": "potion", "hen_feather": "feather",
 	"boar_hide": "hide", "grave_token": "token", "old_coin": "coin", "rowans_letter": "letter", "lamb_bell": "bell", "sages_ink": "ink",
 	"cracked_tusk": "tusk", "matted_fur": "hide", "puglin_trinket": "gem", "bone_fragment": "bone", "brimstone_chip": "gem",
-	"straw_bundle": "straw", "rat_tail": "tail", "chicken_egg": "egg", "scratch_claw": "claw", "boar_king_tusk": "tusk_sword"}
+	"straw_bundle": "straw", "rat_tail": "tail", "chicken_egg": "egg", "scratch_claw": "claw", "boar_king_tusk": "tusk_sword",
+	"hearthstone": "hearth", "old_tusks_tusk": "tusk"}
 
 func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -177,7 +178,13 @@ func _symbol(kind: String, c0: Vector2, s: float, fg: Color, ac: Color, ghost: b
 			draw_line(v.call(-0.2, 0.02), v.call(0.2, 0.02), Color(0.5, 0.35, 0.15), s * 0.05)
 		"tail":
 			draw_arc(v.call(0, 0), s * 0.26, 0.3, TAU - 0.6, 20, Color(0.85, 0.6, 0.6), s * 0.05)
+		"hearth":
+			_p(_ellipse(v.call(0, 0.04), s * 0.3, s * 0.26), Color(0.45, 0.5, 0.6))
+			_p(_ellipse(v.call(-0.04, -0.02), s * 0.18, s * 0.14), Color(0.58, 0.63, 0.72))
+			draw_arc(v.call(0, 0.04), s * 0.12, 0, TAU, 16, Color(0.5, 0.85, 1.0), s * 0.05)
+			draw_circle(v.call(0, 0.04), s * 0.04, Color(0.8, 0.95, 1.0))
 		"egg":
+
 			_p(_ellipse(v.call(0, 0.04), s * 0.22, s * 0.3), Color(0.97, 0.93, 0.82))
 		_:
 			draw_rect(Rect2(v.call(-0.26, -0.2), Vector2(0.52, 0.5) * s), Color(0.55, 0.4, 0.25))

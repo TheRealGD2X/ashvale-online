@@ -12,6 +12,7 @@ uniform sampler2D cobble_normal : hint_normal, filter_linear_mipmap_anisotropic,
 uniform sampler2D rock_albedo : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform float half_size = 128.0;
 uniform float water_h = 0.35;
+uniform float cave_dark = 0.0;     // underground: the tops of the rock walls fade into darkness
 
 uniform vec3 grass_a : source_color = vec3(0.38, 0.56, 0.20);   // lush
 uniform vec3 grass_b : source_color = vec3(0.60, 0.64, 0.28);   // sunny, drier
@@ -85,7 +86,9 @@ void fragment() {
 	// soft large-scale light and shade, like a painter's wash
 	col *= 0.92 + 0.16 * texture(noise_big, p / 70.0 + 0.61).r;
 
+	col *= 1.0 - cave_dark * smoothstep(1.4, 3.6, wpos.y) * 0.93;
 	ALBEDO = col;
+
 	ROUGHNESS = rough;
 	SPECULAR = 0.3;
 	NORMAL_MAP = nrm_ts;

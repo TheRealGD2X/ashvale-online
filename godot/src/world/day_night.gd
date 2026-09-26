@@ -18,6 +18,7 @@ var env: Environment
 var sky_mat: ShaderMaterial
 var fast := false
 var hq := true
+var cave := false                  # underground: no sun or sky, just lanterns in the dark
 
 static func set_hour(h: float) -> void: hour = fposmod(h, 24.0)
 
@@ -83,6 +84,16 @@ static func _curve(x: float, pts: Array) -> Variant:
 	return pts[-1][1]
 
 func _apply() -> void:
+	if cave:
+		night = 1.0; dusk = 0.0
+		sun.visible = false; moon.visible = false
+		env.background_mode = Environment.BG_COLOR; env.background_color = Color(0.01, 0.01, 0.015)
+		env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR; env.ambient_light_color = Color(0.32, 0.3, 0.36); env.ambient_light_energy = 0.55
+		env.tonemap_exposure = 1.35
+		env.fog_light_color = Color(0.03, 0.03, 0.04); env.fog_density = 0.012
+		env.volumetric_fog_density = 0.02; env.volumetric_fog_albedo = Color(0.5, 0.45, 0.4)
+		return
+
 	# the sun: rises in the east (+x) at 6, highest at 13, sets in the west at 20, arcing across the south
 	var a := (hour - 6.0) / 14.0 * PI
 	var to_sun := Vector3(cos(a), sin(a) * 0.86, sin(a) * 0.5 + 0.12).normalized()

@@ -65,6 +65,10 @@ func _mat(sh: Shader, hmt: Texture2D, clear: Texture2D, sp: float, sc: float, f0
 	m.set_shader_parameter("noise_fine", Terrain.noise_fine)
 	m.set_shader_parameter("half_size", WorldData.HALF)
 	m.set_shader_parameter("water_h", WorldData.WATER_H)
+	var pal: Dictionary = WorldData.Z.get("palette", {})
+	for k in ["grass_a", "grass_b", "grass_c"]:
+		if pal.has(k): m.set_shader_parameter(k, pal[k])
+
 	m.set_shader_parameter("spacing", sp)
 	m.set_shader_parameter("per_row", int(ceil(CHUNK / sp)))
 	m.set_shader_parameter("clump_scale", sc)

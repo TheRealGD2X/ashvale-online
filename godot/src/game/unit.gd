@@ -103,7 +103,9 @@ func dmg_mult(school: String, id := "") -> float:
 
 func crit_chance(spell: bool) -> float:
 	var c := 0.05 + float(gear_stats.get("crit", 0)) / 100.0 + (tmod("crit_spell") if spell else tmod("crit"))
-	c += (attrs["int"] if spell else attrs["agi"]) / 2000.0 * (20.0 if spell else 20.0)
+	# about 1% per 12 points of Agility (Intellect for spells) at level 10, per 29 at level 60
+	c += float(attrs["int"] if spell else attrs["agi"]) / (8.0 + level * 0.35) / 100.0
+
 	return clampf(c, 0.0, 0.5)
 
 func base_mana() -> int:
@@ -331,7 +333,7 @@ func take_damage(src: Unit, amount: float, school := "physical", crit := false, 
 	if power_kind == "rage" and dmg > 0: gain_rage(2.5 * dmg / maxf(1.0, max_hp) * 100.0 * 0.5)
 	# roots break on damage (after a short grace)
 	for a in auras:
-		if a["data"].has("root") and a["t"] > 1.5: a["t"] = a["dur"]
+		if a["data"].has("root") and not a["data"].has("cage") and a["t"] > 1.5: a["t"] = a["dur"]
 	struck.emit(self, dmg, crit, school, kind)
 	if absorbed > 0: show_text("Absorb %d" % absorbed, Color(0.9, 0.9, 0.7), src)
 	if dmg > 0 and model and busy_anim <= 0.0 and casting.is_empty() and randf() < 0.35: act("Hit_Chest", 1.2)
@@ -491,7 +493,7 @@ func use(id: String, t: Unit = null, at := Vector3.INF) -> String:
 func _pay(id: String) -> void:
 	var a: Dictionary = Abilities.LIST[id]
 	var c := cost_of(id)
-	if a.get("all_rage", false) and power_kind == "rage": casting["extra_rage"] = power - c
+	if a.get("all_rage", false) and power_kind == "rage": extra_rage = power - c
 	power -= c
 	if int(a.get("cost", 0)) < 0 and power_kind == "rage": gain_rage(-float(a["cost"]))
 	if c > 0 and power_kind == "mana": last_cast_t = 0.0
@@ -548,7 +550,9 @@ func _fire(id: String, t: Unit, at: Vector3) -> void:
 	get_tree().call_group("fx", "play", id, self, t, at)
 	_effect(id, t, at)
 
-var cur_ability := ""                # the ability whose effect is being applied (talent mods by ability)
+var extra_rage := 0.0                # Execute: the Rage beyond its cost, spent for extra damage
+var cur_ability := ""
+                # the ability whose effect is being applied (talent mods by ability)
 
 func _effect(id: String, t: Unit, at: Vector3) -> void:
 	cur_ability = id
@@ -565,7 +569,7 @@ func _effect2(id: String, t: Unit, at: Vector3) -> void:
 		"strike":
 			if t == null or t.dead: return
 			var dmg: float = randf_range(weapon["min"], weapon["max"]) + attack_power() / 14.0 * weapon["speed"] + Abilities.value(id, "bonus", level)
-			if a.has("per_rage"): dmg += Abilities.value(id, "per_rage", level) * float(casting.get("extra_rage", 0.0))
+			if a.has("per_rage"): dmg += Abilities.value(id, "per_rage", level) * extra_rage; extra_rage = 0.0
 			if a.get("all_rage", false): power = 0.0
 			melee_hit(t, dmg, "special", float(a.get("threat", 1.0)))
 		"spell":
@@ -620,6 +624,8 @@ func _effect2(id: String, t: Unit, at: Vector3) -> void:
 			var c: Vector3 = global_position if a.get("self_center", false) else (at if at != Vector3.INF else (t.global_position if t else global_position))
 			var victims := enemies_near(c, float(a["radius"]))
 			for u in victims: spell_hit(u, Abilities.value(id, "dmg", level), school)
+		"hearth":
+			if has_method("go_home"): call("go_home")
 		"taunt":
 			if t == null: return
 			var top := 0.0
