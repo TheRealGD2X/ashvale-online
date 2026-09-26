@@ -21,10 +21,27 @@ func _init() -> void:
 func set_ability(id: String) -> void:
 	ability = id; queue_redraw()
 
+static var _tex := {}
+static func tex(path: String) -> Texture2D:
+	if not _tex.has(path): _tex[path] = load(path) if ResourceLoader.exists(path) else null
+	return _tex[path]
+
 func _draw() -> void:
 	var r := Rect2(Vector2.ZERO, size)
 	if ability == "" or not Abilities.LIST.has(ability):
 		draw_rect(r, Color(0.08, 0.07, 0.06, 0.7))
+		return
+	# the painted icon (art/spell_icons.py) in its bronze frame (art/ui_art.py)
+	var pic := tex("res://assets/icons/%s.png" % ability)
+	if pic:
+		var inset := size.x * 0.07
+		var ir := Rect2(Vector2(inset, inset), size - Vector2(inset, inset) * 2.0)
+		draw_texture_rect(pic, ir, false)
+		if cd_frac > 0.0: _sweep(ir)
+		if dim > 0.0: draw_rect(ir, Color(0.0, 0.0, 0.08, dim))
+		if tint.a > 0.0: draw_rect(ir, tint)
+		var fr := tex("res://assets/ui/frame_ability.png")
+		if fr: draw_texture_rect(fr, r, false)
 		return
 	var a: Dictionary = Abilities.LIST[ability]
 	var col: Color = Fx.SCHOOL.get(a.get("school", "physical"), Color.WHITE)
@@ -172,3 +189,13 @@ func _flame(base: Vector2, h: float, c: Color) -> void:
 		if p.y < 0: p.y *= 2.1; p.x *= 1.0 - (-p.y / (h * 1.1)) * 0.75
 		pts.append(base + p)
 	draw_colored_polygon(pts, c)
+
+func _sweep(ir: Rect2) -> void:
+	var c0 := ir.get_center(); var s := ir.size.x
+	var pts2 := PackedVector2Array([c0])
+	for k in 33:
+		var ang := -PI / 2.0 + TAU * cd_frac * float(k) / 32.0
+		var dir := Vector2(cos(ang), sin(ang))
+		pts2.append(c0 + dir / maxf(absf(dir.x), absf(dir.y)) * s * 0.5)
+	draw_colored_polygon(pts2, Color(0, 0, 0, 0.62))
+

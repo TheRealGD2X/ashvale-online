@@ -144,6 +144,8 @@ func _player_frame() -> void:
 	pf["name"] = _label(p, "", 19, Vector2(100, 8), INK, true)
 	pf["hp"] = _bar(p, Vector2(98, 38), Vector2(218, 22), Color(0.2, 0.72, 0.22))
 	pf["pw"] = _bar(p, Vector2(98, 64), Vector2(218, 16), Color(0.18, 0.38, 0.9))
+	pf["hp"]["bg"].visible = false; pf["pw"]["bg"].visible = false        # the orbs show these now
+	p.size = Vector2(230, 96)
 	buffs = HBoxContainer.new(); buffs.position = Vector2(30, 122); buffs.add_theme_constant_override("separation", 4); buffs.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(buffs)
 	gold_l = _label(root, "", 16, Vector2(26, 160), GOLD)
@@ -167,19 +169,28 @@ func _target_frame() -> void:
 		social.add_child(b)
 	tf["social"] = social; social.visible = false
 
+## the bottom of the screen, Diablo-style: a health orb on the left, a mana (or rage) orb on the
+## right, and between them the five-slot action bar on a bronze-rimmed stone plate, with the cast
+## bar and experience above it (art in assets/ui, painted by art/ui_art.py; orbs: shaders/orb.gdshader)
+const BAR_W := 580.0
+const BAR_H := 110.0
+const SLOT_X := [118.0, 204.0, 290.0, 376.0, 462.0]
+var orbs := {}
+
 func _action_bar() -> void:
 	var holder := Control.new(); holder.set_anchors_preset(Control.PRESET_CENTER_BOTTOM); holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(holder)
-	var n := 5; var s := 64.0; var gap := 8.0
-	var w := n * s + (n - 1) * gap + 28
-	var back := _panel(holder, Vector2(-w / 2.0, -s - 46), Vector2(w, s + 22), 12)
-	for i in n:
+	var plate := TextureRect.new(); plate.texture = load("res://assets/ui/hotbar.png"); plate.size = Vector2(BAR_W, BAR_H)
+	plate.position = Vector2(-BAR_W / 2.0, -BAR_H - 6); plate.mouse_filter = Control.MOUSE_FILTER_PASS
+	holder.add_child(plate)
+	var s := 64.0
+	for i in SLOT_X.size():
 		var b := Button.new(); b.flat = true; b.focus_mode = Control.FOCUS_NONE
-		b.position = Vector2(14 + i * (s + gap), 11); b.size = Vector2(s, s)
-		back.add_child(b)
-		back.mouse_filter = Control.MOUSE_FILTER_PASS
+		b.position = Vector2(SLOT_X[i] - s / 2.0, 60.0 - s / 2.0); b.size = Vector2(s, s)
+		plate.add_child(b)
 		var ic := AbilityIcon.new(); ic.size = Vector2(s, s); b.add_child(ic)
-		var key := _label(b, str(i + 1), 15, Vector2(4, 1), Color(1, 1, 1))
+		var key := _label(b, str(i + 1), 14, Vector2(6, 3), Color(1, 0.95, 0.8))
+		key.add_theme_color_override("font_outline_color", Color(0, 0, 0)); key.add_theme_constant_override("outline_size", 5)
 		var cdl := Label.new(); cdl.size = Vector2(s, s); cdl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; cdl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		cdl.add_theme_font_size_override("font_size", 24); cdl.add_theme_font_override("font", bold); cdl.add_theme_color_override("font_color", Color(1, 0.95, 0.7))
 		cdl.add_theme_color_override("font_outline_color", Color(0, 0, 0)); cdl.add_theme_constant_override("outline_size", 6); cdl.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -189,21 +200,68 @@ func _action_bar() -> void:
 		b.mouse_entered.connect(func(): _show_tip(player.bar[idx] if player else "", b))
 		b.mouse_exited.connect(_hide_tip)
 		slots.append({"btn": b, "icon": ic, "cd": cdl, "flash": 0.0})
+	# the orbs either side
+	var od := 196.0
+	for side in [["hp", -1.0], ["mp", 1.0]]:
+		var key2: String = side[0]
+		var cx: float = side[1] * (BAR_W / 2.0 + od * 0.36)
+		var box := Control.new(); box.size = Vector2(od, od); box.position = Vector2(cx - od / 2.0, -od - 2); box.mouse_filter = Control.MOUSE_FILTER_PASS
+		holder.add_child(box)
+		var liq := ColorRect.new(); var inner := od * 0.772
+		liq.size = Vector2(inner, inner); liq.position = Vector2((od - inner) / 2.0, (od - inner) / 2.0); liq.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var sm := ShaderMaterial.new(); sm.shader = load("res://shaders/orb.gdshader"); liq.material = sm
+		box.add_child(liq)
+		var frame := TextureRect.new(); frame.texture = load("res://assets/ui/orb_frame_%s.png" % key2); frame.size = Vector2(od, od)
+		frame.mouse_filter = Control.MOUSE_FILTER_IGNORE; frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; box.add_child(frame)
+		var txt := Label.new(); txt.size = Vector2(od, 24); txt.position = Vector2(0, od * 0.5 - 12); txt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		txt.add_theme_font_size_override("font_size", 17); txt.add_theme_font_override("font", bold)
+		txt.add_theme_color_override("font_outline_color", Color(0, 0, 0)); txt.add_theme_constant_override("outline_size", 6)
+		txt.mouse_filter = Control.MOUSE_FILTER_IGNORE; txt.modulate.a = 0.0; box.add_child(txt)
+		box.mouse_entered.connect(func(): txt.modulate.a = 1.0)
+		box.mouse_exited.connect(func(): txt.modulate.a = 0.0)
+		orbs[key2] = {"mat": sm, "text": txt, "shown": 1.0, "last": -1.0, "flash": 0.0}
+	_set_orb_colors()
+
+func _set_orb_colors() -> void:
+	(orbs["hp"]["mat"] as ShaderMaterial).set_shader_parameter("deep", Color(0.32, 0.02, 0.03)); orbs["hp"]["mat"].set_shader_parameter("bright", Color(1.0, 0.22, 0.14))
+	var rage := player != null and player.power_kind == "rage"
+	orbs["mp"]["mat"].set_shader_parameter("deep", Color(0.35, 0.08, 0.0) if rage else Color(0.02, 0.06, 0.32))
+	orbs["mp"]["mat"].set_shader_parameter("bright", Color(1.0, 0.55, 0.12) if rage else Color(0.25, 0.55, 1.0))
+
+func _update_orbs(delta: float) -> void:
+	for pair in [["hp", player.hp / maxf(1.0, player.max_hp), "%d / %d" % [int(player.hp), int(player.max_hp)]],
+			["mp", player.power / maxf(1.0, player.max_power), "%d / %d" % [int(player.power), int(player.max_power)]]]:
+		var o: Dictionary = orbs[pair[0]]
+		var want: float = pair[1]
+		if o["last"] >= 0.0 and absf(want - o["last"]) > 0.02: o["flash"] = 1.0
+		o["last"] = want
+		o["shown"] = lerpf(o["shown"], want, clampf(delta * 6.0, 0, 1))
+		o["flash"] = maxf(0.0, o["flash"] - delta * 3.0)
+		o["mat"].set_shader_parameter("fill", o["shown"])
+		o["mat"].set_shader_parameter("flash", o["flash"])
+		o["text"].text = pair[2]
 
 func _cast_bar() -> void:
 	var holder := Control.new(); holder.set_anchors_preset(Control.PRESET_CENTER_BOTTOM); holder.mouse_filter = Control.MOUSE_FILTER_IGNORE; root.add_child(holder)
-	var p := _panel(holder, Vector2(-170, -178), Vector2(340, 34), 8)
+	var p := _panel(holder, Vector2(-170, -BAR_H - 78), Vector2(340, 34), 8)
 	castbar["panel"] = p; p.visible = false
 	castbar["bar"] = _bar(p, Vector2(8, 7), Vector2(324, 20), Color(0.95, 0.72, 0.2))
 
 func _xp_bar() -> void:
-	var holder := Control.new(); holder.set_anchors_preset(Control.PRESET_BOTTOM_WIDE); holder.mouse_filter = Control.MOUSE_FILTER_IGNORE; root.add_child(holder)
-	holder.offset_top = -14; holder.offset_bottom = 0
-	var bg := ColorRect.new(); bg.color = Color(0.03, 0.02, 0.05, 0.9); bg.set_anchors_preset(Control.PRESET_FULL_RECT); bg.mouse_filter = Control.MOUSE_FILTER_IGNORE; holder.add_child(bg)
+	var holder := Control.new(); holder.set_anchors_preset(Control.PRESET_CENTER_BOTTOM); holder.mouse_filter = Control.MOUSE_FILTER_IGNORE; root.add_child(holder)
+	var w := BAR_W - 60.0
+	var bg := ColorRect.new(); bg.color = Color(0.03, 0.02, 0.04, 0.92); bg.size = Vector2(w, 10); bg.position = Vector2(-w / 2.0, -BAR_H - 20)
+	bg.mouse_filter = Control.MOUSE_FILTER_PASS; holder.add_child(bg)
+	var edge := ReferenceRect.new(); edge.border_color = Color(0.72, 0.56, 0.32, 0.9); edge.border_width = 1.5; edge.editor_only = false
+	edge.size = bg.size + Vector2(2, 2); edge.position = Vector2(-1, -1); edge.mouse_filter = Control.MOUSE_FILTER_IGNORE; bg.add_child(edge)
 	var fill := ColorRect.new(); fill.color = Color(0.55, 0.3, 0.85); fill.mouse_filter = Control.MOUSE_FILTER_IGNORE; bg.add_child(fill)
 	fill.anchor_bottom = 1.0
 	var txt := Label.new(); txt.set_anchors_preset(Control.PRESET_FULL_RECT); txt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; txt.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	txt.add_theme_font_size_override("font_size", 11); txt.mouse_filter = Control.MOUSE_FILTER_IGNORE; bg.add_child(txt)
+	txt.add_theme_font_size_override("font_size", 12); txt.mouse_filter = Control.MOUSE_FILTER_IGNORE; txt.position.y = -16
+	txt.add_theme_color_override("font_outline_color", Color(0, 0, 0)); txt.add_theme_constant_override("outline_size", 4)
+	txt.modulate.a = 0.0; bg.add_child(txt)
+	bg.mouse_entered.connect(func(): txt.modulate.a = 1.0)
+	bg.mouse_exited.connect(func(): txt.modulate.a = 0.0)
 	xpbar = {"fill": fill, "text": txt, "bg": bg}
 
 func _misc() -> void:
@@ -242,6 +300,7 @@ func _refresh_player() -> void:
 	pf["por"]["letter"].add_theme_color_override("font_color", c["color"])
 	pf["por"]["level"].text = str(player.level)
 	pf["pw"]["fill"].color = Color(0.85, 0.15, 0.12) if player.power_kind == "rage" else Color(0.18, 0.38, 0.9)
+	if not orbs.is_empty(): _set_orb_colors()
 	_refresh_bar()
 	_refresh_buffs()
 
@@ -274,6 +333,7 @@ func _refresh_xp() -> void:
 
 func _process(delta: float) -> void:
 	if player == null: return
+	_update_orbs(delta)
 	# player frame
 	_set_bar(pf["hp"], player.hp / maxf(1.0, player.max_hp), "%d / %d" % [int(player.hp), int(player.max_hp)])
 	_set_bar(pf["pw"], player.power / maxf(1.0, player.max_power), "%d / %d" % [int(player.power), int(player.max_power)])

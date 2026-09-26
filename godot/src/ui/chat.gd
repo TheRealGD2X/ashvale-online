@@ -19,7 +19,7 @@ var player: Player
 func _ready() -> void:
 	add_to_group("chat")
 	set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	offset_left = 20; offset_top = -330; offset_right = 520; offset_bottom = -40
+	offset_left = 16; offset_top = -310; offset_right = 420; offset_bottom = -24
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var bg := Panel.new(); bg.set_anchors_preset(Control.PRESET_FULL_RECT); bg.offset_bottom = -34; bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var sb := StyleBoxFlat.new(); sb.bg_color = Color(0, 0, 0, 0.22); sb.set_corner_radius_all(6)

@@ -18,3 +18,4 @@ tools/godot/
 # third-party model kits used by the web art pipeline (KayKit, CC0): download again from kaylousberg.itch.io if needed
 art/models/hexpack/
 *.blend1
+art/_sprites/
