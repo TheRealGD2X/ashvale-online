@@ -153,7 +153,9 @@ func speed_mult() -> float:
 	var m := 1.0
 	for a in auras:
 		if a["data"].has("slow"): m = minf(m, 1.0 - float(a["data"]["slow"]))
+	if has_meta("mounted"): m *= 1.6
 	return m
+
 
 func _physics_process(delta: float) -> void:
 	if dead:
@@ -469,7 +471,10 @@ func use(id: String, t: Unit = null, at := Vector3.INF) -> String:
 	var a: Dictionary = Abilities.LIST[id]
 	if a.get("helpful", false) and (t == null or is_enemy(t) or t.dead): t = self
 	if a.get("self", false) or a["kind"] == "aoe": t = self if a.get("self", false) else t
+	# doing anything but riding gets you off your mount
+	if has_meta("mounted") and a["kind"] != "mount" and has_method("set_mounted"): call("set_mounted", false)
 	if a.get("gcd", true): gcd = Rules.GCD
+
 	var cast_time := cast_time_of(id)
 	if cast_time == 0.0 and float(a.get("cast", 0.0)) > 0.0 and has_aura("presence_of_mind"): remove_aura("presence_of_mind")
 	var chan := float(a.get("channel", 0.0))
@@ -626,6 +631,8 @@ func _effect2(id: String, t: Unit, at: Vector3) -> void:
 			for u in victims: spell_hit(u, Abilities.value(id, "dmg", level), school)
 		"hearth":
 			if has_method("go_home"): call("go_home")
+		"mount":
+			if has_method("set_mounted"): call("set_mounted", true)
 		"taunt":
 			if t == null: return
 			var top := 0.0

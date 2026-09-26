@@ -37,7 +37,29 @@ func _ready() -> void:
 			var ch := MeshInstance3D.new(); var cm := BoxMesh.new(); cm.size = Vector3(0.35, 0.05, 0.05)
 			var cmt := StandardMaterial3D.new(); cmt.albedo_color = Color(0.95, 0.95, 0.9); cm.material = cmt; ch.mesh = cm
 			rock.add_child(ch); ch.position = Vector3(0, 0.33, 0.25); ch.rotation.z = 0.6
+		"oats", "bloom":
+			var col := Color(0.85, 0.75, 0.4) if look == "oats" else Color(0.65, 0.35, 0.75)
+			for k in 7:
+				var st := MeshInstance3D.new(); var cm := CylinderMesh.new(); cm.top_radius = 0.02; cm.bottom_radius = 0.03; cm.height = 0.7
+				var sm := StandardMaterial3D.new(); sm.albedo_color = Color(0.5, 0.6, 0.3); cm.material = sm; st.mesh = cm
+				body.add_child(st); st.position = Vector3(randf_range(-0.2, 0.2), 0.35, randf_range(-0.2, 0.2))
+				var head := MeshInstance3D.new(); var hm := SphereMesh.new(); hm.radius = 0.06; hm.height = 0.14
+				var hmt := StandardMaterial3D.new(); hmt.albedo_color = col; hm.material = hmt; head.mesh = hm
+				st.add_child(head); head.position.y = 0.36
+		"totem":
+
+			var wood := StandardMaterial3D.new(); wood.albedo_color = Color(0.35, 0.25, 0.15)
+			var pole := MeshInstance3D.new(); var cm := CylinderMesh.new(); cm.top_radius = 0.1; cm.bottom_radius = 0.14; cm.height = 1.8; cm.material = wood; pole.mesh = cm
+			body.add_child(pole); pole.position.y = 0.9
+			var bone := StandardMaterial3D.new(); bone.albedo_color = Color(0.88, 0.85, 0.75)
+			var skull := MeshInstance3D.new(); var sm := SphereMesh.new(); sm.radius = 0.18; sm.height = 0.3; sm.material = bone; skull.mesh = sm
+			body.add_child(skull); skull.position.y = 1.9
+			for k in 3:
+				var f := MeshInstance3D.new(); var fm := BoxMesh.new(); fm.size = Vector3(0.05, 0.4, 0.02)
+				var fc := StandardMaterial3D.new(); fc.albedo_color = [Color(0.8, 0.2, 0.15), Color(0.9, 0.8, 0.2), Color(0.2, 0.5, 0.8)][k]; fm.material = fc; f.mesh = fm
+				body.add_child(f); f.position = Vector3(0.12, 1.5 - k * 0.1, 0); f.rotation.z = 0.4 + k * 0.3
 		"grave":
+
 			var wreath := MeshInstance3D.new(); var tm := TorusMesh.new(); tm.inner_radius = 0.18; tm.outer_radius = 0.3
 			var wm := StandardMaterial3D.new(); wm.albedo_color = Color(0.35, 0.5, 0.25); tm.material = wm; wreath.mesh = tm
 			body.add_child(wreath); wreath.position.y = 0.05
@@ -59,11 +81,13 @@ func _process(delta: float) -> void:
 	# only people on the quest see it glint (bots don't need to see it to find it)
 	var p: Player = get_tree().get_first_node_in_group("player")
 	var want := available and p != null and p.quests.has(needed_by) and not p.quest_complete(needed_by)
-	if want != visible:
-		visible = want
-		if want and glint == null:
-			var fx := get_tree().get_first_node_in_group("fx")
-			if fx: glint = fx.twinkle(self, Color(1.0, 0.9, 0.5), 0.3)
+	var show := want or (available and look in ["totem"])
+	if show != visible: visible = show
+	if want and glint == null:
+		var fx := get_tree().get_first_node_in_group("fx")
+		if fx: glint = fx.twinkle(self, Color(1.0, 0.9, 0.5), 0.3)
+	elif not want and glint: glint.queue_free(); glint = null
+
 	if visible: body.rotation.y += delta * 0.4
 
 func take(p: Player) -> void:

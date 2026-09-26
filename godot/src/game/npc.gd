@@ -24,10 +24,15 @@ func _ready() -> void:
 	super._ready()
 	add_to_group("npcs")
 	max_hp = 1500 + level * 60; hp = max_hp
-	var a := Avatar.new(); a.look = Npcs.look_of(npc_id)
-	model = a
-	add_child(a); a.rotation.y = yaw
-	if info.has("weapon"): a.wield.call_deferred("res://assets/weapons/%s.glb" % info["weapon"], 0.55)
+	if info.has("creature"):
+		var cb := CreatureBody.new(); cb.model = info["creature"]; model = cb
+		add_child(cb); cb.rotation.y = yaw; cb.scale = Vector3.ONE * float(info.get("scale", 1.0))
+	else:
+		var a := Avatar.new(); a.look = Npcs.look_of(npc_id)
+		model = a
+		add_child(a); a.rotation.y = yaw
+		if info.has("weapon"): a.wield.call_deferred("res://assets/weapons/%s.glb" % info["weapon"], 0.55)
+
 	mark = Label3D.new(); mark.billboard = BaseMaterial3D.BILLBOARD_ENABLED; mark.no_depth_test = true
 	mark.font_size = 150; mark.pixel_size = 0.004; mark.outline_size = 28; mark.outline_modulate = Color(0.12, 0.06, 0.0)
 	mark.position = Vector3(0, 2.55, 0); mark.text = ""; mark.fixed_size = false

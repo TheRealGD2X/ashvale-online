@@ -305,6 +305,7 @@ func _quest_step() -> void:
 			var o: Dictionary = q["obj"][i]
 			if int(p.quests[id]["have"][i]) >= int(o.get("n", 1)): continue
 			if o["kind"] == "talk" and o["npc"] == Player.ender_of(id): continue
+			if o["kind"] == "daily" and int(p.quests[id].get("day", -1)) == Player.today(): continue
 			var at := _where(o)
 			if at == Vector3.INF: continue
 			var d := p.global_position.distance_to(at)
@@ -402,7 +403,7 @@ func _dodge() -> bool:
 ## where an objective is done
 func _where(o: Dictionary) -> Vector3:
 	match o["kind"]:
-		"talk":
+		"talk", "daily":
 			var n := _npc(o["npc"]); return n.global_position if n else Vector3.INF
 		"explore": return Vector3(o["at"][0], 0, o["at"][1])
 		"kill":
@@ -419,7 +420,7 @@ func _where(o: Dictionary) -> Vector3:
 func _do(id: String, o: Dictionary, at: Vector3) -> void:
 	var title: String = Quests.LIST[id]["title"]
 	match o["kind"]:
-		"talk": _talk_to(o["npc"], title)
+		"talk", "daily": _talk_to(o["npc"], title)
 		"explore": _go(Nav.nearest_open(at), "exploring for " + title)
 		"kill", "collect":
 			var keys: Array = [o["mon"]] if o["kind"] == "kill" else o["from"]

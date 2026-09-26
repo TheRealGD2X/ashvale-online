@@ -20,8 +20,16 @@ func _ready() -> void:
 			var n := int(a.distance_to(b) / 7.0)
 			for j in n:
 				var p := a.lerp(b, (j + 0.5) / n)
-				_frame(p, b - a, w, wood, k % 3 == 0)
+				if WorldData.zone_id == "mine": _frame(p, b - a, w, wood, k % 3 == 0)
+				elif WorldData.zone_id == "warrens":
+					if k % 3 == 0: _glowcaps(p + (b - a).normalized().orthogonal() * (w - 0.8))
+				else: _stone_pair(p, b - a, w, k % 2 == 0)
 				k += 1
+	if WorldData.zone_id == "warrens":
+		_warrens(cave); return
+	if WorldData.zone_id != "mine":
+		_crypt(cave); return
+
 	# rails down the main gallery
 	_rails([Vector2(0, 110), Vector2(0, 80), Vector2(-10, 56)])
 	_rails([Vector2(-10, 56), Vector2(20, 40), Vector2(40, 20), Vector2(44, -2)])
@@ -166,3 +174,84 @@ func _throne(c: Vector2) -> void:
 	var body := StaticBody3D.new(); add_child(body)
 	var cs := CollisionShape3D.new(); var sh := BoxShape3D.new(); sh.size = Vector3(2.6, 3.0, 2.2); cs.shape = sh
 	body.position = Vector3(c.x, y + 1.5, c.y - 0.3); body.add_child(cs)
+
+
+# ------------------------------------------------------------------ the Warrens: under a hollow tree in the marsh
+
+func _warrens(cave: Dictionary) -> void:
+	var bark := _mat(Color(0.3, 0.22, 0.15))
+	# great roots arching over the passages
+	for hl in cave["halls"]:
+		var pts: Array = hl["pts"]
+		for i in pts.size() - 1:
+			var a: Vector2 = pts[i]; var b: Vector2 = pts[i + 1]
+			for j in int(a.distance_to(b) / 9.0):
+				var p := a.lerp(b, (j + 0.5) / int(a.distance_to(b) / 9.0))
+				_root_arch(p, (b - a).normalized().orthogonal(), float(hl["w"]), bark)
+	for rm in cave["rooms"]:
+		for t in 5:
+			var a2 := TAU * t / 5.0 + 0.3
+			_glowcaps(rm["at"] + Vector2(cos(a2), sin(a2)) * (float(rm["r"]) - 1.2))
+	# webs and eggs in the Broodmother's hall
+	for k in 12:
+		var a3 := rng.randf() * TAU; var d3 := rng.randf_range(3.0, 11.0)
+		_eggs(Vector2(50, 0) + Vector2(cos(a3), sin(a3)) * d3)
+	_slime(Vector2(40, -86), 12.0)
+	var l := OmniLight3D.new(); l.light_color = Color(0.5, 1.0, 0.55); l.omni_range = 20.0; l.light_energy = 1.2
+	add_child(l); l.position = Vector3(40, 4.0, -86)
+	var exit := OmniLight3D.new(); exit.light_color = Color(0.7, 0.9, 0.7); exit.omni_range = 10.0; exit.light_energy = 2.0
+	add_child(exit); exit.position = Vector3(0, 3.0, 110)
+
+func _root_arch(p: Vector2, side: Vector2, w: float, bark: StandardMaterial3D) -> void:
+	var y := WorldData.h(p.x, p.y)
+	for s in [-1.0, 1.0]:
+		var q: Vector2 = p + side * s * (w - 0.2)
+		var r := MeshInstance3D.new(); var cm := CylinderMesh.new(); cm.top_radius = 0.18; cm.bottom_radius = 0.35; cm.height = 3.6; cm.material = bark; r.mesh = cm
+		add_child(r); r.position = Vector3(q.x, y + 1.6, q.y); r.rotation = Vector3(0, atan2(side.x, side.y), s * 0.35)
+	var top := MeshInstance3D.new(); var tm := CylinderMesh.new(); tm.top_radius = 0.2; tm.bottom_radius = 0.25; tm.height = w * 2.0; tm.material = bark; top.mesh = tm
+	add_child(top); top.position = Vector3(p.x, y + 3.2, p.y); top.rotation = Vector3(0, atan2(side.x, side.y), PI / 2.0)
+
+func _glowcaps(c: Vector2) -> void:
+	var stem := _mat(Color(0.85, 0.85, 0.75))
+	var cap := StandardMaterial3D.new(); cap.albedo_color = Color(0.3, 0.8, 0.9); cap.emission_enabled = true; cap.emission = Color(0.25, 0.8, 0.9); cap.emission_energy_multiplier = 1.4
+	var y := WorldData.h(c.x, c.y)
+	for k in 3:
+		var o := Vector2(rng.randf_range(-0.5, 0.5), rng.randf_range(-0.5, 0.5))
+		var h := rng.randf_range(0.3, 0.8)
+		var st := MeshInstance3D.new(); var cm := CylinderMesh.new(); cm.top_radius = 0.04; cm.bottom_radius = 0.06; cm.height = h; cm.material = stem; st.mesh = cm
+		add_child(st); st.position = Vector3(c.x + o.x, y + h / 2.0, c.y + o.y)
+		var cp := MeshInstance3D.new(); var sm := SphereMesh.new(); sm.radius = 0.2; sm.height = 0.18; sm.material = cap; cp.mesh = sm
+		add_child(cp); cp.position = Vector3(c.x + o.x, y + h, c.y + o.y)
+	var l := OmniLight3D.new(); l.light_color = Color(0.35, 0.85, 0.95); l.omni_range = 6.0; l.light_energy = 1.0
+	add_child(l); l.position = Vector3(c.x, y + 1.0, c.y)
+
+# ------------------------------------------------------------------ temples, crypts and catacombs: dressed stone
+
+func _stone_pair(p: Vector2, along: Vector2, w: float, lamp: bool) -> void:
+	var stone := _mat(Color(0.5, 0.47, 0.44) if WorldData.zone_id == "temple" else Color(0.42, 0.42, 0.45))
+	var side := along.normalized().orthogonal()
+	for s in [-1.0, 1.0]:
+		var q: Vector2 = p + side * s * (w - 0.4)
+		var col := MeshInstance3D.new(); var cm := CylinderMesh.new(); cm.top_radius = 0.35; cm.bottom_radius = 0.42; cm.height = 3.6; cm.radial_segments = 8; cm.material = stone; col.mesh = cm
+		add_child(col); col.position = Vector3(q.x, WorldData.h(q.x, q.y) + 1.8, q.y)
+	if lamp: _lamp(p + side * (w - 0.9), 2.4)
+
+func _crypt(cave: Dictionary) -> void:
+	var stone := _mat(Color(0.45, 0.44, 0.46))
+	var rooms: Array = cave["rooms"]
+	for i in rooms.size():
+		var c: Vector2 = rooms[i]["at"]; var r: float = rooms[i]["r"]
+		# sarcophagi round the walls, bones on the floor
+		for k in (4 if i > 0 else 0):
+			var a := TAU * k / 4.0 + 0.6
+			var sp := c + Vector2(cos(a), sin(a)) * (r - 2.2)
+			var box := MeshInstance3D.new(); var bm := BoxMesh.new(); bm.size = Vector3(1.0, 0.8, 2.2); bm.material = stone; box.mesh = bm
+			add_child(box); box.position = Vector3(sp.x, WorldData.h(sp.x, sp.y) + 0.4, sp.y); box.rotation.y = a
+		for k in (8 if WorldData.zone_id != "temple" else 2): _bones(c + Vector2(rng.randf_range(-r + 2, r - 2), rng.randf_range(-r + 2, r - 2)))
+	# the last hall: a dais and a throne
+	var last: Vector2 = rooms[rooms.size() - 1]["at"]
+	_throne(last + Vector2(0, -8))
+	var glow := OmniLight3D.new(); glow.light_color = Color(0.8, 0.5, 1.0) if WorldData.zone_id == "catacombs" else (Color(1.0, 0.5, 0.2) if WorldData.zone_id == "temple" else Color(0.5, 0.8, 1.0))
+	glow.omni_range = 20.0; glow.light_energy = 1.4; add_child(glow); glow.position = Vector3(last.x, 4.0, last.y - 4)
+	var exit := OmniLight3D.new(); exit.light_color = Color(0.8, 0.8, 0.9); exit.omni_range = 10.0; exit.light_energy = 2.0
+	add_child(exit); exit.position = Vector3(0, 3.0, 110)

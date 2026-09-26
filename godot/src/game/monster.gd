@@ -37,6 +37,66 @@ const KINDS := {
 	"bone_king": {"model": "Skeleton_B", "type": "undead", "scale": 1.7, "attack": ["Sword_Heavy_Combo", "Sword_Regular_C"], "speed": 3.0, "names": ["The Bone King"], "boss": "bone_king", "drop_one": ["bone_kings_circlet", "marrowplate_pauldrons", "hollow_crown_band"],
 		"walk": "Zombie_Walk_Fwd", "idle": "Zombie_Idle", "spells": ["hellfire_ring"]},
 	"bone_cage": {"cage": true, "type": "undead", "scale": 1.0, "speed": 99.0, "names": ["Bone Prison"]},
+	# ---- Mirewood (14–22)
+	"mire_goblin": {"model": "Puglin", "type": "humanoid", "scale": 1.05, "attack": ["Punch_Jab", "Punch_Cross"], "speed": 2.0, "names": ["Mire Goblin", "Mire Goblin Scrapper", "Bog Snatcher"],
+		"walk": "Walk", "loot": ["puglin_trinket", "goblin_ear"]},
+	"goblin_shaman": {"model": "Puglin", "type": "humanoid", "scale": 0.95, "attack": ["Punch_Jab"], "speed": 2.0, "names": ["Mire Goblin Shaman"], "walk": "Walk", "caster": true,
+		"spells": ["bog_bolt"], "loot": ["puglin_trinket"]},
+	"goblin_lieutenant": {"model": "Puglin", "type": "humanoid", "scale": 1.35, "attack": ["Punch_Cross", "Melee_Hook"], "speed": 2.2, "names": ["Grisk, the Warlord's Lieutenant"], "named": true,
+		"walk": "Walk", "spells": ["ravage"]},
+	"goblin_warlord": {"model": "Puglin", "type": "humanoid", "scale": 1.7, "attack": ["Punch_Cross", "Melee_Hook"], "speed": 2.6, "names": ["Gorvok the Goblin Warlord"], "named": true,
+		"walk": "Walk", "spells": ["tidal_slam"], "drop": ["warlords_horn"]},
+	"viper": {"creature": "snake", "type": "beast", "scale": 1.5, "speed": 1.6, "names": ["Reed Viper", "Mire Adder"], "loot": ["viper_fang"]},
+	"temple_moth": {"creature": "moth", "type": "beast", "scale": 1.6, "speed": 1.8, "names": ["Temple Moth", "Dusky Moth"], "loot": ["moth_wing"]},
+	"marsh_stalker": {"model": "Lycan", "type": "beast", "scale": 0.9, "attack": ["Zombie_Scratch", "Melee_Hook"], "speed": 2.0, "names": ["Marsh Stalker"], "walk": "Jog_Fwd", "loot": ["matted_fur"]},
+	"broodmother": {"creature": "spider", "type": "beast", "scale": 3.4, "speed": 2.0, "names": ["The Broodmother"], "boss": "brood", "drop_one": ["broodsilk_mantle", "venomfang_dirk"]},
+	"rootmaw": {"model": "Tidebreaker", "type": "elemental", "scale": 1.25, "attack": ["Sword_Attack", "Sword_Regular_C"], "speed": 3.2, "names": ["Old Rootmaw"], "boss": "rootmaw",
+		"spells": ["tidal_slam"], "drop_one": ["rootmaw_heartwood_staff", "barkskin_legguards", "mirewarden_signet"]},
+	# ---- Ash Slopes (20–28)
+	"stone_sentinel": {"model": "Tidebreaker", "type": "elemental", "scale": 0.85, "attack": ["Sword_Attack", "Sword_Regular_C"], "speed": 3.0, "names": ["Stone Sentinel", "Cinder Sentinel"],
+		"walk": "Walk", "loot": ["rough_stone"]},
+	"khar_cultist": {"avatar": "wizard", "tool": "skullstaff", "type": "humanoid", "scale": 1.0, "speed": 2.6, "names": ["Khar Cultist", "Khar Initiate", "Ashen Acolyte"], "caster": true,
+		"attack": ["Sword_Regular_A"], "spells": ["ember_bolt"], "loot": ["cultist_robe_scrap"], "tint": 3},
+	"khar_zealot": {"avatar": "warrior", "tool": "reaver", "type": "humanoid", "scale": 1.05, "speed": 2.5, "names": ["Khar Zealot"], "attack": ["Sword_Regular_A", "Sword_Regular_B"],
+		"loot": ["cultist_robe_scrap"], "tint": 3},
+	"temple_archer": {"avatar": "ranger", "tool": "wood", "type": "humanoid", "scale": 1.0, "speed": 2.4, "names": ["Temple Archer"], "caster": true, "attack": ["Sword_Regular_A"],
+		"spells": ["arrow_shot"], "loot": ["guardian_arrow_scrap"]},
+	"cinder_imp": {"model": "Imp", "type": "demon", "scale": 1.1, "attack": ["Sword_Regular_A", "Melee_Hook"], "speed": 1.8, "names": ["Cinder Imp", "Ashen Imp"], "walk": "Walk", "caster": true,
+		"spells": ["ember_bolt"], "loot": ["brimstone_chip"]},
+	"stone_warden": {"model": "Hellwarden", "type": "elemental", "scale": 1.15, "attack": ["Sword_Heavy_Combo", "Sword_Attack"], "speed": 3.0, "names": ["The Stone Warden"], "named": true,
+		"walk": "Walk", "spells": ["hellfire_ring"]},
+	"bellringer": {"avatar": "cleric", "tool": "club", "type": "humanoid", "scale": 1.15, "speed": 2.6, "names": ["Brother Kel, the Bellringer"], "boss": "bell",
+		"attack": ["Sword_Regular_A", "Sword_Heavy_Combo"], "drop_one": ["bellringers_cowl", "tolling_mace"]},
+	"ashmaw": {"model": "Hellwarden", "type": "demon", "scale": 1.4, "attack": ["Sword_Heavy_Combo", "Sword_Attack"], "speed": 3.0, "names": ["Ashmaw"], "boss": "ashmaw",
+		"walk": "Walk", "spells": ["hellfire_ring"], "drop_one": ["ashmaw_hide_mantle", "cinderheart_ring"]},
+	"mora": {"avatar": "wizard", "tool": "skullstaff", "type": "humanoid", "scale": 1.15, "speed": 2.6, "names": ["High Cultist Mora"], "boss": "mora", "caster": true,
+		"attack": ["Sword_Regular_A"], "spells": ["ember_bolt"], "drop_one": ["moras_ashen_staff", "soulthread_robe", "khar_signet"]},
+	# ---- Ashen Highlands (26–34)
+	"khar_beastman": {"model": "Lycan", "type": "humanoid", "scale": 1.0, "attack": ["Zombie_Scratch", "Melee_Hook"], "speed": 2.2, "names": ["Khar Beastman", "Khar Raider"], "walk": "Jog_Fwd", "loot": ["khar_horn_chip"]},
+	"khar_elite": {"model": "Lycan", "type": "humanoid", "scale": 1.15, "attack": ["Zombie_Scratch", "Melee_Hook"], "speed": 2.4, "names": ["Khar Bloodguard"], "walk": "Jog_Fwd", "spells": ["ravage"], "loot": ["khar_horn_chip"]},
+	"brandmaster": {"model": "Lycan", "type": "humanoid", "scale": 1.35, "attack": ["Zombie_Scratch", "Melee_Hook"], "speed": 2.4, "names": ["Ghor the Brandmaster"], "named": true, "walk": "Jog_Fwd", "spells": ["ravage", "tidal_slam"]},
+	"bull_of_khar": {"model": "Hellwarden", "type": "humanoid", "scale": 1.5, "attack": ["Sword_Heavy_Combo", "Sword_Attack"], "speed": 3.2, "names": ["The Bull of Khar"], "named": true, "walk": "Walk", "spells": ["hellfire_ring"]},
+	"highland_wolf": {"creature": "wolf", "type": "beast", "scale": 1.45, "speed": 2.0, "names": ["Highland Wolf", "Grey Runner"], "loot": ["matted_fur"]},
+	"highland_bear": {"creature": "bear", "type": "beast", "scale": 1.35, "speed": 2.4, "names": ["Highland Bear"], "loot": ["matted_fur"]},
+	"drowned_dead": {"model": "Skeleton_A", "type": "undead", "scale": 1.05, "attack": ["Sword_Regular_A", "Sword_Regular_B"], "speed": 2.4, "names": ["Drowned Dead", "Crypt Sleeper"],
+		"walk": "Zombie_Walk_Fwd", "idle": "Zombie_Idle", "loot": ["bone_fragment"]},
+	"lady_silt": {"model": "Skeleton_B", "type": "undead", "scale": 1.4, "attack": ["Sword_Regular_C", "Sword_Heavy_Combo"], "speed": 2.8, "names": ["Lady Silt"], "boss": "gault", "adds": "drowned_dead",
+		"walk": "Zombie_Walk_Fwd", "idle": "Zombie_Idle", "spells": ["tidal_slam"], "drop_one": ["siltveil_cowl", "drowned_kings_blade"]},
+	"crypt_lord": {"model": "Skeleton_B", "type": "undead", "scale": 1.75, "attack": ["Sword_Heavy_Combo", "Sword_Regular_C"], "speed": 3.0, "names": ["The Crypt Lord"], "boss": "bone_king",
+		"walk": "Zombie_Walk_Fwd", "idle": "Zombie_Idle", "spells": ["hellfire_ring"], "drop_one": ["cryptlord_greaves", "lakebound_band", "sunken_staff"]},
+	# ---- Varn Plateau (34–40)
+	"fallen_wraith": {"model": "Skeleton_B", "type": "undead", "scale": 1.1, "attack": ["Sword_Regular_B", "Sword_Regular_C"], "speed": 2.4, "names": ["Fallen Wraith", "Varn Revenant"],
+		"walk": "Zombie_Walk_Fwd", "idle": "Zombie_Idle", "loot": ["bone_fragment"]},
+	"abyssal_knight": {"model": "Hellwarden", "type": "demon", "scale": 1.0, "attack": ["Sword_Heavy_Combo", "Sword_Attack"], "speed": 3.0, "names": ["Abyssal Knight"], "walk": "Walk", "loot": ["brimstone_chip"]},
+	"lich_acolyte": {"avatar": "wizard", "tool": "skullstaff", "type": "humanoid", "scale": 1.0, "speed": 2.6, "names": ["Lich Acolyte", "Varn Deathspeaker"], "caster": true, "tint": 2,
+		"attack": ["Sword_Regular_A"], "spells": ["ember_bolt"], "loot": ["cultist_robe_scrap"]},
+	"circle_acolyte": {"avatar": "wizard", "tool": "skullstaff", "type": "humanoid", "scale": 1.15, "speed": 2.6, "names": ["Acolyte Veyne", "Acolyte Marr", "Acolyte Soth"], "named": true, "caster": true, "tint": 3,
+		"attack": ["Sword_Regular_A"], "spells": ["ember_bolt", "hellfire_ring"]},
+	"vaals_herald": {"model": "Hellwarden", "type": "demon", "scale": 1.6, "attack": ["Sword_Heavy_Combo", "Sword_Attack"], "speed": 3.0, "names": ["Vaal's Herald"], "named": true, "walk": "Walk", "spells": ["hellfire_ring"]},
+	"gravewarden": {"model": "Hellwarden", "type": "demon", "scale": 1.3, "attack": ["Sword_Heavy_Combo", "Sword_Attack"], "speed": 3.0, "names": ["The Gravewarden"], "boss": "gault", "adds": "fallen_wraith",
+		"walk": "Walk", "drop_one": ["gravewarden_plate", "catacomb_lantern"]},
+	"lord_varn": {"model": "Skeleton_B", "type": "undead", "scale": 1.85, "attack": ["Sword_Heavy_Combo", "Sword_Regular_C"], "speed": 3.0, "names": ["Lord Varn, the Hollow Lich"], "boss": "bone_king",
+		"walk": "Zombie_Walk_Fwd", "idle": "Zombie_Idle", "spells": ["hellfire_ring"], "drop_one": ["varns_crown", "lichbone_staff", "varn_signet", "deathwalker_boots"]},
 	"puglin": {"model": "Puglin", "type": "humanoid", "scale": 1.0, "attack": ["Punch_Jab", "Punch_Cross"], "speed": 2.0,
 		"names": ["Puglin Scavenger", "Puglin Snout", "Puglin Tusker"], "walk": "Walk", "loot": ["puglin_trinket"]},
 	"imp": {"model": "Imp", "type": "demon", "scale": 1.0, "attack": ["Sword_Regular_A", "Melee_Hook"], "speed": 1.8,
@@ -97,6 +157,9 @@ func _ready() -> void:
 		var r2 := RandomNumberGenerator.new(); r2.randomize()
 		ava.look = Avatar.random_look(r2, d["avatar"], "m")
 		if kind == "gault": ava.look["beard"] = "Hair_Beard"; ava.look["hair"] = "Hair_Balding"; ava.look["hair_color"] = Avatar.HAIR_COLORS[5]
+		if d.has("tint"):
+			for fam in ava.look["tint"]: ava.look["tint"][fam] = int(d["tint"])
+
 		model = ava
 	elif d.get("cage", false):
 		model = _cage_body()
@@ -206,9 +269,10 @@ func _boss_tick(delta: float) -> void:
 			# every 30 s he calls two diggers; any still standing 10 s later work him into a fury
 			if boss_t > 30.0:
 				boss_t = 0.0
-				_yell(["Diggers! To me!", "Put your backs into it, lads!", "Nobody leaves till the Hollow's open!"][rng.randi() % 3])
+				_yell(["Diggers! To me!", "Put your backs into it, lads!", "Nobody leaves till the Hollow's open!"][rng.randi() % 3] if kind == "gault" else "Rise, and serve!")
+
 				for i in 2:
-					var m := Monster.new(); m.setup("hollow_digger", level - 2)
+					var m := Monster.new(); m.setup(KINDS[kind].get("adds", "hollow_digger"), level - 2)
 					get_parent().add_child(m)
 					var p := Nav.nearest_open(global_position + Vector3(rng.randf_range(-6, 6), 0, rng.randf_range(-6, 6)))
 					p.y = WorldData.h(p.x, p.z); m.global_position = p; m.home = p; m.respawn_t = 1e9
@@ -216,6 +280,63 @@ func _boss_tick(delta: float) -> void:
 					adds.append(m)
 					if target: m.get_tree().create_timer(0.3).timeout.connect(func(): if is_instance_valid(m) and is_instance_valid(target): m.aggro(target))
 				get_tree().create_timer(10.0).timeout.connect(_gault_fury)
+		"brood":
+			# every 20 s a clutch of spiderlings hatches and runs at whoever is nearest
+			if boss_t > 20.0:
+				boss_t = 0.0
+				_yell("The eggs split open!")
+				for i in 3:
+					var m := Monster.new(); m.setup("rail_spider", level - 4)
+					m.uname = "Spiderling"
+					get_parent().add_child(m)
+					var p := Nav.nearest_open(global_position + Vector3(rng.randf_range(-7, 7), 0, rng.randf_range(-7, 7)))
+					p.y = WorldData.h(p.x, p.z); m.global_position = p; m.home = p; m.respawn_t = 1e9
+					m.model.scale *= 0.6
+					m.died.connect(func(_u): m.get_tree().create_timer(10.0).timeout.connect(m.queue_free))
+					var v := _random_foe()
+					if v: m.get_tree().create_timer(0.3).timeout.connect(func(): if is_instance_valid(m) and is_instance_valid(v): m.aggro(v))
+		"bell":
+			# the Great Bell: every 18 s he strikes it and everyone near him is knocked senseless for 2 s
+			if boss_t > 18.0:
+				boss_t = 0.0
+				_yell("Hear the bell!")
+				get_tree().call_group("fx", "play", "thunder_clap", self, self, global_position)
+				for u in enemies_near(global_position, 9.0): u.stunned = maxf(u.stunned, 2.0); u.take_damage(self, max_hp * 0.02, "holy", false, "spell")
+		"ashmaw":
+			if boss_t > 12.0 and not casting.is_empty() == false:
+				boss_t = 0.0
+		"mora":
+			# Soul Drain: she channels on someone for 6 s, taking their life; hit her hard enough and it breaks
+			if boss_phase == 3:
+				var v = get_meta("drain_on") if has_meta("drain_on") else null
+				var t_left: float = get_meta("drain_t") - get_process_delta_time()
+				set_meta("drain_t", t_left)
+				if v == null or not is_instance_valid(v) or v.dead or t_left <= 0.0 or hp < float(get_meta("drain_hp")) - max_hp * 0.06:
+					if t_left > 0.0 and hp < float(get_meta("drain_hp")) - max_hp * 0.06: _yell("No! My focus!")
+					boss_phase = 0; remove_meta("drain_on"); return
+				if Engine.get_physics_frames() % 30 == 0:
+					var dmg: float = v.max_hp * 0.05
+					v.take_damage(self, dmg, "shadow", false, "dot"); heal(self, dmg * 2.0)
+					get_tree().call_group("fx", "play", "shadow_rot", self, v, v.global_position)
+				return
+			if boss_t > 16.0:
+				boss_t = 0.0
+				var dv := _random_foe()
+				if dv:
+					boss_phase = 3; set_meta("drain_on", dv); set_meta("drain_t", 6.0); set_meta("drain_hp", hp)
+					stop_moving(); attacking = false
+					_yell("Your soul is ash, %s!" % dv.uname)
+		"rootmaw":
+
+			# Entangle: roots hold everyone near him; below half health he slams harder and faster
+			if boss_t > 15.0:
+				boss_t = 0.0
+				_yell("The roots remember!")
+				for u in enemies_near(global_position, 10.0):
+					u.add_aura("entangle", self, 4.0, {"root": true, "cage": true, "debuff": true})
+			if hp < max_hp * 0.5 and boss_phase == 0:
+				boss_phase = 2; add_aura("rootmaw_rage", self, 999.0, {"dmg_pct": 0.3}); _yell("You will feed the marsh!")
+
 		"bone_king":
 			# Bone Prison: a cage of bone closes on someone; break it in 6 seconds or it crushes them
 			if boss_t > 20.0 and threat.size() >= 1:
@@ -276,7 +397,8 @@ func _crown() -> void:
 func _think(delta: float) -> void:
 	if KINDS[kind].get("cage", false): attacking = false; return
 	if boss and in_combat and not dead: _boss_tick(delta)
-	if boss_phase == 1: return
+	if boss_phase == 1 or boss_phase == 3: return
+
 
 
 	if has_meta("taunted"):

@@ -18,6 +18,17 @@ func _ready() -> void:
 	var args: Dictionary = get_parent().args if "args" in get_parent() else {}
 	if args.has("weather"): set_state(args["weather"]); pinned = true
 	_make_rain()
+	# the Ash Slopes: ash drifts down all the time instead of rain, under a hazy sky
+	if WorldData.Z.get("ashfall", false):
+		pinned = true; target_cloud = 0.55; target_rain = 0.0; DayNight.cloud = 0.55; DayNight.rain = 0.0
+		var pm: ParticleProcessMaterial = rain_fx.process_material
+		pm.initial_velocity_min = 0.6; pm.initial_velocity_max = 1.2; pm.gravity = Vector3(0.3, -0.8, 0.1); pm.spread = 40.0
+		rain_fx.lifetime = 9.0; rain_fx.amount = 2500
+		var q := QuadMesh.new(); q.size = Vector2(0.06, 0.06)
+		var m := StandardMaterial3D.new(); m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED; m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		m.albedo_color = Color(0.75, 0.72, 0.68, 0.7); m.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED; q.material = m
+		rain_fx.draw_pass_1 = q
+		set_meta("ash", true)
 
 func set_state(s: String) -> void:
 	state = s
@@ -41,8 +52,9 @@ func _process(delta: float) -> void:
 	var cam := get_viewport().get_camera_3d()
 	if cam and rain_fx:
 		rain_fx.global_position = cam.global_position + Vector3(0, 6, 0) - cam.global_basis.z * 8.0
-		rain_fx.amount_ratio = DayNight.rain
-		rain_fx.emitting = DayNight.rain > 0.02
+		rain_fx.amount_ratio = DayNight.rain if not has_meta("ash") else 1.0
+		rain_fx.emitting = DayNight.rain > 0.02 or has_meta("ash")
+
 	if rain_snd:
 		rain_snd.volume_db = linear_to_db(maxf(DayNight.rain, 0.0001)) - 8.0
 		if DayNight.rain > 0.02 and not rain_snd.playing: rain_snd.play()

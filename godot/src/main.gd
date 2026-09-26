@@ -22,7 +22,7 @@ var exit_warned := {}
 static var travel := {}              # set before reloading into another zone: {"ch", "zone", "pos", "party"}
 
 const BUILDERS := {"village": "res://src/world/village.gd", "landmarks": "res://src/world/landmarks.gd", "water": "res://src/world/water.gd",
-	"vegetation": "res://src/world/vegetation.gd", "life": "res://src/world/life.gd", "camp": "res://src/world/camp.gd", "mine": "res://src/world/mine.gd"}
+	"vegetation": "res://src/world/vegetation.gd", "life": "res://src/world/life.gd", "camp": "res://src/world/camp.gd", "mine": "res://src/world/mine.gd", "marsh": "res://src/world/marsh.gd", "temple": "res://src/world/temple.gd", "highland": "res://src/world/highland.gd", "varn": "res://src/world/varn.gd"}
 
 func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
@@ -81,10 +81,17 @@ func _ready() -> void:
 		var rng := RandomNumberGenerator.new(); rng.seed = int(args.get("seed", "5"))
 		var ch := {"name": "Tester", "cls": cls, "level": int(args.get("level", "1")), "look": Avatar.random_look(rng, cls, args.get("sex", "m")), "zone": zone}
 		# tests can start further along: --done=ashvale marks the province's quests done
-		if args.get("done", "") == "ashvale":
+		# (or --done=mirewood: every quest given in that zone and the ones before it on the road)
+		var road := ["ashvale", "hollow", "mirewood", "ashslopes", "highlands", "varn"]
+		if road.has(args.get("done", "")):
+			var upto := road.find(args["done"])
 			var dq := []
 			for id in Quests.LIST:
-				if int(Quests.LIST[id]["level"]) <= 10 and not (Npcs.LIST.get(Quests.LIST[id]["giver"], {}).get("zone", "ashvale") != "ashvale"): dq.append(id)
+				var gz: String = Npcs.LIST.get(Quests.LIST[id]["giver"], {}).get("zone", "ashvale")
+				if road.find(gz) < 0 or road.find(gz) > upto: continue
+				if gz == "ashvale" and int(Quests.LIST[id]["level"]) > 10: continue
+				if Quests.LIST[id].get("kind", "") == "daily": continue
+				dq.append(id)
 			ch["done_quests"] = dq
 			ch["known"] = []
 			for t in Npcs.TRAINING[cls]:
@@ -98,6 +105,8 @@ func _ready() -> void:
 		if args.has("duel"): add_child(load("res://tools/duel.gd").new())
 		if args.has("chattest"): add_child(load("res://tools/chattest.gd").new())
 		if args.has("crafttest"): add_child(load("res://tools/crafttest.gd").new())
+		if args.has("zonetour"): add_child(load("res://tools/zonetour.gd").new())
+
 
 
 		if args.has("dbg"): add_child(load("res://tools/dbg.gd").new())

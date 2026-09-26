@@ -81,7 +81,9 @@ func _scatter() -> void:
 			if rng.randf() < maxf(f * 0.85, meadow_tree) and _free_ground(px, pz, 3.5):
 				var pine: bool = pz < -50.0 or maxf(absf(px), absf(pz)) > 100.0 or WorldData.Z.get("pines", false)
 				var kind: String
-				if pine and rng.randf() < 0.72: kind = "Pine_%d" % (1 + rng.randi() % 5)
+				if WorldData.Z.get("dead_trees", false) and rng.randf() < 0.6: kind = ["DeadTree_1", "DeadTree_3", "TwistedTree_1", "TwistedTree_4"][rng.randi() % 4]
+				elif pine and rng.randf() < 0.72: kind = "Pine_%d" % (1 + rng.randi() % 5)
+
 				elif rng.randf() < 0.03: kind = ["DeadTree_1", "DeadTree_3"][rng.randi() % 2]
 				else: kind = "CommonTree_%d" % (1 + rng.randi() % 5)
 				var s := rng.randf_range(0.85, 1.35) * (1.15 if f < 0.2 else 1.0)

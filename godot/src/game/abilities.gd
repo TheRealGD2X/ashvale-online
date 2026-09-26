@@ -90,6 +90,9 @@ const LIST := {
 
 	# ------------------------------------------------------------------ monsters
 	# ------------------------------------------------------------------ everyone
+	"summon_stag": {"name": "Highland Stag", "cls": "all", "level": 40, "school": "nature", "cost": 0, "cast": 1.5, "self": true, "ooc": true,
+		"kind": "mount", "anim": "cast", "fx": "", "icon": ["♞", Color(0.7, 0.55, 0.35)], "desc": "Summons your Highland Stag. Riding, you move 60% faster. Anything you do other than walk gets you off."},
+
 	"hearthstone": {"name": "Hearthstone", "cls": "all", "level": 1, "school": "arcane", "cost": 0, "cast": 10.0, "cd": 3600.0, "self": true,
 		"kind": "hearth", "anim": "cast", "fx": "blink", "icon": ["⌂", Color(0.4, 0.8, 1.0)],
 		"desc": "Returns you to your home inn after 10 seconds. Moving or being hit stops it."},
@@ -101,7 +104,13 @@ const LIST := {
 		"kind": "telegraph", "range": 20.0, "radius": 5.0, "dmg": [30, 6.0], "anim": "Sword_Attack", "fx": "tidal_slam", "icon": ["❄", Color(0.4, 0.7, 1.0)], "desc": ""},
 	"hellfire_ring": {"name": "Hellfire", "cls": "monster", "level": 1, "school": "fire", "cost": 0, "cd": 16.0, "cast": 2.5,
 		"kind": "telegraph", "self_center": true, "radius": 8.0, "dmg": [35, 7.0], "anim": "Sword_Heavy_Combo", "fx": "hellfire", "icon": ["🔥", Color(1, 0.3, 0.05)], "desc": ""},
-	"grub_eruption": {"name": "Eruption", "cls": "monster", "level": 1, "school": "nature", "cost": 0, "cast": 2.6, "gcd": false,
+	"arrow_shot": {"name": "Shoot", "cls": "monster", "level": 1, "school": "physical", "cost": 0, "cast": 1.6,
+		"kind": "spell", "range": 30.0, "dmg": [10, 3.2], "speed": 34.0, "anim": "Spell_Simple_Shoot", "fx": "arcane_missile", "icon": ["➶", Color(0.8, 0.7, 0.5)], "desc": ""},
+	"bog_bolt": {
+"name": "Bog Bolt", "cls": "monster", "level": 1, "school": "nature", "cost": 0, "cast": 2.2,
+		"kind": "spell", "range": 30.0, "dmg": [10, 3.0], "speed": 18.0, "anim": "Spell_Simple_Shoot", "fx": "ember_bolt", "icon": ["☄", Color(0.4, 0.8, 0.3)], "desc": ""},
+	"grub_eruption": {
+"name": "Eruption", "cls": "monster", "level": 1, "school": "nature", "cost": 0, "cast": 2.6, "gcd": false,
 		"kind": "telegraph", "radius": 4.5, "dmg": [30, 8.0], "range": 99.0, "anim": "", "fx": "", "icon": ["☄", Color(0.6, 0.5, 0.3)], "desc": ""},
 }
 

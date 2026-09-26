@@ -36,6 +36,15 @@ func _physics_process(delta: float) -> void:
 		report_t = 0.0
 		print("t=%4d L%d xp %d/%d gold %s hp %d/%d  done %d  active %s  task: %s  at (%d, %d)" % [int(t), p.level, p.xp, Rules.xp_need(p.level), Items.money(p.gold),
 			int(p.hp), int(p.max_hp), p.done_quests.size(), str(p.quests.keys()), brain.task, int(p.global_position.x), int(p.global_position.z)])
+		if p.quests.is_empty():
+			var why := []
+			for id in Quests.LIST:
+				var g: String = Quests.LIST[id]["giver"]
+				if Npcs.LIST.get(g, {}).get("zone", "ashvale") != WorldData.zone_id: continue
+				var st := p.quest_state(id)
+				if st == "done": continue
+				why.append("%s:%s%s%s%s" % [id, st, " skip" if brain.skip.has(id) else "", " unreach" if brain._unreachable(id) else "", " nonpc" if brain._npc(g) == null else ""])
+			print("   idle quests: ", why)
 	if t >= limit or p.done_quests.size() >= Quests.LIST.size() - 1:
 		print("QUESTTEST END t=%d level %d done %d/%d deaths %d gold %s" % [int(t), p.level, p.done_quests.size(), Quests.LIST.size(), deaths, Items.money(p.gold)])
 		print("done: ", p.done_quests)

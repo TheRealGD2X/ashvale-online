@@ -239,7 +239,39 @@ func _dress() -> void:
 
 func set_camera(c: OrbitCamera) -> void: cam = c
 
+# ------------------------------------------------------------------ riding
+
+var steed: CreatureBody
+
+func set_mounted(on: bool) -> void:
+	if on == has_meta("mounted"): return
+	if on:
+		set_meta("mounted", true)
+		steed = CreatureBody.new(); steed.model = "deer"; add_child(steed)
+		steed.scale = Vector3.ONE * 1.55; steed.rotation.y = yaw
+		if model: model.position.y = 0.95
+		get_tree().call_group("fx", "burst", global_position + Vector3(0, 1, 0), Color(0.7, 0.9, 0.5), 30, 3.0, 0.2, 0.8, 0.0)
+	else:
+		remove_meta("mounted")
+		if steed: steed.queue_free(); steed = null
+		if model: model.position.y = 0.0
+
+func toggle_mount() -> void:
+	if has_meta("mounted"): set_mounted(false); return
+	if not ("summon_stag" in known): _hud("error", "You don't have a mount yet"); return
+	var why := use("summon_stag", self)
+	if why != "": _hud("error", why)
+
 func _animate(v: float) -> void:
+	if has_meta("mounted") and model and steed:
+		steed.rotation.y = yaw
+		steed.play("Walk" if v > 0.3 else "Idle", clampf(v / 4.0, 0.7, 2.0))
+		if model.anim: model.play("Sitting_Idle")
+		return
+	_animate_person(v)
+
+
+func _animate_person(v: float) -> void:
 	if has_meta("sitting") and v < 0.3 and model and model.anim and busy_anim <= 0.0:
 		model.play("Sitting_Idle"); return
 	super._animate(v)
@@ -307,6 +339,7 @@ func _unhandled_input(e: InputEvent) -> void:
 		var k: int = e.physical_keycode
 		if k >= KEY_1 and k <= KEY_5: press_slot(k - KEY_1)
 		elif k == KEY_TAB: tab_target()
+		elif k == KEY_Z: toggle_mount()
 		elif k == KEY_ESCAPE and target: target = null; attacking = false; changed.emit(); get_viewport().set_input_as_handled()
 
 func press_slot(i: int) -> void:
@@ -667,6 +700,12 @@ func turn_in(id: String, choice := -1) -> bool:
 	var gets: int = q.get("items", []).size() + (1 if q.has("choice") else 0)
 	if free < gets: _hud("error", "Inventory is full"); return false
 	if q.has("choice") and (choice < 0 or choice >= q["choice"].size()): _hud("error", "Choose a reward first"); return false
+	if q.has("cost") and gold < int(q["cost"]): _hud("error", "You need %s" % Items.money(int(q["cost"]))); return false
+	if q.has("cost"): gold -= int(q["cost"])
+	if q.get("mount", false) and not ("summon_stag" in known):
+		known.append("summon_stag")
+		_hud("notice", "You can now ride your stag (Z).")
+
 	# take what the quest asked for
 	for o in q["obj"]:
 		if o["kind"] in ["collect", "gather"]: remove_item(o["item"], int(o["n"]))
@@ -757,6 +796,15 @@ func on_talk(npc: String) -> void:
 				quests[id]["have"][i] = 1; moved = true
 				if npc != ender_of(id): _progress_text(o, 1)
 				_check_done(id)
+			# once a day (Gentling: feed the stag on three different days)
+			if o["kind"] == "daily" and o["npc"] == npc and int(quests[id]["have"][i]) < int(o["n"]):
+				var today := Player.today()
+				if int(quests[id].get("day", -1)) != today:
+					quests[id]["day"] = today
+					quests[id]["have"][i] = int(quests[id]["have"][i]) + 1; moved = true
+					_progress_text(o, quests[id]["have"][i])
+					_check_done(id)
+				else: _hud("error", "Come back tomorrow")
 	if moved: quests_changed.emit()
 
 var _explore_t := 0.0
@@ -772,13 +820,23 @@ func _check_discovery() -> void:
 			_hud("banner", "Discovered: %s" % pl[0], WorldData.Z.get("name", ""))
 			gain_xp(int(20 + level * 12))
 
+## tests can pretend each minute is a new day
+## the day number for "once a day" things (with --fastdays a day lasts a minute, for tests)
+static func today() -> int:
+	if Main_fast_days(): return int(Time.get_ticks_msec() / 60000)
+	return int(Time.get_unix_time_from_system() / 86400.0)
+
+static func Main_fast_days() -> bool:
+	return "--fastdays" in OS.get_cmdline_user_args()
+
 func _check_explore() -> void:
+
 	_check_discovery()
 	for id in quests:
 		var q: Dictionary = Quests.LIST[id]
 		for i in q["obj"].size():
 			var o: Dictionary = q["obj"][i]
-			if o["kind"] == "explore" and int(quests[id]["have"][i]) < 1:
+			if o["kind"] == "explore" and int(quests[id]["have"][i]) < 1 and o.get("zone", Npcs.LIST.get(q["giver"], {}).get("zone", "ashvale")) == WorldData.zone_id:
 				var at := Vector2(o["at"][0], o["at"][1])
 				if Vector2(global_position.x, global_position.z).distance_to(at) < float(o.get("r", 10.0)):
 					quests[id]["have"][i] = 1

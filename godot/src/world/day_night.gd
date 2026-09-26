@@ -118,6 +118,13 @@ func _apply() -> void:
 	env.fog_density = 0.0015 + 0.004 * rain
 	env.fog_light_color = fog.lerp(Color(0.5, 0.55, 0.6) * (1.0 - night * 0.8), cloud * 0.6)
 	env.adjustment_saturation = 1.0 - 0.18 * cloud
+	# some zones have their own air (Mirewood's green marsh fog)
+	if WorldData.Z.has("fog"):
+		var zf: Color = WorldData.Z["fog"]
+		env.fog_light_color = env.fog_light_color.lerp(zf * (1.0 - night * 0.7), 0.6)
+		env.fog_density += 0.004
+		env.volumetric_fog_albedo = zf
+
 	env.volumetric_fog_albedo = fog.lerp(Color.WHITE, 0.5)
 	# mist gathers at dawn and in the evening
 	env.volumetric_fog_density = 0.003 + 0.012 * dusk + 0.004 * night + 0.01 * rain
