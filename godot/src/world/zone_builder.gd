@@ -143,3 +143,17 @@ func dark_door(p: Vector2, facing: float, m: StandardMaterial3D, w := 3.0, h := 
 	var q := MeshInstance3D.new(); var qm := QuadMesh.new(); qm.size = Vector2(w, h)
 	var bm := StandardMaterial3D.new(); bm.albedo_color = Color.BLACK; bm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED; qm.material = bm; q.mesh = qm
 	add_child(q); q.position = Vector3(p.x, ground(p) + h / 2.0, p.y); q.rotation.y = facing
+
+## timber-and-stone houses from the village kit: [[Vector2 centre, yaw, W, D, floors, "brick"|"plaster"], ...]
+## (yaw faces the front door; W and D in 2 m modules: 4, 6 or 8)
+func houses(list: Array) -> void:
+	var v: Node3D = load("res://src/world/village.gd").new()
+	v.town = false
+	add_child(v)
+	v.rng.seed = rng.seed + 3
+	for h in list: v.house(h[0], h[1], h[2], h[3], h[4], h[5])
+
+## yaw that makes something at c face the point at
+func facing(c: Vector2, at: Vector2) -> float:
+	return atan2(at.x - c.x, at.y - c.y)
+

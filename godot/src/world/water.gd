@@ -23,12 +23,17 @@ func _ready() -> void:
 	mat.set_shader_parameter("noise_fine", Terrain.noise_fine); mat.set_shader_parameter("noise_big", Terrain.noise_big)
 	mat.set_shader_parameter("world_mask", Terrain.mask_tex); mat.set_shader_parameter("half_size", WorldData.HALF)
 	pond.material_override = mat
+	# some zones have their own water: the sea, a lava lake, a frozen tarn
+	var wz: Dictionary = WorldData.Z.get("water", {})
+	for k in ["shallow", "mid", "deep"]:
+		if wz.has(k): mat.set_shader_parameter(k, wz[k])
+	if wz.has("glow"): mat.set_shader_parameter("glow", wz["glow"]); mat.set_shader_parameter("reflect_amount", 0.0)
 	pond.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	pond.layers = LAYER_WATER
 	pond.position = Vector3(WorldData.POND.x, WorldData.WATER_H, WorldData.POND.y)
 	add_child(pond)
 	_reflection()
-	_dress()
+	if WorldData.Z.get("water", {}).get("pads", true): _dress()
 
 # ------------------------------------------------------------------ mirrored reflection camera
 func _reflection() -> void:

@@ -116,7 +116,14 @@ func _warrior(t: Unit) -> void:
 	if _can("battle_shout", p) and not p.has_aura("battle_shout"): p.use("battle_shout", p); return
 	if _can("execute", t): p.use("execute", t); return
 	var near := p.enemies_near(p.global_position, 7.0).size()
+	if p.hp < p.max_hp * 0.3 and _can("shield_wall", p): p.use("shield_wall", p)
+	if p.hp < p.max_hp * 0.35 and _can("rallying_cry", p): p.use("rallying_cry", p)
+	if (near >= 2 or (t is Monster and (t.elite or t.boss))) and _can("recklessness", p): p.use("recklessness", p)
+	if leader and p.hp < p.max_hp * 0.6 and _can("shield_block", p): p.use("shield_block", p)
+	if near >= 2 and _can("cleaving_slam", t): p.use("cleaving_slam", t); return
+	if near >= 2 and _can("whirlwind", t): p.use("whirlwind", t); return
 	if near >= 2 and _can("thunder_clap", t): p.use("thunder_clap", t); return
+	if _can("mortal_strike", t): p.use("mortal_strike", t); return
 	if _can("rend", t) and not _has_my_aura(t, "rend") and t.hp > t.max_hp * 0.4: p.use("rend", t); return
 	if p.power >= 30 and _can("heroic_strike", t): p.use("heroic_strike", t); return
 	if t.hp < t.max_hp * 0.3 and _can("hamstring", t) and not _has_my_aura(t, "hamstring") and t is Monster and t.critter == false: p.use("hamstring", t); return
@@ -137,6 +144,15 @@ func _caster(t: Unit, nukes: Array, instant: String, armor: String) -> void:
 		var dest := p.global_position + away.normalized() * 10.0
 		if Nav.walkable(dest): p.move_to(dest); return
 	if p.is_moving() and d < 26.0: p.stop_moving()
+	if p.cls == "wizard":
+		if not p.has_aura("ice_barrier") and _can("ice_barrier", p) and fight_t < 2.0: p.use("ice_barrier", p); return
+		if p.power < p.max_power * 0.2 and _can("evocation", p): p.use("evocation", p); return
+		if (t is Monster and (t.elite or t.boss) or p.enemies_near(t.global_position, 6.0).size() >= 3):
+			if _can("arcane_power", p): p.use("arcane_power", p)
+			if _can("time_warp", p): p.use("time_warp", p)
+		if d < 7.0 and p.enemies_near(p.global_position, 8.0).size() >= 2 and _can("cone_of_cold", t): p.use("cone_of_cold", t); return
+		if p.enemies_near(t.global_position, 6.0).size() >= 2 and _can("meteor", t): p.use("meteor", t, t.global_position); return
+		if fight_t < 1.0 and d > 10.0 and _can("pyroblast", t): p.use("pyroblast", t); return
 	if _can(instant, t): p.use(instant, t); return
 	if p.power < p.max_power * 0.1:
 		# out of mana: hit it with the staff
@@ -155,15 +171,25 @@ func _cleric(t: Unit) -> void:
 	for m in (leader.party_members() if leader and is_instance_valid(leader) else p.party_members()):
 		if is_instance_valid(m) and not m.dead and m.hp / m.max_hp < lowest and p.global_position.distance_to(m.global_position) < 28.0:
 			lowest = m.hp / m.max_hp; heal_me = m
+	if p.hp < p.max_hp * 0.35 and _can("divine_protection", p): p.use("divine_protection", p)
+	var hurt := 0
+	for m2 in (leader.party_members() if leader and is_instance_valid(leader) else p.party_members()):
+		if is_instance_valid(m2) and not m2.dead and m2.hp < m2.max_hp * 0.7 and p.global_position.distance_to(m2.global_position) < 14.0: hurt += 1
+	if hurt >= 3 and _can("prayer_of_healing", p): p.use("prayer_of_healing", p); return
+	if heal_me.hp < heal_me.max_hp * 0.25 and _can("salvation", heal_me): p.use("salvation", heal_me); return
 	if heal_me.hp < heal_me.max_hp * 0.5:
 		if _can("ward_of_light", heal_me) and not heal_me.has_aura("weakened_soul"): p.use("ward_of_light", heal_me); return
+		if _can("radiance", heal_me) and not heal_me.has_aura("radiance"): p.use("radiance", heal_me); return
 		if _can("renewal", heal_me) and not heal_me.has_aura("renewal"): p.use("renewal", heal_me); return
+		if heal_me != p and _can("greater_mend", heal_me): p.use("greater_mend", heal_me); return
 		if _can("mend", heal_me): p.use("mend", heal_me); return
 	if not p.has_aura("inner_fire") and _can("inner_fire", p): p.use("inner_fire", p); return
 	if fight_t < 1.0 and _can("ward_of_light", p) and not p.has_aura("weakened_soul") and leader == null: p.use("ward_of_light", p); return
 	var d := p.distance_to(t)
 	if p.is_moving() and d < 26.0: p.stop_moving()
 	if _can("shadow_rot", t) and not _has_my_aura(t, "shadow_rot"): p.use("shadow_rot", t); return
+	if _can("holy_fire", t): p.use("holy_fire", t); return
+	if _can("mind_blast", t): p.use("mind_blast", t); return
 	if p.power < p.max_power * 0.15 or d < 2.5:
 		if not p.attacking: p.start_attack(t)
 		if d > p.swing_range(): p.chase(t, p.swing_range() * 0.8)
@@ -489,6 +515,12 @@ func _trainer_step() -> bool:
 		if not (t[0] in p.known) and p.level >= int(t[1]) and p.gold >= int(t[2]):
 			want = t[0]; cost = int(t[2]); break
 	if want == "": return false
+	# the class trainer in Ashvale, or a master of the orders in the bigger camps; none here: later
+	if _npc(tid) == null:
+		tid = ""
+		for n in p.get_tree().get_nodes_in_group("npcs"):
+			if n.visible and n.info.get("trainer", "") == "all": tid = n.npc_id
+		if tid == "": return false
 	if _talk_to(tid, "training"):
 		p.train(want, cost)
 		_fill_bar()
@@ -496,9 +528,9 @@ func _trainer_step() -> bool:
 
 ## put the best five on the bar
 func _fill_bar() -> void:
-	var order := {"warrior": ["heroic_strike", "charge", "rend", "thunder_clap", "execute", "battle_shout", "hamstring", "taunt"],
-		"wizard": ["fireball", "frostbolt", "fire_blast", "frost_nova", "arcane_missiles", "flamestrike", "blink", "frost_armor"],
-		"cleric": ["smite", "mend", "shadow_rot", "renewal", "ward_of_light", "holy_nova", "inner_fire"]}
+	var order := {"warrior": ["mortal_strike", "heroic_strike", "charge", "execute", "whirlwind", "rend", "thunder_clap", "battle_shout", "hamstring", "taunt"],
+		"wizard": ["fireball", "frostbolt", "fire_blast", "frost_nova", "pyroblast", "arcane_missiles", "flamestrike", "blink", "frost_armor"],
+		"cleric": ["smite", "mend", "shadow_rot", "renewal", "ward_of_light", "greater_mend", "holy_nova", "inner_fire"]}
 	var bar := []
 	for id in order[p.cls]:
 		if id in p.known and bar.size() < 5: bar.append(id)

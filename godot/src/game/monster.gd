@@ -97,6 +97,81 @@ const KINDS := {
 		"walk": "Walk", "drop_one": ["gravewarden_plate", "catacomb_lantern"]},
 	"lord_varn": {"model": "Skeleton_B", "type": "undead", "scale": 1.85, "attack": ["Sword_Heavy_Combo", "Sword_Regular_C"], "speed": 3.0, "names": ["Lord Varn, the Hollow Lich"], "boss": "bone_king",
 		"walk": "Zombie_Walk_Fwd", "idle": "Zombie_Idle", "spells": ["hellfire_ring"], "drop_one": ["varns_crown", "lichbone_staff", "varn_signet", "deathwalker_boots"]},
+	# ---- Saltmere Coast (40–46)
+	"tide_crab": {"creature": "crab", "type": "beast", "scale": 2.0, "speed": 1.8, "names": ["Tide Crab", "Shore Crab"], "loot": ["crab_shell"]},
+	"puglin_wrecker": {"model": "Puglin", "type": "humanoid", "scale": 1.15, "attack": ["Punch_Jab", "Punch_Cross"], "speed": 2.2, "names": ["Puglin Wrecker", "Wrecker Lookout"],
+		"walk": "Walk", "loot": ["wreckers_trinket"]},
+	"drowned_sailor": {"model": "Skeleton_A", "type": "undead", "scale": 1.05, "attack": ["Sword_Regular_A", "Sword_Regular_B"], "speed": 2.4, "names": ["Drowned Sailor", "Drowned Deckhand"],
+		"walk": "Zombie_Walk_Fwd", "idle": "Zombie_Idle", "loot": ["sea_glass"]},
+	"sea_serpent": {"creature": "serpent", "type": "beast", "scale": 2.6, "speed": 2.0, "names": ["Sea Serpent", "Coastcoil"], "loot": ["serpent_scale"]},
+	"tidecaller": {"model": "Tidebreaker", "type": "elemental", "scale": 0.95, "attack": ["Sword_Attack", "Sword_Regular_C"], "speed": 3.0, "names": ["Tidecaller"], "caster": true,
+		"spells": ["brine_bolt", "tidal_slam"], "loot": ["sea_glass"]},
+	"snapjaw": {"creature": "crab", "type": "beast", "scale": 3.4, "speed": 2.0, "names": ["Old Snapjaw"], "named": true, "loot": ["crab_shell"]},
+	"gutbag": {"model": "Puglin", "type": "humanoid", "scale": 1.65, "attack": ["Punch_Jab", "Punch_Cross"], "speed": 2.4, "names": ["Gutbag, the Wrecker King"], "named": true,
+		"walk": "Walk", "spells": ["ravage"], "loot": ["wreckers_trinket"]},
+	"bosun_grell": {"model": "Skeleton_A", "type": "undead", "scale": 1.55, "attack": ["Sword_Heavy_Combo", "Sword_Regular_C"], "speed": 2.8, "names": ["Bosun Grell"], "boss": "gault",
+		"adds": "drowned_sailor", "yell": ["All hands! All hands!", "Man the lines, you dogs!", "Up from the bilge, lads!"], "walk": "Zombie_Walk_Fwd", "idle": "Zombie_Idle",
+		"spells": ["tidal_slam"], "drop_one": ["bosuns_whistle", "barnacled_greaves", "saltstained_wraps"]},
+	"brine_mother": {"creature": "crab", "type": "beast", "scale": 4.4, "speed": 2.2, "names": ["The Brine Mother"], "boss": "brood", "hatch": ["tide_crab", "Brineling", 4],
+		"hatch_yell": "The brood spills out of the shallows!", "drop_one": ["brinemother_carapace", "pearl_of_the_deep", "tidewoven_mantle"]},
+	"admiral_vesk": {"model": "Skeleton_B", "type": "undead", "scale": 1.95, "attack": ["Sword_Heavy_Combo", "Sword_Regular_C"], "speed": 3.0, "names": ["Admiral Vesk, the Drowned"],
+		"boss": "bone_king", "walk": "Zombie_Walk_Fwd", "idle": "Zombie_Idle", "spells": ["tidal_slam"], "drop_one": ["vesks_cutlass", "drowned_admirals_coat", "coral_crown", "anchor_of_vesk"]},
+	# ---- Emberreach (46–52)
+	"magma_worm": {"creature": "magmaworm", "type": "elemental", "scale": 2.2, "speed": 1.8, "names": ["Magma Worm", "Cinder Crawler"], "aggro": 6.0, "loot": ["slag_lump"]},
+	"ember_drake": {"creature": "drake", "type": "dragonkin", "scale": 2.0, "speed": 1.6, "names": ["Ember Drake", "Ash Drake"], "loot": ["drake_scale"]},
+	"cinder_fiend": {"model": "Imp", "type": "demon", "scale": 1.25, "attack": ["Sword_Regular_A", "Melee_Hook"], "speed": 1.9, "names": ["Cinder Fiend", "Forge Imp"], "walk": "Walk",
+		"caster": true, "spells": ["ember_bolt"], "loot": ["brimstone_chip"]},
+	"obsidian_guard": {"model": "Hellwarden", "type": "elemental", "scale": 1.1, "attack": ["Sword_Heavy_Combo", "Sword_Attack"], "speed": 3.0, "names": ["Obsidian Guardian"], "walk": "Walk",
+		"loot": ["obsidian_shard"]},
+	"cinderhide": {"model": "Lycan", "type": "humanoid", "scale": 1.1, "attack": ["Zombie_Scratch", "Melee_Hook"], "speed": 2.3, "names": ["Cinderhide Ravager", "Cinderhide Howler"],
+		"walk": "Jog_Fwd", "spells": ["ravage"], "loot": ["charred_fang"]},
+	"slag_elemental": {"model": "Tidebreaker", "type": "elemental", "scale": 1.1, "attack": ["Sword_Attack", "Sword_Regular_C"], "speed": 3.0, "names": ["Slag Elemental"],
+		"spells": ["magma_spit"], "loot": ["slag_lump"]},
+	"pyreclaw": {"creature": "drake", "type": "dragonkin", "scale": 3.2, "speed": 1.8, "names": ["Pyreclaw"], "named": true, "spells": ["magma_spit"], "loot": ["drake_scale"]},
+	"the_smelter": {"model": "Hellwarden", "type": "elemental", "scale": 1.65, "attack": ["Sword_Heavy_Combo", "Sword_Attack"], "speed": 3.0, "names": ["The Smelter"], "named": true,
+		"walk": "Walk", "spells": ["hellfire_ring"], "loot": ["obsidian_shard"]},
+	"slagjaw": {"creature": "magmaworm", "type": "elemental", "scale": 4.6, "speed": 2.0, "names": ["Slagjaw"], "boss": "grub", "dive_yell": "The rock melts and heaves...",
+		"drop_one": ["slagjaw_tooth", "molten_core_band", "smeltwalker_boots"]},
+	"forgemaster_tharn": {"avatar": "warrior", "tool": "club", "type": "humanoid", "scale": 1.3, "speed": 2.6, "names": ["Forgemaster Tharn"], "boss": "bell", "bell_yell": "Feel the hammer!",
+		"attack": ["Sword_Regular_A", "Sword_Heavy_Combo"], "drop_one": ["tharns_forgehammer", "anvilplate_chest", "bellows_gloves"]},
+	"pyrelord_azhul": {"model": "Hellwarden", "type": "demon", "scale": 2.1, "attack": ["Sword_Heavy_Combo", "Sword_Attack"], "speed": 3.0, "names": ["Pyrelord Azhul"], "boss": "nova",
+		"nova": "pyre_nova", "nova_yell": ["Burn!", "The forge remembers its master!", "Into the fire!"], "walk": "Walk", "spells": ["magma_spit"],
+		"drop_one": ["azhuls_emberstaff", "crown_of_cinders", "pyrelord_pauldrons", "heart_of_the_forge"]},
+	# ---- The Pale Reach (52–57)
+	"frost_wolf": {"creature": "frostwolf", "type": "beast", "scale": 1.5, "speed": 2.0, "names": ["Frost Wolf", "Rimefang"], "loot": ["frost_fang"]},
+	"snow_bear": {"creature": "snowbear", "type": "beast", "scale": 1.45, "speed": 2.4, "names": ["Snow Bear", "Whitepelt"], "loot": ["frost_fang"]},
+	"mountain_ram": {"creature": "ram", "type": "beast", "scale": 1.3, "speed": 1.8, "names": ["Mountain Ram"], "passive": true, "loot": ["ram_horn"]},
+	"rimeborn": {"model": "Skeleton_B", "type": "undead", "scale": 1.1, "attack": ["Sword_Regular_B", "Sword_Regular_C"], "speed": 2.4, "names": ["Rimeborn Warrior", "Rimeborn Thane"],
+		"walk": "Zombie_Walk_Fwd", "idle": "Zombie_Idle", "loot": ["rime_crystal"]},
+	"ice_golem": {"model": "Tidebreaker", "type": "elemental", "scale": 1.15, "attack": ["Sword_Attack", "Sword_Regular_C"], "speed": 3.0, "names": ["Ice Golem"], "spells": ["tidal_slam"],
+		"loot": ["rime_crystal"]},
+	"snowmane": {"model": "Lycan", "type": "humanoid", "scale": 1.15, "attack": ["Zombie_Scratch", "Melee_Hook"], "speed": 2.3, "names": ["Snowmane Lycan", "Snowmane Howler"], "walk": "Jog_Fwd",
+		"spells": ["ravage"], "loot": ["frost_fang"]},
+	"rime_witch": {"avatar": "wizard", "tool": "crystalstaff", "type": "humanoid", "scale": 1.0, "speed": 2.6, "names": ["Rime Witch", "Frostbinder"], "caster": true, "tint": 1,
+		"attack": ["Sword_Regular_A"], "spells": ["frost_lance"], "loot": ["rime_crystal"]},
+	"old_whitefang": {"creature": "frostwolf", "type": "beast", "scale": 2.4, "speed": 2.2, "names": ["Old Whitefang"], "named": true, "spells": ["ravage"], "loot": ["frost_fang"]},
+	"ursoth": {"creature": "snowbear", "type": "beast", "scale": 3.4, "speed": 2.6, "names": ["Ursoth the Frostmaw"], "boss": "rootmaw", "roots_yell": "The ice holds you fast!",
+		"rage_yell": "RRRAAAWR!", "drop_one": ["frostmaw_hide", "ursoths_claw", "icebound_girdle"]},
+	"skadi": {"avatar": "wizard", "tool": "crystalstaff", "type": "humanoid", "scale": 1.2, "speed": 2.6, "names": ["Rime Witch Skadi"], "boss": "mora", "caster": true, "tint": 1,
+		"drain_yell": "Your warmth is mine, %s!", "attack": ["Sword_Regular_A"], "spells": ["frost_lance"], "drop_one": ["skadis_frostcall", "rimewoven_robe", "circlet_of_winter"]},
+	"hrimgar": {"model": "Skeleton_B", "type": "undead", "scale": 2.05, "attack": ["Sword_Heavy_Combo", "Sword_Regular_C"], "speed": 3.0, "names": ["Hrimgar, the Frozen King"],
+		"boss": "bone_king", "walk": "Zombie_Walk_Fwd", "idle": "Zombie_Idle", "spells": ["glacial_nova"],
+		"drop_one": ["hrimgars_crown", "frozen_kings_greatsword", "kingsfrost_legplates", "shard_of_eternal_winter"]},
+	# ---- Vaal's Scar (57–60)
+	"void_imp": {"model": "Imp", "type": "demon", "scale": 1.1, "attack": ["Sword_Regular_A", "Melee_Hook"], "speed": 1.9, "names": ["Void Imp", "Voidling"], "walk": "Walk",
+		"caster": true, "spells": ["void_bolt"], "loot": ["void_ichor"]},
+	"voidforged": {"model": "Hellwarden", "type": "demon", "scale": 1.1, "attack": ["Sword_Heavy_Combo", "Sword_Attack"], "speed": 3.0, "names": ["Voidforged Knight"], "walk": "Walk",
+		"loot": ["voidstone"]},
+	"soul_wraith": {"model": "Skeleton_B", "type": "undead", "scale": 1.1, "attack": ["Sword_Regular_B", "Sword_Regular_C"], "speed": 2.5, "names": ["Soul Wraith", "Scar Revenant"],
+		"walk": "Zombie_Walk_Fwd", "idle": "Zombie_Idle", "loot": ["void_ichor"]},
+	"void_horror": {"model": "Tidebreaker", "type": "demon", "scale": 1.25, "attack": ["Sword_Attack", "Sword_Regular_C"], "speed": 3.0, "names": ["Void Horror"], "spells": ["void_nova"],
+		"loot": ["voidstone"]},
+	"vaals_chosen": {"model": "Lycan", "type": "demon", "scale": 1.2, "attack": ["Zombie_Scratch", "Melee_Hook"], "speed": 2.4, "names": ["Vaal's Chosen"], "walk": "Jog_Fwd",
+		"spells": ["ravage"], "loot": ["voidstone"]},
+	"voidcaller": {"avatar": "wizard", "tool": "abyssstaff", "type": "humanoid", "scale": 1.0, "speed": 2.6, "names": ["Voidcaller", "Scar Cultist"], "caster": true, "tint": 3,
+		"attack": ["Sword_Regular_A"], "spells": ["void_bolt"], "loot": ["cultist_robe_scrap"]},
+	"doomherald_kess": {"model": "Hellwarden", "type": "demon", "scale": 1.75, "attack": ["Sword_Heavy_Combo", "Sword_Attack"], "speed": 3.0, "names": ["Doomherald Kess"], "named": true,
+		"walk": "Walk", "spells": ["hellfire_ring", "void_nova"], "loot": ["voidstone"]},
 	"puglin": {"model": "Puglin", "type": "humanoid", "scale": 1.0, "attack": ["Punch_Jab", "Punch_Cross"], "speed": 2.0,
 		"names": ["Puglin Scavenger", "Puglin Snout", "Puglin Tusker"], "walk": "Walk", "loot": ["puglin_trinket"]},
 	"imp": {"model": "Imp", "type": "demon", "scale": 1.0, "attack": ["Sword_Regular_A", "Melee_Hook"], "speed": 1.8,
@@ -264,12 +339,13 @@ func _boss_tick(delta: float) -> void:
 
 					casting.clear()
 					use("grub_eruption", v, v.global_position)
-					_yell("The ground heaves...")
+					_yell(KINDS[kind].get("dive_yell", "The ground heaves..."))
 		"gault":
 			# every 30 s he calls two diggers; any still standing 10 s later work him into a fury
 			if boss_t > 30.0:
 				boss_t = 0.0
-				_yell(["Diggers! To me!", "Put your backs into it, lads!", "Nobody leaves till the Hollow's open!"][rng.randi() % 3] if kind == "gault" else "Rise, and serve!")
+				var gy: Array = KINDS[kind].get("yell", ["Diggers! To me!", "Put your backs into it, lads!", "Nobody leaves till the Hollow's open!"] if kind == "gault" else ["Rise, and serve!"])
+				_yell(gy[rng.randi() % gy.size()])
 
 				for i in 2:
 					var m := Monster.new(); m.setup(KINDS[kind].get("adds", "hollow_digger"), level - 2)
@@ -284,10 +360,11 @@ func _boss_tick(delta: float) -> void:
 			# every 20 s a clutch of spiderlings hatches and runs at whoever is nearest
 			if boss_t > 20.0:
 				boss_t = 0.0
-				_yell("The eggs split open!")
-				for i in 3:
-					var m := Monster.new(); m.setup("rail_spider", level - 4)
-					m.uname = "Spiderling"
+				var hatch: Array = KINDS[kind].get("hatch", ["rail_spider", "Spiderling", 3])
+				_yell(KINDS[kind].get("hatch_yell", "The eggs split open!"))
+				for i in int(hatch[2]):
+					var m := Monster.new(); m.setup(hatch[0], level - 4)
+					m.uname = hatch[1]
 					get_parent().add_child(m)
 					var p := Nav.nearest_open(global_position + Vector3(rng.randf_range(-7, 7), 0, rng.randf_range(-7, 7)))
 					p.y = WorldData.h(p.x, p.z); m.global_position = p; m.home = p; m.respawn_t = 1e9
@@ -299,7 +376,7 @@ func _boss_tick(delta: float) -> void:
 			# the Great Bell: every 18 s he strikes it and everyone near him is knocked senseless for 2 s
 			if boss_t > 18.0:
 				boss_t = 0.0
-				_yell("Hear the bell!")
+				_yell(KINDS[kind].get("bell_yell", "Hear the bell!"))
 				get_tree().call_group("fx", "play", "thunder_clap", self, self, global_position)
 				for u in enemies_near(global_position, 9.0): u.stunned = maxf(u.stunned, 2.0); u.take_damage(self, max_hp * 0.02, "holy", false, "spell")
 		"ashmaw":
@@ -325,18 +402,25 @@ func _boss_tick(delta: float) -> void:
 				if dv:
 					boss_phase = 3; set_meta("drain_on", dv); set_meta("drain_t", 6.0); set_meta("drain_hp", hp)
 					stop_moving(); attacking = false
-					_yell("Your soul is ash, %s!" % dv.uname)
+					_yell(KINDS[kind].get("drain_yell", "Your soul is ash, %s!") % dv.uname)
 		"rootmaw":
 
 			# Entangle: roots hold everyone near him; below half health he slams harder and faster
 			if boss_t > 15.0:
 				boss_t = 0.0
-				_yell("The roots remember!")
+				_yell(KINDS[kind].get("roots_yell", "The roots remember!"))
 				for u in enemies_near(global_position, 10.0):
 					u.add_aura("entangle", self, 4.0, {"root": true, "cage": true, "debuff": true})
 			if hp < max_hp * 0.5 and boss_phase == 0:
-				boss_phase = 2; add_aura("rootmaw_rage", self, 999.0, {"dmg_pct": 0.3}); _yell("You will feed the marsh!")
+				boss_phase = 2; add_aura("rootmaw_rage", self, 999.0, {"dmg_pct": 0.3}); _yell(KINDS[kind].get("rage_yell", "You will feed the marsh!"))
 
+		"nova":
+			# every 15 s a ring of fire (or frost, or void) grows around him: get out of it before it goes off
+			if boss_t > 15.0 and casting.is_empty() and not threat.is_empty():
+				boss_t = 0.0
+				var ny: Array = KINDS[kind].get("nova_yell", ["Burn!"])
+				_yell(ny[rng.randi() % ny.size()])
+				stop_moving(); use(KINDS[kind].get("nova", "hellfire_ring"), self, global_position)
 		"bone_king":
 			# Bone Prison: a cage of bone closes on someone; break it in 6 seconds or it crushes them
 			if boss_t > 20.0 and threat.size() >= 1:
@@ -548,7 +632,7 @@ func _roll_loot() -> void:
 		if rng.randf() < green: loot.append(Items.roll(level, rng, 3 if elite and rng.randf() < 0.3 else 2))
 		if rng.randf() < 0.04: loot.append({"id": "minor_healing_potion", "n": 1})
 		# crafting materials: hides from beasts, cloth scraps from people
-		var tier := clampi(int(level / 10) + 1, 1, 6)
+		var tier := Crafting.tier_for_level(level)
 		if creature_type == "beast" and rng.randf() < 0.4: loot.append({"id": "hide_%d" % tier, "n": rng.randi_range(1, 2)})
 		if creature_type == "humanoid" and rng.randf() < 0.35: loot.append({"id": "linen_%d" % tier, "n": rng.randi_range(1, 3)})
 

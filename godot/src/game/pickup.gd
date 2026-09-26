@@ -58,6 +58,18 @@ func _ready() -> void:
 				var f := MeshInstance3D.new(); var fm := BoxMesh.new(); fm.size = Vector3(0.05, 0.4, 0.02)
 				var fc := StandardMaterial3D.new(); fc.albedo_color = [Color(0.8, 0.2, 0.15), Color(0.9, 0.8, 0.2), Color(0.2, 0.5, 0.8)][k]; fm.material = fc; f.mesh = fm
 				body.add_child(f); f.position = Vector3(0.12, 1.5 - k * 0.1, 0); f.rotation.z = 0.4 + k * 0.3
+		"driftwood":
+			var dw := StandardMaterial3D.new(); dw.albedo_color = Color(0.78, 0.74, 0.66); dw.roughness = 0.95
+			for k in 3:
+				var lg := MeshInstance3D.new(); var cm := CylinderMesh.new(); cm.top_radius = 0.07; cm.bottom_radius = 0.1; cm.height = 1.1 - k * 0.2; cm.material = dw; lg.mesh = cm
+				body.add_child(lg); lg.position = Vector3(0, 0.08 + k * 0.1, (k - 1) * 0.15); lg.rotation = Vector3(0, k * 0.7, PI / 2)
+		"rune":
+			var rs := StandardMaterial3D.new(); rs.albedo_color = Color(0.5, 0.52, 0.56)
+			var rk := MeshInstance3D.new(); var bm := BoxMesh.new(); bm.size = Vector3(0.4, 0.12, 0.3); bm.material = rs; rk.mesh = bm
+			body.add_child(rk); rk.position.y = 0.06; rk.rotation = Vector3(0.1, 0.4, 0.15)
+			var rg := StandardMaterial3D.new(); rg.albedo_color = Color(0.5, 0.8, 1.0); rg.emission_enabled = true; rg.emission = Color(0.4, 0.75, 1.0); rg.emission_energy_multiplier = 2.5
+			var glyph := MeshInstance3D.new(); var gm := BoxMesh.new(); gm.size = Vector3(0.22, 0.02, 0.05); gm.material = rg; glyph.mesh = gm
+			rk.add_child(glyph); glyph.position.y = 0.07
 		"grave":
 
 			var wreath := MeshInstance3D.new(); var tm := TorusMesh.new(); tm.inner_radius = 0.18; tm.outer_radius = 0.3

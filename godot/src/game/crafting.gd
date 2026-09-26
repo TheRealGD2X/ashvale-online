@@ -4,23 +4,30 @@ class_name Crafting
 ## tannery, linen into cloth at a loom), then craft gear and potions from recipes. Everything comes
 ## in tiers, one per zone band; the top tier sits just below raid loot.
 ##
-## Skills: Mining, Herbalism, Smithing, Leatherworking, Tailoring, Alchemy, each 1–300. A tier needs
+## Skills: Mining, Herbalism, Smithing, Leatherworking, Tailoring, Alchemy, each 1–400. A tier needs
 ## (tier - 1) × 50 skill; working at a tier near your level raises it. Better skill, better odds of a
 ## finer result: Normal, Good, Excellent (blue), Masterpiece (purple).
 
 const SKILLS := {"mining": "Mining", "herbalism": "Herbalism", "smithing": "Smithing", "leatherworking": "Leatherworking",
 	"tailoring": "Tailoring", "alchemy": "Alchemy"}
-const TIER_ILVL := [8, 16, 24, 34, 44, 56]
-const TIER_NAME := ["Copper", "Black Iron", "Bog Iron", "Ashsteel", "Highland Steel", "Starmetal"]
-const LEATHER_NAME := ["Rough", "Rugged", "Mire", "Cinder", "Highland", "Wyrm"]
-const CLOTH_NAME := ["Linen", "Wool", "Reedweave", "Ashsilk", "Frostweave", "Runecloth"]
-const HERB_NAME := ["Hearthleaf", "Cliffmoss", "Bogbell", "Emberroot", "Frostthistle", "Starbloom"]
+const TIERS := 8
+const MAX_SKILL := 400
+const TIER_ILVL := [8, 16, 24, 34, 44, 52, 60, 68]
+const TIER_NAME := ["Copper", "Black Iron", "Bog Iron", "Ashsteel", "Highland Steel", "Starmetal", "Brinesteel", "Voidsteel"]
+const LEATHER_NAME := ["Rough", "Rugged", "Mire", "Cinder", "Highland", "Wyrm", "Drakehide", "Rimehide"]
+const CLOTH_NAME := ["Linen", "Wool", "Reedweave", "Ashsilk", "Frostweave", "Runecloth", "Emberweave", "Voidweave"]
+const HERB_NAME := ["Hearthleaf", "Cliffmoss", "Bogbell", "Emberroot", "Frostthistle", "Starbloom", "Firebloom", "Voidlotus"]
+## the tier of hides and cloth a monster of this level drops (one tier per zone band)
+static func tier_for_level(level: int) -> int:
+	for t in range(TIERS, 0, -1):
+		if level >= [1, 10, 17, 23, 29, 35, 41, 51][t - 1]: return t
+	return 1
 const QUALITY_NAMES := ["Normal", "Good", "Excellent", "Masterpiece"]
 
 ## raw and refined materials, generated per tier: ore_1, bar_1, hide_1, leather_1, linen_1, cloth_1, herb_1
 static func materials() -> Dictionary:
 	var out := {}
-	for t in range(1, 7):
+	for t in range(1, TIERS + 1):
 		var i := t - 1
 		out["ore_%d" % t] = {"name": "%s Ore" % TIER_NAME[i], "q": 1, "stack": 20, "sell": 4 * t * t, "mat": "ore", "tier": t}
 		out["bar_%d" % t] = {"name": "%s Bar" % TIER_NAME[i], "q": 1, "stack": 20, "sell": 10 * t * t, "mat": "bar", "tier": t}
@@ -103,7 +110,7 @@ static func make(r: Array, tier: int, quality: int, rng: RandomNumberGenerator) 
 	var prefix: String = ["", "Fine ", "Excellent ", "Masterwork "][quality]
 	if spec.has("use"):
 		var heal := 60 + tier * 90 + quality * 30
-		var d0 := {"name": "%s%s" % [["Minor ", "", "Greater ", "Superior ", "Major ", "Grand "][tier - 1], r[1]], "q": 1, "use": spec["use"], "stack": 10,
+		var d0 := {"name": "%s%s" % [["Minor ", "", "Greater ", "Superior ", "Major ", "Grand ", "Mighty ", "Supreme "][tier - 1], r[1]], "q": 1, "use": spec["use"], "stack": 10,
 			"sell": 6 * tier * tier, "crafted": true}
 		if spec["use"] == "potion": d0["heal"] = heal
 		else: d0["mana_now"] = heal

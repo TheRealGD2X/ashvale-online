@@ -277,7 +277,7 @@ func _tick_swing(delta: float) -> void:
 	if not casting.is_empty() or stunned > 0.0: return
 	if distance_to(target) > swing_range(): return
 	if swing_t > 0.0: return
-	var spd: float = weapon["speed"] * (1.0 + _aura_sum("slow_attack")) / (1.0 + tmod("haste"))
+	var spd: float = weapon["speed"] * (1.0 + _aura_sum("slow_attack")) / (1.0 + tmod("haste") + _aura_sum("haste"))
 	swing_t = spd
 	var dmg: float = randf_range(weapon["min"], weapon["max"]) + attack_power() / 14.0 * weapon["speed"]
 	melee_hit(target, dmg, "white")
@@ -318,6 +318,8 @@ func gain_rage(n: float) -> void:
 ## deal damage to this unit; returns what actually got through (after shields)
 func take_damage(src: Unit, amount: float, school := "physical", crit := false, kind := "", threat_mult := 1.0) -> int:
 	if dead: return 0
+	# walls and wards: "dmg_taken" auras (Shield Wall -0.4) take a share off
+	amount *= clampf(1.0 + _aura_sum("dmg_taken"), 0.2, 3.0)
 	var dmg := int(round(maxf(1.0, amount)))
 	# shields absorb first
 	var absorbed := 0
@@ -461,7 +463,7 @@ func cast_time_of(id: String) -> float:
 	var ct := float(Abilities.LIST[id].get("cast", 0.0))
 	if ct <= 0.0: return 0.0
 	if has_aura("presence_of_mind"): return 0.0
-	return maxf(0.5, ct + tmod("cast_" + id))
+	return maxf(0.5, (ct + tmod("cast_" + id)) / (1.0 + _aura_sum("haste")))
 
 ## start using an ability; returns "" or the reason it failed
 func use(id: String, t: Unit = null, at := Vector3.INF) -> String:
@@ -617,8 +619,11 @@ func _effect2(id: String, t: Unit, at: Vector3) -> void:
 				if a.has("burn"): u.add_aura(id + "_burn", self, float(a["burn_dur"]), {"dot": Abilities.value(id, "burn", level) / (float(a["burn_dur"]) / 2.0), "school": school}, 2.0)
 		"buff":
 			var data := {}
-			for key in ["ap", "armor", "sp"]:
+			for key in ["ap", "armor", "sp", "max_hp", "mana_regen"]:
 				if a.has(key): data[key] = Abilities.value(id, key, level)
+			for key in ["dmg_pct", "dmg_taken", "haste"]:
+				if a.has(key): data[key] = float(a[key])
+			if a.has("heal_pct"): t.heal(self, t.max_hp * float(a["heal_pct"]))
 			t.add_aura(String(a.get("aura", id)), self, float(a["dur"]), data)
 		"debuff":
 			if t == null: return

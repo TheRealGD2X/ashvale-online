@@ -183,6 +183,124 @@ const LIST := {
 	"straw_bundle": {"name": "Bundle of Straw", "q": 0, "stack": 10, "sell": 4},
 	"rat_tail": {"name": "Rat Tail", "q": 0, "stack": 10, "sell": 3},
 	"chicken_egg": {"name": "Chicken Egg", "q": 1, "stack": 10, "sell": 2, "use": "food", "heal": 40},
+	# ---- Milestone 6 (levels 40–60)
+	"crab_shell": {"name": "Cracked Crab Shell", "q": 0, "stack": 10, "sell": 64},
+	"wreckers_trinket": {"name": "Wrecker's Trinket", "q": 0, "stack": 10, "sell": 72},
+	"sea_glass": {"name": "Sea Glass", "q": 0, "stack": 10, "sell": 70},
+	"serpent_scale": {"name": "Serpent Scale", "q": 0, "stack": 10, "sell": 78},
+	"slag_lump": {"name": "Lump of Slag", "q": 0, "stack": 10, "sell": 84},
+	"drake_scale": {"name": "Scorched Drake Scale", "q": 0, "stack": 10, "sell": 92},
+	"obsidian_shard": {"name": "Obsidian Chip", "q": 0, "stack": 10, "sell": 88},
+	"charred_fang": {"name": "Charred Fang", "q": 0, "stack": 10, "sell": 90},
+	"frost_fang": {"name": "Frozen Fang", "q": 0, "stack": 10, "sell": 104},
+	"rime_crystal": {"name": "Rime Crystal", "q": 0, "stack": 10, "sell": 110},
+	"ram_wool": {"name": "Tuft of Ram's Wool", "q": 0, "stack": 10, "sell": 96},
+	"void_ichor": {"name": "Void Residue", "q": 0, "stack": 10, "sell": 126},
+	"voidstone": {"name": "Voidstone Fragment", "q": 0, "stack": 10, "sell": 132},
+	"greaves_requisition": {"name": "Greaves' Requisition", "q": 1, "quest": true, "desc": "Salt fish, 40 barrels. Rivets, 12 crates. Patience, none left."},
+	"tender_claw": {"name": "Tender Claw", "q": 1, "quest": true, "stack": 20},
+	"lamp_oil_cask": {"name": "Cask of Lamp Oil", "q": 1, "quest": true, "stack": 20, "desc": "Stamped with a lighthouse."},
+	"dry_driftwood": {"name": "Dry Driftwood", "q": 1, "quest": true, "stack": 20, "desc": "Pale, light, and bone-dry."},
+	"drowned_locket": {"name": "Drowned Locket", "q": 1, "quest": true, "stack": 20, "desc": "There's a name inside."},
+	"marens_cargo_note": {"name": "Maren's Cargo Note", "q": 1, "quest": true, "desc": "Addressed to Forgemaster Brunna, Forgehold. Smells of fish."},
+	"obsidian_shard_q": {"name": "Obsidian Shard", "q": 1, "quest": true, "stack": 20, "desc": "Black glass with an edge like a razor."},
+	"perfect_drake_scale": {"name": "Perfect Drake Scale", "q": 1, "quest": true, "stack": 20, "desc": "Shoulder scale, unscorched."},
+	"brunnas_letter": {"name": "Brunna's Letter", "q": 1, "quest": true, "desc": "Addressed to Huntmaster Aldric, Wintermere. Warm to the touch."},
+	"thick_white_pelt": {"name": "Thick White Pelt", "q": 1, "quest": true, "stack": 20},
+	"ram_horn": {"name": "Ram's Horn", "q": 1, "quest": true, "stack": 20},
+	"rune_shard": {"name": "Rune Shard", "q": 1, "quest": true, "stack": 20, "desc": "A flake of stone with a blue rune on it, still glowing faintly."},
+	"aldrics_dispatch": {"name": "Aldric's Dispatch", "q": 1, "quest": true, "desc": "Addressed to High Marshal Corvin, the Last Watch."},
+	"void_ichor_q": {"name": "Vial of Void Ichor", "q": 1, "quest": true, "stack": 20, "desc": "Don't drink it."},
+	"salted_fish": {"name": "Salted Fish", "q": 1, "use": "food", "heal": 900, "stack": 20, "sell": 60, "desc": "Gullhaven's finest. Restores health while sitting."},
+	"gullhaven_chowder": {"name": "Gullhaven Chowder", "q": 1, "use": "food", "heal": 1300, "stack": 20, "sell": 90, "desc": "Cask's crab chowder. Restores health while sitting."},
+	"mountain_water": {"name": "Snowmelt Water", "q": 1, "use": "drink", "mana": 1100, "stack": 20, "sell": 60, "desc": "So cold it hurts your teeth."},
+	"major_healing_potion": {"name": "Major Healing Potion", "q": 1, "use": "potion", "heal": 1400, "stack": 5, "sell": 120},
+	"netmenders_gloves": {"name": "Netmender's Gloves", "q": 2, "slot": "hands", "ilvl": 42, "st": "int spi", "armor_type": "cloth", "bind": "quest"},
+	"saltwind_cord": {"name": "Saltwind Cord", "q": 2, "slot": "waist", "ilvl": 42, "st": "int sta", "armor_type": "cloth", "bind": "quest"},
+	"harbor_watch_girdle": {"name": "Harbour Watch Girdle", "q": 2, "slot": "waist", "ilvl": 43, "st": "str sta", "armor_type": "plate", "bind": "quest"},
+	"keepers_lantern": {"name": "Keeper's Lantern", "q": 2, "slot": "trinket1", "ilvl": 43, "st": "int spi", "bind": "quest"},
+	"tobiahs_oilskin": {"name": "Tobiah's Oilskin", "q": 2, "slot": "chest", "ilvl": 43, "st": "sta int", "armor_type": "cloth", "bind": "quest"},
+	"lamplighters_rod": {"name": "Lamplighter's Rod", "q": 2, "slot": "main_hand", "ilvl": 43, "st": "int spi", "wtype": "wand", "bind": "quest"},
+	"merrows_bell": {"name": "The Merrow's Bell", "q": 2, "slot": "neck", "ilvl": 44, "st": "sta spi", "bind": "quest"},
+	"ioness_prayer_shawl": {"name": "Ione's Prayer Shawl", "q": 2, "slot": "shoulders", "ilvl": 44, "st": "spi int", "armor_type": "cloth", "bind": "quest"},
+	"saltstone_signet": {"name": "Saltstone Signet", "q": 2, "slot": "finger1", "ilvl": 44, "st": "str sta", "bind": "quest"},
+	"tidecallers_mantle": {"name": "Tidecaller's Mantle", "q": 2, "slot": "shoulders", "ilvl": 45, "st": "int sta", "armor_type": "cloth", "bind": "quest"},
+	"brinewarden_helm": {"name": "Brinewarden Helm", "q": 2, "slot": "head", "ilvl": 45, "st": "str sta", "armor_type": "plate", "bind": "quest"},
+	"coral_band": {"name": "Coral Band", "q": 2, "slot": "finger1", "ilvl": 45, "st": "int spi", "bind": "quest"},
+	"snapjaw_shell_buckler": {"name": "Snapjaw Shell Pauldrons", "q": 3, "slot": "shoulders", "ilvl": 46, "st": "sta str", "armor_type": "plate", "bind": "quest"},
+	"wrecker_kings_cleaver": {"name": "Wrecker King's Cleaver", "q": 2, "slot": "main_hand", "ilvl": 46, "st": "str sta", "wtype": "axe", "bind": "quest", "model": "axe"},
+	"gutbags_crown_bell": {"name": "Gutbag's Bell-Crown", "q": 2, "slot": "head", "ilvl": 46, "st": "int sta", "armor_type": "cloth", "bind": "quest", "desc": "It still rings when you nod."},
+	"vesks_cutlass_q": {"name": "Tidebreaker Cutlass", "q": 3, "slot": "main_hand", "ilvl": 48, "st": "str sta", "wtype": "sword", "bind": "quest", "model": "curved"},
+	"admirals_greatcoat": {"name": "Admiral's Greatcoat", "q": 3, "slot": "chest", "ilvl": 48, "st": "int spi sta", "armor_type": "cloth", "bind": "quest"},
+	"tidebound_signet": {"name": "Tidebound Signet", "q": 3, "slot": "finger1", "ilvl": 48, "st": "sta str int", "bind": "quest"},
+	"glassedge_blade": {"name": "Glassedge Blade", "q": 2, "slot": "main_hand", "ilvl": 49, "st": "str sta", "wtype": "sword", "bind": "quest", "model": "serrated"},
+	"obsidian_focus": {"name": "Obsidian Focus", "q": 2, "slot": "trinket1", "ilvl": 49, "st": "int spi", "bind": "quest"},
+	"blackglass_legguards": {"name": "Blackglass Legguards", "q": 2, "slot": "legs", "ilvl": 49, "st": "str sta", "armor_type": "plate", "bind": "quest"},
+	"smelters_gauntlets": {"name": "Smelter's Gauntlets", "q": 2, "slot": "hands", "ilvl": 50, "st": "str sta", "armor_type": "plate", "bind": "quest"},
+	"furnaceheart_band": {"name": "Furnaceheart Band", "q": 2, "slot": "finger1", "ilvl": 50, "st": "int sta", "bind": "quest"},
+	"ashworks_cloak": {"name": "Ashworks Cloak", "q": 2, "slot": "back", "ilvl": 50, "st": "sta spi", "bind": "quest"},
+	"drakescale_vest": {"name": "Drakescale Vest", "q": 2, "slot": "chest", "ilvl": 50, "st": "sta str", "armor_type": "plate", "bind": "quest"},
+	"drakehunters_boots": {"name": "Drakehunter's Treads", "q": 2, "slot": "feet", "ilvl": 50, "st": "int spi", "armor_type": "cloth", "bind": "quest"},
+	"roostkeepers_charm": {"name": "Roostkeeper's Charm", "q": 2, "slot": "neck", "ilvl": 50, "st": "str sta", "bind": "quest"},
+	"ketchs_longbow_charm": {"name": "Ketch's Bowstring", "q": 3, "slot": "trinket1", "ilvl": 52, "st": "str sta", "bind": "quest", "desc": "Eleven years of hunting, wound round your wrist."},
+	"wardens_emberstave": {"name": "Warden's Emberstave", "q": 2, "slot": "main_hand", "ilvl": 51, "st": "int spi", "wtype": "staff", "bind": "quest", "model": "emberstaff"},
+	"slagforged_pauldrons": {"name": "Slagforged Pauldrons", "q": 2, "slot": "shoulders", "ilvl": 51, "st": "str sta", "armor_type": "plate", "bind": "quest"},
+	"cinderweave_wraps": {"name": "Cinderweave Wraps", "q": 2, "slot": "wrist", "ilvl": 51, "st": "int sta", "armor_type": "cloth", "bind": "quest"},
+	"heart_of_azhul_q": {"name": "Cooling Ember of Azhul", "q": 3, "slot": "trinket1", "ilvl": 54, "st": "int spi sta", "bind": "quest"},
+	"tharns_last_work": {"name": "Tharn's Last Work", "q": 3, "slot": "main_hand", "ilvl": 54, "st": "str sta", "wtype": "mace", "bind": "quest", "model": "club", "desc": "The last thing Tharn made before the mountain took him. It's perfect."},
+	"emberheart_signet": {"name": "Emberheart Signet", "q": 3, "slot": "finger1", "ilvl": 54, "st": "str sta int", "bind": "quest"},
+	"whitepelt_hood_cloak": {"name": "Whitepelt Cloak", "q": 2, "slot": "back", "ilvl": 54, "st": "sta str", "bind": "quest"},
+	"tovess_mittens": {"name": "Tove's Mittens", "q": 2, "slot": "hands", "ilvl": 54, "st": "int spi", "armor_type": "cloth", "bind": "quest", "desc": "Knitted with love and a lot of wool."},
+	"fur_lined_boots": {"name": "Fur-Lined Sabatons", "q": 2, "slot": "feet", "ilvl": 54, "st": "sta str", "armor_type": "plate", "bind": "quest"},
+	"runescribes_circlet": {"name": "Runescribe's Circlet", "q": 2, "slot": "head", "ilvl": 55, "st": "int spi", "armor_type": "cloth", "bind": "quest"},
+	"iceward_girdle": {"name": "Iceward Girdle", "q": 2, "slot": "waist", "ilvl": 55, "st": "str sta", "armor_type": "plate", "bind": "quest"},
+	"barrow_kings_ring": {"name": "Barrow-King's Ring", "q": 2, "slot": "finger1", "ilvl": 55, "st": "sta int", "bind": "quest"},
+	"sigruns_ember_charm": {"name": "Sigrun's Ember Charm", "q": 2, "slot": "neck", "ilvl": 56, "st": "spi int", "bind": "quest"},
+	"frostbinder_robe": {"name": "Frostbinder Robe", "q": 2, "slot": "chest", "ilvl": 56, "st": "int sta", "armor_type": "cloth", "bind": "quest"},
+	"wintersteel_legplates": {"name": "Wintersteel Legplates", "q": 2, "slot": "legs", "ilvl": 56, "st": "str sta", "armor_type": "plate", "bind": "quest"},
+	"whitefang_mantle": {"name": "Whitefang Mantle", "q": 3, "slot": "shoulders", "ilvl": 57, "st": "str sta", "armor_type": "plate", "bind": "quest"},
+	"crown_of_hrimgar_q": {"name": "Circlet of the Reach", "q": 3, "slot": "head", "ilvl": 59, "st": "str sta", "armor_type": "plate", "bind": "quest"},
+	"frostspire_greatstaff": {"name": "Frostspire Greatstaff", "q": 3, "slot": "main_hand", "ilvl": 59, "st": "int spi sta", "wtype": "staff", "bind": "quest", "model": "moon"},
+	"winterheart_pendant": {"name": "Winterheart Pendant", "q": 3, "slot": "neck", "ilvl": 59, "st": "int spi sta", "bind": "quest"},
+	"watchguard_plate": {"name": "Watchguard Breastplate", "q": 2, "slot": "chest", "ilvl": 59, "st": "str sta", "armor_type": "plate", "bind": "quest"},
+	"voidwarded_robe": {"name": "Voidwarded Robe", "q": 2, "slot": "chest", "ilvl": 59, "st": "int spi", "armor_type": "cloth", "bind": "quest"},
+	"last_watch_signet": {"name": "Last Watch Signet", "q": 2, "slot": "finger1", "ilvl": 59, "st": "str sta", "bind": "quest"},
+	"seers_voidglass": {"name": "Seer's Voidglass", "q": 2, "slot": "trinket1", "ilvl": 60, "st": "int spi", "bind": "quest"},
+	"horrorbane_gauntlets": {"name": "Horrorbane Gauntlets", "q": 2, "slot": "hands", "ilvl": 60, "st": "str sta", "armor_type": "plate", "bind": "quest"},
+	"unmade_cloak": {"name": "Cloak of the Unmade", "q": 2, "slot": "back", "ilvl": 60, "st": "sta int", "bind": "quest"},
+	"heralds_bane": {"name": "Herald's Bane", "q": 3, "slot": "main_hand", "ilvl": 62, "st": "str sta", "wtype": "sword", "bind": "quest", "model": "abyssblade"},
+	"kesss_voidmantle": {"name": "Kess's Voidmantle", "q": 3, "slot": "shoulders", "ilvl": 62, "st": "int spi sta", "armor_type": "cloth", "bind": "quest"},
+	"crown_breaker_band": {"name": "Crown-Breaker Band", "q": 3, "slot": "finger1", "ilvl": 62, "st": "str sta int", "bind": "quest"},
+	"bosuns_whistle": {"name": "Bosun's Whistle", "q": 3, "slot": "trinket1", "ilvl": 47, "st": "sta spi", "bind": "bop"},
+	"barnacled_greaves": {"name": "Barnacled Greaves", "q": 3, "slot": "legs", "ilvl": 47, "st": "str sta", "armor_type": "plate", "bind": "bop"},
+	"saltstained_wraps": {"name": "Saltstained Wraps", "q": 3, "slot": "wrist", "ilvl": 47, "st": "int spi", "armor_type": "cloth", "bind": "bop"},
+	"brinemother_carapace": {"name": "Brine Mother's Carapace", "q": 3, "slot": "chest", "ilvl": 48, "st": "sta str", "armor_type": "plate", "bind": "bop"},
+	"pearl_of_the_deep": {"name": "Pearl of the Deep", "q": 3, "slot": "neck", "ilvl": 48, "st": "int spi", "bind": "bop"},
+	"tidewoven_mantle": {"name": "Tidewoven Mantle", "q": 3, "slot": "shoulders", "ilvl": 48, "st": "int sta", "armor_type": "cloth", "bind": "bop"},
+	"vesks_cutlass": {"name": "Vesk's Cutlass", "q": 3, "slot": "main_hand", "ilvl": 50, "st": "str sta", "wtype": "sword", "bind": "bop", "model": "curved"},
+	"drowned_admirals_coat": {"name": "Drowned Admiral's Coat", "q": 3, "slot": "chest", "ilvl": 50, "st": "int spi sta", "armor_type": "cloth", "bind": "bop"},
+	"coral_crown": {"name": "Coral Crown", "q": 3, "slot": "head", "ilvl": 50, "st": "str sta", "armor_type": "plate", "bind": "bop"},
+	"anchor_of_vesk": {"name": "Anchor of Vesk", "q": 3, "slot": "main_hand", "ilvl": 50, "st": "str sta", "wtype": "mace", "bind": "bop", "model": "worldbreaker"},
+	"slagjaw_tooth": {"name": "Slagjaw's Tooth", "q": 3, "slot": "main_hand", "ilvl": 53, "st": "int sta", "wtype": "dagger", "bind": "bop", "model": "fang"},
+	"molten_core_band": {"name": "Molten Core Band", "q": 3, "slot": "finger1", "ilvl": 53, "st": "str sta", "bind": "bop"},
+	"smeltwalker_boots": {"name": "Smeltwalker Boots", "q": 3, "slot": "feet", "ilvl": 53, "st": "int spi", "armor_type": "cloth", "bind": "bop"},
+	"tharns_forgehammer": {"name": "Tharn's Forgehammer", "q": 3, "slot": "main_hand", "ilvl": 55, "st": "str sta", "wtype": "mace", "bind": "bop", "model": "club"},
+	"anvilplate_chest": {"name": "Anvilplate Chestguard", "q": 3, "slot": "chest", "ilvl": 55, "st": "str sta", "armor_type": "plate", "bind": "bop"},
+	"bellows_gloves": {"name": "Bellows-Worker's Gloves", "q": 3, "slot": "hands", "ilvl": 55, "st": "int spi", "armor_type": "cloth", "bind": "bop"},
+	"azhuls_emberstaff": {"name": "Azhul's Emberstaff", "q": 3, "slot": "main_hand", "ilvl": 56, "st": "int spi sta", "wtype": "staff", "bind": "bop", "model": "emberstaff"},
+	"crown_of_cinders": {"name": "Crown of Cinders", "q": 3, "slot": "head", "ilvl": 56, "st": "str sta", "armor_type": "plate", "bind": "bop"},
+	"pyrelord_pauldrons": {"name": "Pyrelord Pauldrons", "q": 3, "slot": "shoulders", "ilvl": 56, "st": "str sta", "armor_type": "plate", "bind": "bop"},
+	"heart_of_the_forge": {"name": "Heart of the Forge", "q": 3, "slot": "trinket1", "ilvl": 56, "st": "int spi sta", "bind": "bop"},
+	"frostmaw_hide": {"name": "Frostmaw Hide", "q": 3, "slot": "back", "ilvl": 58, "st": "sta str", "bind": "bop"},
+	"ursoths_claw": {"name": "Ursoth's Claw", "q": 3, "slot": "main_hand", "ilvl": 58, "st": "str sta", "wtype": "axe", "bind": "bop", "model": "greataxe"},
+	"icebound_girdle": {"name": "Icebound Girdle", "q": 3, "slot": "waist", "ilvl": 58, "st": "int spi", "armor_type": "cloth", "bind": "bop"},
+	"skadis_frostcall": {"name": "Skadi's Frostcall", "q": 3, "slot": "main_hand", "ilvl": 60, "st": "int spi", "wtype": "wand", "bind": "bop"},
+	"rimewoven_robe": {"name": "Rimewoven Robe", "q": 3, "slot": "chest", "ilvl": 60, "st": "int spi sta", "armor_type": "cloth", "bind": "bop"},
+	"circlet_of_winter": {"name": "Circlet of Winter", "q": 3, "slot": "head", "ilvl": 60, "st": "int spi", "armor_type": "cloth", "bind": "bop"},
+	"hrimgars_crown": {"name": "Hrimgar's Crown", "q": 3, "slot": "head", "ilvl": 61, "st": "str sta", "armor_type": "plate", "bind": "bop"},
+	"frozen_kings_greatsword": {"name": "Frozen King's Greatsword", "q": 3, "slot": "main_hand", "ilvl": 61, "st": "str sta", "wtype": "sword", "bind": "bop", "model": "dragonblade"},
+	"kingsfrost_legplates": {"name": "Kingsfrost Legplates", "q": 3, "slot": "legs", "ilvl": 61, "st": "str sta", "armor_type": "plate", "bind": "bop"},
+	"shard_of_eternal_winter": {"name": "Shard of Eternal Winter", "q": 3, "slot": "trinket1", "ilvl": 61, "st": "int spi sta", "bind": "bop"},
 }
 
 ## the starting kit for each class (equipped, then a little food in the bag)
@@ -198,6 +316,7 @@ static func get_def(it: Dictionary) -> Dictionary:
 	if _mats.is_empty(): _mats = Crafting.materials()
 	var id: String = it.get("id", "")
 	var base: Dictionary = LIST.get(id, _mats.get(id, {}))
+	if base.has("st"): base = _expand(id, base)
 	if it.has("rolled"):
 		var d := base.duplicate(true)
 		for k in it["rolled"]: d[k] = it["rolled"][k]
@@ -221,6 +340,58 @@ static func req_level(d: Dictionary) -> int:
 static func color(d: Dictionary) -> Color:
 	return QUALITY[clampi(int(d.get("q", 1)), 0, 5)]["color"]
 
+static func def(id: String) -> Dictionary:
+	return get_def({"id": id})
+
+## Compact item specs: {"name", "q", "slot", "armor_type" or "wtype", "ilvl", "st": "str sta"} — the
+## stats it leans on. Armour, stat amounts, weapon damage, spell power, the look and the sell price
+## are worked out from the item level, quality and slot the first time the item is asked for.
+static var _gen := {}
+const SLOT_BUDGET := {"chest": 1.0, "legs": 1.0, "head": 1.0, "shoulders": 0.8, "hands": 0.75, "feet": 0.75, "waist": 0.7, "wrist": 0.6,
+	"back": 0.6, "finger": 0.7, "neck": 0.7, "trinket": 0.75, "main_hand": 0.75, "off_hand": 0.6}
+const SLOT_LOOK := {"chest": ["Body_Armor", "Body"], "legs": ["Legs", "Legs"], "head": ["Head_Armet", ""], "hands": ["Arms", "Arms"], "feet": ["Feet", "Feet"],
+	"shoulders": ["Acc_Pauldron_Round", "Acc_Pauldron"]}
+const WTYPE := {"sword": [2.6, "long", 1.0], "axe": [2.7, "greataxe", 1.0], "mace": [2.6, "club", 1.0], "staff": [3.0, "crystalstaff", 1.3],
+	"wand": [1.8, "wand", 0.9], "dagger": [1.8, "dagger", 0.95]}
+
+static func _expand(id: String, s: Dictionary) -> Dictionary:
+	if _gen.has(id): return _gen[id]
+	var d := s.duplicate(true); d.erase("st")
+	var il := int(d.get("ilvl", 40)); var q := int(d.get("q", 2))
+	var slot := slot_of(d)
+	var qm: float = {2: 1.0, 3: 1.45, 4: 1.85}.get(q, 0.8)
+	var budget: float = il * 0.62 * qm * float(SLOT_BUDGET.get(slot, 0.75))
+	var keys := String(s["st"]).split(" ", false)
+	var wt: String = d.get("wtype", "")
+	if wt == "staff": budget *= 1.7
+	var stats := {}
+	var wsum := 0.0
+	for i in keys.size(): wsum += 1.25 if i == 0 else 1.0
+	for i in keys.size():
+		if keys[i] == "sp": continue
+		stats[keys[i]] = maxi(1, int(round(budget * (1.25 if i == 0 else 1.0) / wsum)))
+	if not stats.is_empty(): d["stats"] = stats
+	if "sp" in keys or wt in ["staff", "wand"]: d["sp"] = int(il * 0.45 * qm * (1.4 if wt == "staff" else 0.8))
+	if d.has("armor_type") and not d.has("armor"):
+		var at: String = d["armor_type"]
+		d["armor"] = int(ARMOR_PER[at] * float(SLOT_ARMOR.get(slot, 0.5)) * (1.0 + il * 0.35) * {2: 2.2, 3: 2.6, 4: 3.0}.get(q, 2.0))
+		if SLOT_LOOK.has(slot) and not d.has("look"):
+			var fam: String = LOOK_FAMILY[at]
+			var part: String = SLOT_LOOK[slot][0] if fam == "Knight" else SLOT_LOOK[slot][1]
+			if part != "": d["look"] = ["%s_%s" % [fam, part], fam, 3 if q >= 3 else 2]
+			if fam == "Wizard" and slot == "shoulders": d["look"] = ["Noble_Acc_Pauldron", "Noble", 3 if q >= 3 else 2]
+			if fam == "Knight" and slot == "head" and q >= 4: d["look"] = ["Knight_Head_Horns", "Knight", 3]
+			if fam == "Knight" and slot == "shoulders" and q >= 3: d["look"] = ["Knight_Acc_Pauldron_Spike", "Knight", 3]
+	if wt != "" and not d.has("weapon"):
+		var w: Array = WTYPE[wt]
+		var dps: float = (1.5 + 0.55 * il) * float(w[2]) * {2: 1.0, 3: 1.12, 4: 1.25}.get(q, 1.0)
+		var spd: float = w[0]
+		d["weapon"] = [int(dps * spd * 0.75), int(ceil(dps * spd * 1.25)), spd]
+		if not d.has("model"): d["model"] = w[1]
+	if not d.has("sell"): d["sell"] = int(il * il * 1.6 * {2: 1.4, 3: 2.2, 4: 3.0}.get(q, 1.0))
+	_gen[id] = d
+	return d
+
 ## a random uncommon (green) drop for a monster of this level: a base piece with an affix
 const BASES := [
 	["chest", "cloth", "Robe", ["Wizard_Body", "Wizard"]], ["legs", "cloth", "Leggings", ["Wizard_Legs", "Wizard"]],
@@ -237,7 +408,7 @@ const PREFIX := ["Tarnished", "Sturdy", "Warden's", "Hedge-Knight's", "Pilgrim's
 const AFFIX := {"of the Bear": {"sta": 0.5, "str": 0.5}, "of the Owl": {"int": 0.5, "spi": 0.5}, "of the Eagle": {"sta": 0.5, "int": 0.5},
 	"of the Tiger": {"str": 0.5, "agi": 0.5}, "of the Whale": {"sta": 0.5, "spi": 0.5}, "of Strength": {"str": 1.0}, "of Intellect": {"int": 1.0},
 	"of Stamina": {"sta": 1.0}, "of the Boar": {"str": 0.5, "spi": 0.5}, "of the Gorilla": {"str": 0.5, "int": 0.5}}
-const ARMOR_PER := {"cloth": 3.0, "leather": 6.0, "mail": 12.0, "plate": 20.0}
+const ARMOR_PER := {"cloth": 3.0, "leather": 6.0, "mail": 12.0, "plate": 15.0}
 const SLOT_ARMOR := {"chest": 1.0, "legs": 0.85, "head": 0.8, "shoulders": 0.7, "feet": 0.6, "hands": 0.55, "waist": 0.45, "wrist": 0.4, "back": 0.4}
 
 ## weapons that drop: [weapon type, name, speed, model, dps scale]

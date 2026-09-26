@@ -478,6 +478,17 @@ SPECS = {
     'moth':    dict(plan='flyer', col='#c8b88a', fur='#e8dcc0', wing='#9a845a', spot='#4a3222', moth=1, hover=1.2),
     'snake':   dict(plan='snake', col='#4e8a3a', belly='#d8cf8a', pattern='#2e4a22'),
     'maggot':  dict(plan='worm', col='#e2d2a8', ring='#c8b48a', headCol='#8a6a4a'),
+    # ---- levels 40–60: the coast, the ember lands, the frozen north
+    'crab':    dict(plan='spider', col='#b8482a', mark='#f0c080'),
+    'frostwolf': dict(plan='quad2', legH=.46, chest=(.28, .36, .3), hips=(.23, .3, .25), len=.52, head=(.23, .27, .21), headUp=.3, snout=(.25, .1, .06, .04),
+                    ears=(.21, .08, 14, 'sharp'), ruff='#e8eef6', col='#c8d2de', belly='#f4f8fc', foot='paw', footCol='#9aa6b4', legR=(.078, .052), tail='bushy', tailTip='#ffffff', eye=.045, stride=40),
+    'snowbear': dict(plan='quad2', legH=.5, chest=(.46, .5, .44), hips=(.42, .44, .4), len=.58, head=(.34, .33, .31), headUp=.22, snout=(.18, .15, .12, .04), snoutCol='#d8d0c4',
+                    ears=(.1, .1, 0, 'round'), hump=1, col='#e6e2da', belly='#f4f0ea', foot='paw', footCol='#4a4440', legR=(.16, .12), tail='short', eye=.05, stride=24),
+    'drake':   dict(plan='flyer', col='#8a2a1a', wing='#5a1a12', snout='#c85a2a', hover=1.6),
+    'magmaworm': dict(plan='worm', col='#3a2622', ring='#e8641a', headCol='#1e1412'),
+    'serpent': dict(plan='snake', col='#2a6a8a', belly='#bfe0d8', pattern='#16384a'),
+    'ram':     dict(plan='quad2', legH=.5, chest=(.26, .34, .28), hips=(.24, .31, .26), len=.46, head=(.17, .21, .17), headUp=.4, snout=(.14, .1, .08, .03),
+                    ears=(.12, .06, 70, 'leaf'), antlers=1, col='#d8ccb4', belly='#f0e8d8', dark='#4a3c30', legR=(.06, .04), tail='short', eye=.045, stride=34),
 }
 
 def build(name):

@@ -29,12 +29,15 @@ const HOUSES := [
 	[50.0, 16.0, 8, 8, 1, "plaster", PI],
 ]
 
+var town := true                        # false: just a house kit for another zone's builder (see ZoneBuilder.houses)
+
 func _ready() -> void:
 	rng.seed = 42
-	add_to_group("village")
 	window_mat = StandardMaterial3D.new()
 	window_mat.albedo_color = Color(0.2, 0.25, 0.3); window_mat.roughness = 0.08; window_mat.metallic = 0.4
 	window_mat.emission_enabled = true; window_mat.emission = Color(1.0, 0.62, 0.3); window_mat.emission_energy_multiplier = 0.0
+	if not town: return
+	add_to_group("village")
 	for h in HOUSES:
 		var c := Vector2(h[0], h[1])
 		var yaw: float = h[6] if h[6] != null else atan2(WorldData.TOWN.x - c.x, WorldData.TOWN.y - c.y)

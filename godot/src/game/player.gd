@@ -58,7 +58,7 @@ func setup_from(ch: Dictionary) -> void:
 	equipped = ch.get("equipped", {}).duplicate(true)
 	if fresh and equipped.is_empty():
 		for id in Items.START[cls]:
-			var d: Dictionary = Items.LIST[id]
+			var d: Dictionary = Items.def(id)
 			equipped[d["slot"]] = {"id": id, "n": 1}
 		add_item({"id": "hearthstone", "n": 1})
 		add_item({"id": "warm_meal", "n": 4}); add_item({"id": "spring_water", "n": 4})
@@ -554,7 +554,7 @@ func sell(i: int) -> void:
 var buyback: Array = []
 
 func buy(id: String) -> void:
-	var d: Dictionary = Items.LIST[id]
+	var d: Dictionary = Items.def(id)
 	var price := Items.buy_price(d)
 	if gold < price: _hud("error", "You don't have enough money"); return
 	if add_item({"id": id, "n": 1 if int(d.get("stack", 1)) == 1 else mini(5, int(d["stack"]))}):
@@ -599,12 +599,12 @@ func skill(id: String) -> int:
 ## working at a tier near your skill teaches you (green and yellow recipes, as WoW has them)
 func skill_up(id: String, tier: int, amount := 1) -> void:
 	var s := skill(id)
-	if s >= 300: return
+	if s >= Crafting.MAX_SKILL: return
 	var cap := Crafting.skill_needed(tier) + 75
 	if s >= cap: return
 	var chance := 1.0 if s < Crafting.skill_needed(tier) + 40 else 0.5
 	if randf() < chance:
-		skills[id] = mini(300, s + amount)
+		skills[id] = mini(Crafting.MAX_SKILL, s + amount)
 		_hud("notice", "Your skill in %s has increased to %d." % [Crafting.SKILLS[id], skills[id]])
 
 # ------------------------------------------------------------------ talents
@@ -808,7 +808,7 @@ func on_talk(npc: String) -> void:
 	if moved: quests_changed.emit()
 
 var _explore_t := 0.0
-var skills := {}                     # crafting and gathering: skill id -> 1..300
+var skills := {}                     # crafting and gathering: skill id -> 1..400
 var discovered: Array = []           # named places you've found ("Discovered: the Scree", a little XP)
 
 func _check_discovery() -> void:

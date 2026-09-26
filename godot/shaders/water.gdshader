@@ -23,6 +23,7 @@ global uniform float wind_time;
 uniform vec4 rings[6];                          // xy = centre, z = age (s), w = strength
 uniform sampler2D reflection_tex : filter_linear, repeat_disable;   // mirrored camera (see src/world/water.gd)
 uniform float reflect_amount = 1.0;
+uniform float glow = 0.0;                        // lava: the water glows with its own colour
 uniform sampler2D world_mask : filter_linear, repeat_disable;   // a = pond area
 uniform float half_size = 128.0;
 
@@ -111,6 +112,7 @@ void fragment() {
 	col = mix(col, refl * 0.85, clamp(0.06 + fres * reflect_amount * 0.8, 0.0, 0.5) * (1.0 - foam * 0.8));
 
 	ALBEDO = col;
+	EMISSION += col * glow * (0.6 + 0.4 * texture(noise_big, p * 0.05 + t * 0.01).r);
 	ROUGHNESS = mix(0.03, 0.5, foam);
 	SPECULAR = 0.5;
 	METALLIC = 0.0;

@@ -19,14 +19,16 @@ func _ready() -> void:
 	if args.has("weather"): set_state(args["weather"]); pinned = true
 	_make_rain()
 	# the Ash Slopes: ash drifts down all the time instead of rain, under a hazy sky
-	if WorldData.Z.get("ashfall", false):
-		pinned = true; target_cloud = 0.55; target_rain = 0.0; DayNight.cloud = 0.55; DayNight.rain = 0.0
+	# (and the Pale Reach: snow; Emberreach: ash and embers) — "fall_color", "fall_size" per zone
+	if WorldData.Z.get("ashfall", false) or WorldData.Z.get("snow", false):
+		pinned = true; target_cloud = float(WorldData.Z.get("fall_cloud", 0.55)); target_rain = 0.0; DayNight.cloud = target_cloud; DayNight.rain = 0.0
 		var pm: ParticleProcessMaterial = rain_fx.process_material
 		pm.initial_velocity_min = 0.6; pm.initial_velocity_max = 1.2; pm.gravity = Vector3(0.3, -0.8, 0.1); pm.spread = 40.0
 		rain_fx.lifetime = 9.0; rain_fx.amount = 2500
-		var q := QuadMesh.new(); q.size = Vector2(0.06, 0.06)
+		var fs: float = WorldData.Z.get("fall_size", 0.06)
+		var q := QuadMesh.new(); q.size = Vector2(fs, fs)
 		var m := StandardMaterial3D.new(); m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED; m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		m.albedo_color = Color(0.75, 0.72, 0.68, 0.7); m.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED; q.material = m
+		m.albedo_color = WorldData.Z.get("fall_color", Color(0.75, 0.72, 0.68, 0.7)); m.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED; q.material = m
 		rain_fx.draw_pass_1 = q
 		set_meta("ash", true)
 

@@ -23,7 +23,7 @@ func _ready() -> void:
 	body = Node3D.new(); add_child(body)
 	if kind == "ore":
 		var rm := StandardMaterial3D.new(); rm.albedo_color = Color(0.42, 0.4, 0.38); rm.roughness = 0.95
-		var ore := StandardMaterial3D.new(); ore.albedo_color = [Color(0.8, 0.45, 0.25), Color(0.15, 0.15, 0.18), Color(0.5, 0.35, 0.25), Color(0.55, 0.5, 0.5), Color(0.7, 0.75, 0.85), Color(0.6, 0.5, 0.9)][tier - 1]
+		var ore := StandardMaterial3D.new(); ore.albedo_color = [Color(0.8, 0.45, 0.25), Color(0.15, 0.15, 0.18), Color(0.5, 0.35, 0.25), Color(0.55, 0.5, 0.5), Color(0.7, 0.75, 0.85), Color(0.6, 0.5, 0.9), Color(0.35, 0.7, 0.75), Color(0.45, 0.2, 0.7)][tier - 1]
 		ore.metallic = 0.85; ore.roughness = 0.3
 		for k in 3:
 			var r := MeshInstance3D.new(); var sm := SphereMesh.new(); sm.radius = 0.45 - k * 0.1; sm.height = 0.6 - k * 0.1; sm.radial_segments = 7; sm.rings = 4; sm.material = rm
@@ -32,8 +32,8 @@ func _ready() -> void:
 			var o := MeshInstance3D.new(); var om := SphereMesh.new(); om.radius = 0.09; om.height = 0.14; om.radial_segments = 5; om.rings = 2; om.material = ore
 			o.mesh = om; body.add_child(o); o.position = Vector3(rng.randf_range(-0.6, 0.5), rng.randf_range(0.2, 0.45), rng.randf_range(-0.3, 0.3))
 	else:
-		var leaf := StandardMaterial3D.new(); leaf.albedo_color = [Color(0.4, 0.62, 0.25), Color(0.45, 0.55, 0.35), Color(0.3, 0.45, 0.3), Color(0.55, 0.35, 0.2), Color(0.6, 0.75, 0.8), Color(0.5, 0.45, 0.8)][tier - 1]
-		var bloom := StandardMaterial3D.new(); bloom.albedo_color = [Color(1.0, 0.75, 0.3), Color(0.9, 0.9, 0.6), Color(0.5, 0.6, 1.0), Color(1.0, 0.4, 0.2), Color(0.8, 0.9, 1.0), Color(1.0, 0.9, 0.5)][tier - 1]
+		var leaf := StandardMaterial3D.new(); leaf.albedo_color = [Color(0.4, 0.62, 0.25), Color(0.45, 0.55, 0.35), Color(0.3, 0.45, 0.3), Color(0.55, 0.35, 0.2), Color(0.6, 0.75, 0.8), Color(0.5, 0.45, 0.8), Color(0.95, 0.4, 0.15), Color(0.55, 0.25, 0.8)][tier - 1]
+		var bloom := StandardMaterial3D.new(); bloom.albedo_color = [Color(1.0, 0.75, 0.3), Color(0.9, 0.9, 0.6), Color(0.5, 0.6, 1.0), Color(1.0, 0.4, 0.2), Color(0.8, 0.9, 1.0), Color(1.0, 0.9, 0.5), Color(1.0, 0.3, 0.1), Color(0.7, 0.4, 1.0)][tier - 1]
 		bloom.emission_enabled = true; bloom.emission = bloom.albedo_color; bloom.emission_energy_multiplier = 0.4
 		for k in 6:
 			var l := MeshInstance3D.new(); var cm := CylinderMesh.new(); cm.top_radius = 0.0; cm.bottom_radius = 0.06; cm.height = 0.45; cm.material = leaf

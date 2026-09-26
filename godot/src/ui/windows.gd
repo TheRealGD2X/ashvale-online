@@ -186,7 +186,7 @@ func open_npc(n: Npc) -> void:
 	# go straight to the one thing they have, as WoW does when there's only one quest
 	var q := player.quests_at(n.npc_id)
 	var info: Dictionary = n.info
-	var extras := int(info.has("vendor")) + int(info.has("trainer") and info["trainer"] == player.cls)
+	var extras := int(info.has("vendor")) + int(info.has("trainer") and info["trainer"] in [player.cls, "all"])
 	if q["complete"].size() == 1 and q["available"].is_empty() and extras == 0: _show_quest(q["complete"][0]); return
 	if q["available"].size() == 1 and q["complete"].is_empty() and q["active"].is_empty() and extras == 0: _show_quest(q["available"][0]); return
 	npc_page = "gossip"
@@ -213,7 +213,7 @@ func _gossip() -> void:
 	for id in q["available"]: v.add_child(_option("!", Quests.LIST[id]["title"], Color(1, 0.86, 0.1), func(): _show_quest(id)))
 	for id in q["active"]: v.add_child(_option("?", Quests.LIST[id]["title"], Color(0.7, 0.7, 0.7), func(): _show_quest(id)))
 	if info.has("vendor"): v.add_child(_option("◆", "Let me browse your goods.", INK, func(): npc_page = "vendor"; _vendor(); open_bags(true)))
-	if info.get("trainer", "") == player.cls: v.add_child(_option("✦", "I'd like to train.", INK, func(): npc_page = "trainer"; _trainer()))
+	if info.get("trainer", "") in [player.cls, "all"]: v.add_child(_option("✦", "I'd like to train.", INK, func(): npc_page = "trainer"; _trainer()))
 	elif info.has("trainer"): v.add_child(_para("\"You're no %s. Go and find your own kind.\"" % Rules.CLASSES[info["trainer"]]["name"], 16, Color(0.75, 0.7, 0.6)))
 	if info.get("market", false): v.add_child(_option("⚖", "Show me the market board.", INK, func(): open_market()))
 	if info.get("inn", false): v.add_child(_option("⌂", "Make this inn your home.", INK, func():
@@ -265,7 +265,7 @@ func _show_quest(id: String) -> void:
 func _after_quest() -> void:
 	if npc == null: return
 	var q := player.quests_at(npc.npc_id)
-	if q["complete"].is_empty() and q["available"].is_empty() and not npc.info.has("vendor") and npc.info.get("trainer", "") != player.cls:
+	if q["complete"].is_empty() and q["available"].is_empty() and not npc.info.has("vendor") and not (npc.info.get("trainer", "") in [player.cls, "all"]):
 		npc_win.visible = false; npc = null
 	else: _gossip()
 
@@ -291,7 +291,7 @@ func _rewards(v: VBoxContainer, q: Dictionary, picking: bool) -> void:
 				for k in boxes.size():
 					boxes[k].border_color = GOLD; boxes[k].set_border_width_all(2 if k == idx else 0)
 			h.add_child(_slot(it, 44, pick))
-			var nl := _lbl(Items.LIST[it["id"]]["name"], 15, Items.color(Items.LIST[it["id"]])); nl.custom_minimum_size = Vector2(150, 0)
+			var nl := _lbl(Items.def(it["id"])["name"], 15, Items.color(Items.def(it["id"]))); nl.custom_minimum_size = Vector2(150, 0)
 			nl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			h.add_child(nl)
 			g.add_child(row)
@@ -301,7 +301,7 @@ func _rewards(v: VBoxContainer, q: Dictionary, picking: bool) -> void:
 		for id in q["items"]:
 			var it2 := {"id": id, "n": 1}
 			h2.add_child(_slot(it2, 44))
-			h2.add_child(_lbl(Items.LIST[id]["name"] + "   ", 15, Items.color(Items.LIST[id])))
+			h2.add_child(_lbl(Items.def(id)["name"] + "   ", 15, Items.color(Items.def(id))))
 	var h3 := HBoxContainer.new(); h3.add_theme_constant_override("separation", 16); v.add_child(h3)
 	if q.has("money"): h3.add_child(_money_row(int(q["money"])))
 	h3.add_child(_lbl("%d experience" % Quests.xp_for(npc_quest, player.level), 16, Color(0.75, 0.6, 1.0)))
@@ -313,7 +313,7 @@ func _vendor() -> void:
 	v.add_child(_lbl("Click to buy. Right-click things in your bags to sell them.", 14, Color(0.8, 0.76, 0.68)))
 	var g := GridContainer.new(); g.columns = 2; g.add_theme_constant_override("h_separation", 14); g.add_theme_constant_override("v_separation", 8); v.add_child(g)
 	for id in info["vendor"]:
-		var d: Dictionary = Items.LIST[id]
+		var d: Dictionary = Items.def(id)
 		var it := {"id": id, "n": 1 if int(d.get("stack", 1)) == 1 else mini(5, int(d["stack"]))}
 		var h := HBoxContainer.new(); h.custom_minimum_size = Vector2(210, 0)
 		var ic := _slot(it, 44, func(_b): player.buy(id); _vendor())
@@ -637,7 +637,7 @@ func _fill_station() -> void:
 	for r in Crafting.RECIPES:
 		if r[3] == station: used[r[2]] = true
 	var head := HBoxContainer.new(); head.add_theme_constant_override("separation", 18); v.add_child(head)
-	for s in used: head.add_child(_lbl("%s %d / 300" % [Crafting.SKILLS[s], player.skill(s)], 16, Color(0.6, 0.85, 1.0)))
+	for s in used: head.add_child(_lbl("%s %d / %d" % [Crafting.SKILLS[s], player.skill(s), Crafting.MAX_SKILL], 16, Color(0.6, 0.85, 1.0)))
 	for s in ["mining", "herbalism"]: head.add_child(_lbl("%s %d" % [Crafting.SKILLS[s], player.skill(s)], 14, Color(0.7, 0.7, 0.7)))
 	# tier picker
 	var tiers := HBoxContainer.new(); v.add_child(tiers)

@@ -31,7 +31,9 @@ static func build(tree: SceneTree) -> void:
 			var p := _pos(Vector2i(i, j))
 			var slope := maxf(absf(WorldData.h(p.x + 0.5, p.z) - WorldData.h(p.x - 0.5, p.z)), absf(WorldData.h(p.x, p.z + 0.5) - WorldData.h(p.x, p.z - 0.5)))
 			var rock := WorldData.CAVE and WorldData.rock_w(Vector2(p.x, p.z)) > 0.2
-			if rock or p.y < WorldData.WATER_H - 0.25 or slope > 0.95 or absf(p.x) > WorldData.HALF - 3.0 or absf(p.z) > WorldData.HALF - 3.0:
+			# (only the pond is water: low ground elsewhere, and cave floors, are just low ground)
+			var wet := WorldData.POND_R > 0.0 and p.y < WorldData.WATER_H - 0.25 and Vector2(p.x, p.z).distance_to(WorldData.POND) < WorldData.POND_R * 1.9
+			if rock or wet or slope > 0.95 or absf(p.x) > WorldData.HALF - 3.0 or absf(p.z) > WorldData.HALF - 3.0:
 
 				astar.set_point_solid(Vector2i(i, j), true)
 	# solid things: test the cells under each static body's shapes

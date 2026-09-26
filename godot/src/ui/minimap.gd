@@ -13,7 +13,21 @@ const PLACES := {"ashvale": [["Ashvale", Vector2(0, -2)], ["The Mill", Vector2(7
 		["The Hollow Mine", Vector2(24, -96)], ["Skarr's Cut", Vector2(66, -2)], ["Rockjaw's Den", Vector2(76, 60)], ["The Cairn Field", Vector2(-84, -96)],
 		["Hollow Road", Vector2(-8, 96)], ["Cliff Road", Vector2(104, 28)]],
 	"mine": [["Entrance", Vector2(0, 118)], ["Diggers' Hall", Vector2(-32, 54)], ["The Grub Pit", Vector2(-54, -28)], ["The Deep Rails", Vector2(46, -24)],
-		["Foreman's Gallery", Vector2(-2, -32)], ["The Hollow Throne", Vector2(0, -106)]]}
+		["Foreman's Gallery", Vector2(-2, -32)], ["The Hollow Throne", Vector2(0, -106)]],
+	"saltmere": [["Gullhaven", Vector2(-40, 8)], ["The Pier", Vector2(68, 30)], ["Kelp Flats", Vector2(62, 20)], ["Gull Point", Vector2(50, -80)],
+		["The Drowned Hold", Vector2(70, -96)], ["Wreck of the Merrow", Vector2(78, 66)], ["Wrecker's Cove", Vector2(52, 102)], ["Serpent Shore", Vector2(82, -20)],
+		["Tidecaller Rocks", Vector2(92, -50)], ["The Salt Road", Vector2(-104, 6)], ["The Cinder Stair", Vector2(-14, -106)], ["The Sound", Vector2(104, 36)]],
+	"emberreach": [["Forgehold", Vector2(20, 46)], ["The Lava Lake", Vector2(-44, -22)], ["The Ashworks", Vector2(-86, -82)], ["Black Glass Fields", Vector2(18, -50)],
+		["The Molten Deep", Vector2(30, -98)], ["The Roost", Vector2(92, -8)], ["Charred Wood", Vector2(-50, 84)], ["Slag Fields", Vector2(-96, 42)],
+		["The Frostgate", Vector2(-104, -46)], ["The Cinder Stair", Vector2(-12, 104)]],
+	"palereach": [["Wintermere", Vector2(60, -30)], ["The Frozen Lake", Vector2(-20, 40)], ["The Wolfrun", Vector2(30, 62)], ["The Barrows", Vector2(-44, -62)],
+		["Frostspire", Vector2(-100, -38)], ["Northern Pass", Vector2(8, -100)], ["East Slopes", Vector2(96, 30)], ["The Frostgate", Vector2(104, -48)]],
+	"scar": [["The Last Watch", Vector2(0, 66)], ["The Wastes", Vector2(-64, 26)], ["Hollow Field", Vector2(-84, -52)], ["The Broken Road", Vector2(10, -40)],
+		["The Void Pool", Vector2(44, -18)], ["Cult Ring", Vector2(-44, -84)], ["The Broken Crown", Vector2(84, -92)], ["East Rim", Vector2(90, 40)],
+		["The Sanctum Gate", Vector2(0, -102)]],
+	"drowned_hold": [["The Bilge", Vector2(0, 74)], ["Grell's Deck", Vector2(-34, 16)], ["The Brood Pool", Vector2(34, 16)], ["The Admiral's Hall", Vector2(0, -100)]],
+	"molten_deep": [["The Slagworks", Vector2(0, 62)], ["Slagjaw's Pit", Vector2(-50, 4)], ["Tharn's Forge", Vector2(50, 4)], ["The Heart of the Mountain", Vector2(0, -104)]],
+	"frostspire": [["The Cold Stair", Vector2(0, 68)], ["Ursoth's Den", Vector2(-40, 14)], ["The Witch's Hall", Vector2(40, 14)], ["The Frozen Throne", Vector2(0, -104)]]}
 
 static var map_zone := ""
 

@@ -22,7 +22,8 @@ var exit_warned := {}
 static var travel := {}              # set before reloading into another zone: {"ch", "zone", "pos", "party"}
 
 const BUILDERS := {"village": "res://src/world/village.gd", "landmarks": "res://src/world/landmarks.gd", "water": "res://src/world/water.gd",
-	"vegetation": "res://src/world/vegetation.gd", "life": "res://src/world/life.gd", "camp": "res://src/world/camp.gd", "mine": "res://src/world/mine.gd", "marsh": "res://src/world/marsh.gd", "temple": "res://src/world/temple.gd", "highland": "res://src/world/highland.gd", "varn": "res://src/world/varn.gd"}
+	"vegetation": "res://src/world/vegetation.gd", "life": "res://src/world/life.gd", "camp": "res://src/world/camp.gd", "mine": "res://src/world/mine.gd", "marsh": "res://src/world/marsh.gd", "temple": "res://src/world/temple.gd", "highland": "res://src/world/highland.gd", "varn": "res://src/world/varn.gd",
+	"coast": "res://src/world/coast.gd", "ember": "res://src/world/ember.gd", "frost": "res://src/world/frost.gd", "scar": "res://src/world/scar.gd"}
 
 func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
@@ -82,7 +83,7 @@ func _ready() -> void:
 		var ch := {"name": "Tester", "cls": cls, "level": int(args.get("level", "1")), "look": Avatar.random_look(rng, cls, args.get("sex", "m")), "zone": zone}
 		# tests can start further along: --done=ashvale marks the province's quests done
 		# (or --done=mirewood: every quest given in that zone and the ones before it on the road)
-		var road := ["ashvale", "hollow", "mirewood", "ashslopes", "highlands", "varn"]
+		var road := ["ashvale", "hollow", "mirewood", "ashslopes", "highlands", "varn", "saltmere", "emberreach", "palereach", "scar"]
 		if road.has(args.get("done", "")):
 			var upto := road.find(args["done"])
 			var dq := []
